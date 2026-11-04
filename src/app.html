@@ -1,0 +1,1146 @@
+<title>Windowsill</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Morning light: warm white wall, a patch of window light, a sill of pots, iOS grouped lists */
+:root {
+  --bg: #FAF8F3; --surface: #FFFFFF; --fill: #F1EDE5; --ink: #1D1D1F; --muted: #6E6A62; --faint: #A39E94; --line: #EFEBE3;
+  --tint: #2F6FD6; --tint-ink: #FFFFFF; --tint-soft: #E8F0FE;
+  --late: #B9431A; --late-soft: #FBE9E1; --ok: #3F7D4A;
+  --sun: #FFEFC9; --sill: #EADFCB; --sill-shadow: rgba(120, 96, 60, 0.16); --bar: rgba(250, 248, 243, 0.86);
+  --f: -apple-system, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif;
+  --water: #2F86E0; --water-deep: #1D5FC2; --water-soft: #E3EFFC; --shine: #2FA35A;
+  --r: 16px; color-scheme: light;
+}
+
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--ink); }
+body { margin: 0; font-family: var(--f); font-size: 17px; line-height: 1.35; -webkit-font-smoothing: antialiased; position: relative; overflow-x: hidden; }
+.wrap { max-width: 560px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 2px solid var(--tint); outline-offset: 2px; }
+.muted { color: var(--muted); }
+.late-t { color: var(--late); }
+.sp { font-style: italic; color: var(--muted); }
+
+/* window light falling on the wall */
+.light { position: absolute; top: 0; left: 0; right: 0; height: 340px; overflow: hidden; pointer-events: none; z-index: 0; }
+.light > div { position: absolute; top: -40px; right: -70px; width: 300px; height: 360px; transform: skewX(-14deg); display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.light i { background: var(--sun); opacity: 0.55; border-radius: 4px 4px 0 0; }
+.light i:nth-child(n+3) { opacity: 0.38; border-radius: 0; }
+
+.top { position: relative; z-index: 1; padding-top: max(28px, env(safe-area-inset-top, 0px)); }
+.top .wrap { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.date { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.top h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+.round { width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--fill); color: var(--tint); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+
+main.wrap { position: relative; z-index: 1; padding-top: 18px; padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 22px; }
+
+/* Today hero */
+.hero h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; }
+.hero p { font-size: 16px; color: var(--muted); margin-top: 2px; }
+.hero .season { font-size: 14px; color: var(--faint); margin-top: 6px; }
+
+/* the sill */
+.sill { margin: 0 -16px; }
+.pots { display: flex; align-items: flex-end; gap: 6px; overflow-x: auto; padding: 4px 22px 0; scrollbar-width: none; min-height: 94px; }
+.pots::-webkit-scrollbar { display: none; }
+.pot { border: 0; background: none; padding: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; flex: none; min-width: 52px; }
+.pot .drop { height: 16px; color: var(--water); display: flex; align-items: flex-end; }
+.pot.late .drop { color: var(--water-deep); }
+.pot .drop.shine { color: var(--shine); }
+.shine svg { animation: twinkle 2.4s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.88); } }
+@media (prefers-reduced-motion: reduce) { .shine svg { animation: none; } }
+.pot svg.plant { display: block; transition: transform 0.2s; }
+.pot:active svg.plant { transform: scale(0.94); }
+.board { height: 10px; margin: 0 16px; border-radius: 3px; background: var(--sill); box-shadow: 0 6px 14px var(--sill-shadow); }
+
+/* iOS grouped list */
+.group-h { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); padding: 0 4px 6px; }
+.group { background: var(--surface); border-radius: var(--r); box-shadow: 0 1px 2px rgba(60, 50, 30, 0.06); overflow: hidden; }
+.row { display: flex; align-items: center; gap: 12px; padding: 0 12px 0 14px; min-height: 60px; position: relative; }
+.row + .row::before { content: ""; position: absolute; top: 0; left: 36px; right: 0; height: 1px; background: var(--line); }
+.row .main { all: unset; flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 10px 0; cursor: pointer; }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14); }
+.lines { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.name { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sub { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trail { font-size: 15px; color: var(--muted); white-space: nowrap; flex: none; }
+.trail.late { color: var(--late); font-weight: 600; }
+.chev { color: var(--faint); flex: none; }
+.act { width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--water-soft); color: var(--water); display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.act.late { background: var(--water-deep); color: #fff; }
+.act:disabled { opacity: 0.5; }
+.more { all: unset; box-sizing: border-box; width: 100%; display: flex; justify-content: space-between; align-items: center; min-height: 50px; padding: 0 14px; border-radius: var(--r); background: var(--surface); opacity: 0.85; color: var(--muted); font-size: 16px; cursor: pointer; }
+details.soon > summary { list-style: none; }
+details.soon > summary::-webkit-details-marker { display: none; }
+details.soon[open] > summary .chev { transform: rotate(90deg); }
+details.soon[open] > summary { margin-bottom: 10px; }
+
+.empty { background: var(--surface); border-radius: var(--r); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.empty h3 { font-size: 19px; }
+.empty p { color: var(--muted); font-size: 15px; }
+.banner { background: var(--surface); border-radius: var(--r); padding: 14px 16px; color: var(--muted); }
+.lede { color: var(--muted); font-size: 15px; padding: 0 4px; }
+
+/* buttons */
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { border: 0; background: var(--fill); border-radius: 12px; min-height: 44px; padding: 10px 16px; font-weight: 600; font-size: 16px; color: var(--ink); }
+.btn.primary { background: var(--tint); color: var(--tint-ink); }
+.btn.wide { flex: 1 1 140px; }
+.btn.plain { background: none; color: var(--tint); padding-left: 4px; padding-right: 4px; }
+.btn.danger { background: none; color: var(--late); }
+.btn.danger.armed { background: var(--late); color: var(--surface); }
+.btn.small { min-height: 34px; padding: 6px 12px; font-size: 14px; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.toggle { border: 0; background: var(--fill); border-radius: 999px; min-height: 36px; padding: 6px 14px; font-size: 15px; }
+.toggle[aria-pressed="true"] { background: var(--tint); color: var(--tint-ink); font-weight: 600; }
+
+/* search */
+.search { width: 100%; border: 0; border-radius: 12px; background: var(--fill); padding: 10px 14px; font-size: 17px; }
+.search::placeholder { color: var(--faint); }
+
+/* bottom tab bar */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--bar); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); }
+.tabs-in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
+.tabs button { border: 0; background: transparent; padding: 8px 4px 6px; font-weight: 600; font-size: 11px; color: var(--faint); display: flex; flex-direction: column; align-items: center; gap: 3px; position: relative; }
+.tabs button[aria-current="page"] { color: var(--tint); }
+.tabs .n { display: none; }
+.tabs .badge { position: absolute; top: 4px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--water-deep); color: #fff; font-size: 11px; line-height: 18px; text-align: center; }
+.tabs .badge:empty { display: none; }
+
+/* sheet */
+.sheet { position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
+.sheet-back { position: absolute; inset: 0; background: rgba(20, 16, 10, 0.35); }
+.sheet-card { position: relative; background: var(--bg); width: 100%; max-width: 560px; max-height: 92%; overflow-y: auto; border-radius: 20px 20px 0 0;
+  padding-block: 10px calc(28px + env(safe-area-inset-bottom, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 18px; }
+.sheet-card::before { content: ""; align-self: center; width: 38px; height: 5px; border-radius: 3px; background: var(--line); flex: none; }
+.sheet-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.sheet-top h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
+.x { border: 0; background: var(--fill); color: var(--muted); border-radius: 50%; width: 32px; height: 32px; flex: none; display: inline-flex; align-items: center; justify-content: center; }
+
+/* plant sheet */
+.p-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; margin-top: -6px; }
+.p-head .x { align-self: flex-end; }
+.p-head h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-top: 4px; }
+.p-head .common { font-size: 17px; font-weight: 600; color: var(--muted); }
+.p-head .sp { font-size: 14px; color: var(--faint); }
+.p-head .where { font-size: 15px; color: var(--muted); }
+.status { background: var(--surface); border-radius: var(--r); padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.status .k { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.status .big { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; }
+.status .small { font-size: 15px; color: var(--muted); }
+.cuepick { display: flex; flex-wrap: wrap; gap: 8px; }
+.note { display: flex; gap: 10px; align-items: flex-start; background: var(--late-soft); color: var(--ink); border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+.note svg { color: var(--late); flex: none; margin-top: 1px; }
+.note .btn { margin-left: auto; }
+.kv { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 12px 14px; min-height: 48px; position: relative; font-size: 16px; }
+.kv + .kv::before, .group > .kv ~ button.kv::before { content: ""; position: absolute; top: 0; left: 14px; right: 0; height: 1px; background: var(--line); }
+.kv > span:first-child { color: var(--muted); flex: none; }
+.kv > span:last-child { text-align: right; min-width: 0; }
+.kv.long { flex-direction: column; align-items: flex-start; gap: 2px; }
+.kv.long > span:last-child { text-align: left; }
+button.kv { all: unset; box-sizing: border-box; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; min-height: 48px; position: relative; color: var(--tint); font-size: 16px; cursor: pointer; }
+.stepper { display: inline-flex; align-items: center; gap: 10px; }
+.stepper .btn { min-height: 32px; width: 36px; padding: 0; font-size: 18px; }
+details.more-d > summary { cursor: pointer; color: var(--tint); font-size: 16px; padding: 4px; list-style: none; }
+details.more-d > summary::-webkit-details-marker { display: none; }
+details.more-d ul { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: var(--muted); }
+.log { list-style: none; margin: 0; padding: 4px 0; }
+.log li { display: grid; grid-template-columns: 4.6rem 1fr; gap: 10px; padding: 8px 14px; font-size: 15px; }
+.log li > span:first-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* forms */
+form.f { display: flex; flex-direction: column; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label, .field .lab { font-size: 13px; font-weight: 600; color: var(--muted); padding-left: 4px; }
+.field small { color: var(--muted); font-size: 13px; padding-left: 4px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.row2 > * { min-width: 0; }
+input[type="text"], input[type="number"], input[type="date"], select, textarea {
+  width: 100%; border: 0; border-radius: 12px; padding: 11px 14px; background: var(--surface); min-width: 0; font-size: 16px; min-height: 44px; }
+textarea { resize: vertical; min-height: 80px; }
+fieldset { border: 0; background: var(--fill); border-radius: var(--r); padding: 14px; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+legend { display: none; }
+
+/* photo check-ins */
+.thumb { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; flex: none; background: var(--fill); display: block; }
+.p-photo { width: 132px; height: 132px; border-radius: 50%; object-fit: cover; background: var(--fill); display: block; box-shadow: 0 6px 18px var(--sill-shadow); }
+.strip { display: flex; gap: 10px; overflow-x: auto; padding: 14px; scrollbar-width: none; }
+.strip::-webkit-scrollbar { display: none; }
+.shot { all: unset; flex: none; width: 96px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; }
+.shot img, .shot .ph { width: 96px; height: 120px; border-radius: 12px; object-fit: cover; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--faint); font-size: 13px; }
+.shot .d { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.hd { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--faint); }
+.hd.excellent { background: var(--ok); } .hd.good { background: var(--tint); } .hd.bad { background: var(--late); }
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+.compare figure { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.compare img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 12px; background: var(--fill); display: block; }
+.compare figcaption { font-size: 13px; color: var(--muted); }
+.big-photo { width: 100%; max-height: 62vh; object-fit: contain; border-radius: var(--r); background: var(--fill); display: block; }
+.pick { display: flex; align-items: center; justify-content: center; min-height: 150px; border-radius: var(--r); background: var(--surface); color: var(--tint); font-weight: 600; cursor: pointer; overflow: hidden; position: relative; }
+.pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.pick img { width: 100%; max-height: 46vh; object-fit: contain; display: block; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.toast:not([hidden]) { display: flex; align-items: center; gap: 14px; }
+.toast-act { border: 0; background: none; color: var(--water-soft); font: inherit; font-weight: 700; padding: 6px 2px; margin: -6px 0; cursor: pointer; }
+.done-t { color: var(--ok); }
+.row .btn.small { flex: none; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(92px + env(safe-area-inset-bottom, 0px)); z-index: 30;
+  background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 999px; font-size: 15px; font-weight: 500; max-width: calc(100% - 32px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); }
+@media (prefers-reduced-motion: no-preference) {
+  .sheet-card { animation: up 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); } @keyframes up { from { transform: translateY(40px); opacity: 0.6; } }
+  .toast { animation: pop 0.2s ease-out; } @keyframes pop { from { transform: translate(-50%, 8px); opacity: 0; } }
+}
+</style>
+
+<div class="light" aria-hidden="true"><div><i></i><i></i><i></i><i></i></div></div>
+<header class="top"><div class="wrap"><div><p class="date" id="today"></p><h1>Windowsill</h1></div><span id="topAction"></span></div></header>
+<main class="wrap" id="view"></main>
+<nav class="tabs" aria-label="Sections"><div class="tabs-in">
+  <button data-tab="today"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Today<span class="badge" id="n-today"></span></button>
+  <button data-tab="plants"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-9"/><path d="M12 12C12 7 8 4 4 4c0 5 3 8 8 8z"/><path d="M12 14c0-4 3-7 8-7 0 4-3 7-8 7z"/></svg>Plants<span class="n" id="n-plants"></span></button>
+  <button data-tab="rooms"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M12 3v18M4 12h16"/></svg>Rooms<span class="n" id="n-rooms"></span></button>
+  <button data-tab="props"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h8l-1 5v10a3 3 0 0 1-6 0V8z"/><path d="M12 14c0-3 2-5 4-6"/></svg>Props<span class="n" id="n-props"></span></button>
+</div></nav>
+<div class="sheet" id="sheet" hidden><div class="sheet-back" data-act="close"></div><div class="sheet-card" role="dialog" aria-modal="true" id="sheetBody"></div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const S = { plants: [], rooms: [], props: [], tab: "today", q: "", loaded: { plants: false, rooms: false, props: false }, db: null, noDb: false, cues: {}, sheetPlant: null, checkins: [], assets: null, ci: null };
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// dates are local YYYY-MM-DD strings
+const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const parse = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const today = () => iso(new Date());
+const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return iso(d); };
+const daysBetween = (a, b) => Math.round((parse(b) - parse(a)) / 864e5);
+const short = (s) => s ? parse(s).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "never";
+function rel(s) {
+  if (!s) return "never";
+  const n = daysBetween(today(), s);
+  if (n === 0) return "today"; if (n === -1) return "yesterday"; if (n === 1) return "tomorrow";
+  return n < 0 ? `${-n} days ago` : `in ${n} days`;
+}
+
+const GRADES = ["low", "medium", "bright indirect", "direct"];
+const FEED = { standard: "Balanced liquid feed, half strength", succulent: "Low-nitrogen feed, 2 to 3 times a year", orchid: "Orchid feed, weakly weekly", none: "No feeding" };
+const FEED_DAYS = { standard: 28, succulent: 75, orchid: 7, none: 0 };
+const STATUSES = ["rooting", "potted", "established", "for sale", "sold", "gifted"];
+const GENERIC_CUES = [
+  "Finger two knuckles into the soil: dry and loose means water, cool and sticky means wait.",
+  "Lift the pot: noticeably light means water, heavy means wait.",
+  "Leaves soft or drooping can mean thirsty; yellow and mushy means too much water.",
+];
+const CUE_WORDS = ["dry", "light pot", "drooping", "crispy"];
+const HEALTH = { excellent: "Thriving", good: "Doing fine", bad: "Needs help" };
+const CI_TAGS = ["New leaf", "Big leaves", "Flowering", "Yellowing", "Crispy tips", "Pests", "Repotted", "Pruned"];
+
+const roomOf = (p) => S.rooms.find((r) => r.id === p.roomId);
+const where = (p) => [roomOf(p)?.name, p.spot].filter(Boolean).join(" · ") || "No spot set";
+
+function catChip(p) {
+  if (!p.care?.toxic) return "";
+  if (p.catReach === "no") return `<span class="chip">toxic, out of cats' reach</span>`;
+  return `<span class="chip flag">${p.catReach === "yes" ? "toxic, cats can reach" : "toxic: out of cats' reach?"}</span>`;
+}
+const catRisk = (p) => !!p.care?.toxic && p.catReach !== "no";
+function inSeason(p) { if (p.feedYearRound) return true; const m = new Date().getMonth() + 1; return m >= 3 && m <= 9; }
+function waterDue(p) {
+  let due = p.lastWatered ? addDays(p.lastWatered, p.waterEvery || 7) : today();
+  if (p.snoozeUntil && p.snoozeUntil > due) due = p.snoozeUntil;
+  // Weekday-only rooms (the office): a weekend due date slides to Monday, erring dry.
+  if (roomOf(p)?.weekdaysOnly) { const wd = parse(due).getDay(); if (wd === 6) due = addDays(due, 2); else if (wd === 0) due = addDays(due, 1); }
+  return due;
+}
+function feedDue(p) {
+  const type = p.care?.feed || "standard";
+  if (type === "none" || !inSeason(p)) return null;
+  if (p.noFeedUntil && p.noFeedUntil > today()) return null;
+  return p.lastFed ? addDays(p.lastFed, p.feedEvery || FEED_DAYS[type] || 28) : today();
+}
+function inspectDue(p) { return addDays(p.lastInspected || p.created || today(), p.inspectEvery || 30); }
+function state(due) { const n = daysBetween(today(), due); return n < 0 ? "late" : n === 0 ? "now" : n <= 3 ? "soon" : "ok"; }
+function duePill(due) {
+  const n = daysBetween(today(), due), s = state(due);
+  const txt = n < 0 ? (n === -1 ? "1 day late" : `${-n} days late`) : n === 0 ? "due today" : n === 1 ? "tomorrow" : `in ${n} days`;
+  return `<span class="pill ${s === "ok" ? "" : s}">${txt}</span>`;
+}
+
+/* ---------- data ---------- */
+async function boot() {
+  $("#today").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+  render();
+  const db = window.claude?.use ? await window.claude.use("db") : null;
+  if (!db) { S.noDb = true; render(); return; }
+  S.db = db;
+  window.claude.use("assets").then((a) => { S.assets = a; if (S.sheetPlant) refreshPlantSheet(); }).catch(() => {});
+  for (const name of ["plants", "rooms", "props", "checkins"]) {
+    db.collection(name).onSnapshot((snap) => {
+      const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      if (name === "plants") { S.plants = docs.filter((p) => !p.gifted); S.gifted = docs.filter((p) => p.gifted); }
+      else S[name] = docs;
+      S.loaded[name] = true;
+      render();
+      if (S.sheetPlant && name !== "props") refreshPlantSheet();
+      if (name === "checkins" && S.shotOpen) openShot(S.shotOpen);
+      if (name === "plants" && S.actOpen) refreshActivity();
+    }, () => { S.noDb = true; render(); });
+  }
+}
+async function write(fn, okMsg) {
+  try { await fn(); if (okMsg) toast(okMsg); return true; }
+  catch (e) {
+    toast(e?.code === "quota_exceeded" ? "Storage is full. Delete old props or plants, then try again." : "That didn't save. Check your connection and try again.");
+    return false;
+  }
+}
+const plantRef = (id) => S.db.collection("plants").doc(id);
+const getPlant = (id) => S.plants.find((p) => p.id === id) || (S.gifted || []).find((p) => p.id === id);
+function withLog(p, entry) { return [...(p.log || []), { d: today(), ...entry }].slice(-150); }
+// Undoable actions: each log entry remembers the fields it changed (prev), so it can be taken back
+// from the toast, from Done today, or from Recent activity.
+const UNDO_KEYS = ["lastWatered", "snoozeUntil", "lastFed", "lastInspected", "repotted", "noFeedUntil", "health"];
+async function logAct(p, entry, upd, msg) {
+  const at = new Date().toISOString(), prev = {};
+  for (const k of Object.keys(upd)) if (UNDO_KEYS.includes(k)) prev[k] = p[k] ?? null;
+  const ok = await write(() => plantRef(p.id).update({ ...upd, log: withLog(p, { ...entry, at, prev }) }));
+  if (ok) toast(msg, { label: "Undo", run: () => undoEntry(p.id, at) });
+  return ok;
+}
+async function undoEntry(id, at) {
+  const p = getPlant(id), log = p?.log || [], e = log.find((x) => x.at === at);
+  if (!e) return toast("Nothing to undo");
+  const rest = log.filter((x) => x !== e), upd = { log: rest };
+  // Roll a field back only if no later entry changed it again.
+  for (const [k, v] of Object.entries(e.prev || {})) if (!rest.some((x) => x.at > at && x.prev && k in x.prev)) upd[k] = v;
+  if (await write(() => plantRef(id).update(upd))) toast(`Undone: ${actLabel(e).toLowerCase()}, ${nm(p)}`);
+}
+function actLabel(e) {
+  if (e.t === "water") return e.fed ? "Watered and fed" : "Watered";
+  if (e.t === "check") return "Still damp, checking later";
+  if (e.t === "inspect") return "Pest check";
+  if (e.t === "issue") return "Problem flagged";
+  if (e.t === "repot") return "Repotted";
+  if (e.t === "visit") return "Visit";
+  if (e.t === "note" && e.note === "fed") return "Fed";
+  return e.note ? cap(e.note) : cap(e.t);
+}
+const hhmm = (at) => at ? new Date(at).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }) : "";
+const DONE_T = ["water", "check", "inspect", "repot", "issue"];
+const doneToday = (p) => (p.log || []).filter((e) => e.at && e.d === today() && (DONE_T.includes(e.t) || e.note === "fed"));
+// Check-ins: one row per photo/progress note; the photo itself lives in the artifact's asset store.
+const shotsOf = (id) => S.checkins.filter((c) => c.plantId === id).sort((a, b) => (String(a.d) + (a.at || "")).localeCompare(String(b.d) + (b.at || "")));
+const photosOf = (id) => shotsOf(id).filter((c) => c.assetId);
+const blobUrl = (aid) => "/_blob/" + encodeURIComponent(aid);
+const latestPhoto = (p) => photosOf(p.id).slice(-1)[0];
+
+/* ---------- look ---------- */
+const IC = {
+  drop: `<svg width="18" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z" fill="none" stroke="currentColor" stroke-width="2"/></svg>`,
+  shine: `<svg width="22" height="16" viewBox="0 0 22 16" aria-hidden="true"><path d="M11 2v5.5M3.5 5.5l3.5 3.5M18.5 5.5L15 9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+  dropFill: `<svg width="14" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z" fill="currentColor"/></svg>`,
+  chev: `<svg class="chev" width="9" height="15" viewBox="0 0 9 15" aria-hidden="true"><path d="M1.5 1.5l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  search: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>`,
+  plus: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`,
+  x: `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8"/></svg>`,
+  gear: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`,
+  alert: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>`,
+};
+const nm = (p) => p.name || p.common || String(p.species || "").replace(/\s*\([^)]*\)?/g, "").trim() || p.species || "Unnamed plant";
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const hash = (s) => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+function dayName(s) {
+  const n = daysBetween(today(), s);
+  if (n <= 0) return "today"; if (n === 1) return "tomorrow";
+  if (n < 7) return parse(s).toLocaleDateString(undefined, { weekday: "long" });
+  return short(s);
+}
+function dueShort(s) {
+  const n = daysBetween(today(), s);
+  if (n < 0) return `${-n}d late`; if (n === 0) return "Today"; if (n === 1) return "Tomorrow";
+  if (n < 7) return parse(s).toLocaleDateString(undefined, { weekday: "short" });
+  return short(s);
+}
+
+// Pots: glaze colour from the plant id, foliage shape from the species.
+const GLAZES = [["#C8734F", "#D98A63"], ["#F1EDE4", "#E4DED2"], ["#2D3A45", "#3A4A57"], ["#E7B84B", "#F0C862"], ["#B7C7D6", "#C7D5E1"], ["#2E7D77", "#3E8F88"]];
+const glaze = (p) => GLAZES[hash(p.id) % GLAZES.length];
+/* ---------- plant drawings: one per plant style, drawn in a 56x70 box; the pot rim sits at y 38 ---------- */
+let PK_ID = 0;
+const PK = { leaf: "#4E8B57", deep: "#2F6B45", dark: "#24513A", lime: "#A9CC5A", cream: "#F3EBD3", silver: "#C9D6CF", stem: "#6A8F55" };
+const r1 = (n) => Math.round(n * 10) / 10;
+// heart leaf, tip pointing down along angle a (deg) from its stalk point x,y
+const heart = (x, y, s, a, fill, extra = "") => `<g transform="translate(${r1(x)} ${r1(y)}) rotate(${a})"><path d="M0 ${s}C${-s} ${r1(s * 0.35)} ${r1(-s * 0.85)} ${r1(-s * 0.55)} 0 ${r1(-s * 0.2)}C${r1(s * 0.85)} ${r1(-s * 0.55)} ${s} ${r1(s * 0.35)} 0 ${s}z" fill="${fill}"/>${extra}</g>`;
+// pointed upright blade from base bx,40 to tip tx,ty
+const blade = (bx, w, tx, ty, fill, stroke = "") => `<path d="M${bx - w} 40Q${bx - w - 1} ${r1((40 + ty) / 2)} ${tx} ${ty}Q${bx + w + 1} ${r1((40 + ty) / 2)} ${bx + w} 40z" fill="${fill}"${stroke ? ` stroke="${stroke}" stroke-width="1.2"` : ""}/>`;
+const oval = (x, y, rx, ry, a, fill, extra = "") => `<g transform="translate(${r1(x)} ${r1(y)}) rotate(${a})"><ellipse rx="${rx}" ry="${ry}" fill="${fill}"/>${extra}</g>`;
+const vine = (pts, c = PK.stem, w = 1.2) => `<path d="${pts}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
+
+const PLANTS = {
+  snake: (v) => {
+    const edge = v === "gold" ? "#D9C25A" : v === "white" ? "#EDEBDF" : "";
+    const body = v === "gold" ? "#2C4A36" : "#3E7650";
+    const band = (x, y) => `<path d="M${x - 2.5} ${y}q1.3 -1.2 2.5 0t2.5 0" stroke="#9CC497" stroke-width="1" fill="none" opacity="0.7"/>`;
+    if (v === "rosette" || v === "white") return { back: [[-34, 15], [-14, 9], [12, 9], [32, 15], [0, 13]].map(([a, h]) => `<g transform="rotate(${a} 28 40)">${blade(28, 5, 28, h, body, edge)}${band(28, 30)}${band(28, 24)}</g>`).join("") };
+    if (v === "spear") return { back: [[19, 6, -8], [28, 2, 0], [36, 9, 9]].map(([x, t, a]) => `<g transform="rotate(${a} ${x} 40)"><line x1="${x}" y1="40" x2="${x}" y2="${t}" stroke="#3E7650" stroke-width="5.5" stroke-linecap="round"/><path d="M${x - 2} ${t + 8}h4M${x - 2} ${t + 15}h4M${x - 2} ${t + 22}h4" stroke="#8DB98A" stroke-width="1" opacity="0.8"/></g>`).join("") };
+    return { back: [[20, 5, 14, 6], [30, 6, 33, 0], [38, 4, 44, 12]].map(([x, w, tx, ty]) => blade(x, w, tx, ty, body, edge) + band((x + tx) / 2, 30) + band((x * 2 + tx) / 3 + 0.5, 22) + band((x + tx * 2) / 3, 14)).join("") };
+  },
+  monstera: (v) => {
+    // split heart leaf: a mask cuts slits in from the edge, plus a few holes near the midrib
+    const big = (x, y, sz, a, fill, spots) => { const id = `m${++PK_ID}`, k = sz / 10;
+      const slits = [-4.5, -0.5, 3.5].map((y) => `M${r1(-12 * k)} ${r1((y + 1.5) * k)}L${r1(-4 * k)} ${r1((y - 1) * k)}M${r1(12 * k)} ${r1((y + 1.5) * k)}L${r1(4 * k)} ${r1((y - 1) * k)}`).join("");
+      return `<g transform="translate(${x} ${y}) rotate(${a + 180})"><mask id="${id}"><rect x="-20" y="-20" width="40" height="40" fill="#fff"/><path d="${slits}" stroke="#000" stroke-width="${r1(1.2 * k)}" stroke-linecap="round"/><circle cx="${r1(-2.6 * k)}" cy="${r1(-1 * k)}" r="${r1(0.9 * k)}"/><circle cx="${r1(2.6 * k)}" cy="${r1(-1 * k)}" r="${r1(0.9 * k)}"/></mask><path mask="url(#${id})" d="M0 ${r1(7 * k)}C${r1(-6 * k)} ${r1(10 * k)} ${r1(-11 * k)} ${r1(4 * k)} ${r1(-10 * k)} ${r1(-3 * k)}C${r1(-9 * k)} ${r1(-9 * k)} ${r1(-4 * k)} ${r1(-11 * k)} 0 ${r1(-8 * k)}C${r1(4 * k)} ${r1(-11 * k)} ${r1(9 * k)} ${r1(-9 * k)} ${r1(10 * k)} ${r1(-3 * k)}C${r1(11 * k)} ${r1(4 * k)} ${r1(6 * k)} ${r1(10 * k)} 0 ${r1(7 * k)}z" fill="${fill}"/><path d="M0 ${r1(7 * k)}V${r1(-7 * k)}" stroke="rgba(255,255,255,0.3)" stroke-width="0.8"/>${spots || ""}</g>`; };
+    const fill = v === "variegated" ? "#5E9A5E" : PK.deep;
+    const thai = v === "thai" ? [[-6, -2], [-3, 4], [-7, 3], [4, -5], [6, 2], [3, 5], [-2, -6], [8, -1]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.1" fill="${PK.cream}"/>`).join("") : "";
+    const vari = v === "variegated" ? `<path d="M0 -8C4 -6 8 -2 9 2L0 6z" fill="${PK.cream}" opacity="0.9"/>` : "";
+    return { back: vine("M27 40C26 36 24 32 22 30M29 40C31 37 34 35 36 33", PK.stem, 1.6) + big(20, 18, 14, -18, fill, thai + vari) + big(39, 27, 9, 28, v === "variegated" ? "#6FA96B" : PK.leaf, thai) };
+  },
+  adansonii: () => {
+    const holey = (x, y, s, a) => `<g transform="translate(${x} ${y}) rotate(${a})"><path fill-rule="evenodd" fill="${PK.leaf}" d="M0 ${-s}C${s * 0.75} ${-s} ${s * 0.75} ${s} 0 ${s}C${-s * 0.75} ${s} ${-s * 0.75} ${-s} 0 ${-s}zM${-s * 0.33} ${-s * 0.35}a1 2 0 1 0 0.01 0zM${s * 0.33} ${-s * 0.1}a1 2 0 1 0 0.01 0zM${-s * 0.33} ${s * 0.35}a1 2 0 1 0 0.01 0z"/></g>`;
+    return { back: vine("M28 40C26 30 20 24 16 18M30 40C33 30 38 24 42 20") + holey(15, 16, 8, -30) + holey(27, 20, 9, 5) + holey(41, 17, 8, 35),
+      front: vine("M12 40C8 48 9 56 12 62") + holey(11, 50, 5.5, 15) + holey(13, 61, 5, -10) };
+  },
+  alocasia: () => {
+    const arrow = (x, y, s, a) => `<g transform="translate(${x} ${y}) rotate(${a})"><path d="M0 ${-s * 1.2}L${s * 0.8} ${s * 0.6}L${s * 0.25} ${s * 0.35}L0 ${s * 0.7}L${-s * 0.25} ${s * 0.35}L${-s * 0.8} ${s * 0.6}z" fill="#21422F" stroke-linejoin="round" stroke="#21422F" stroke-width="2"/><path d="M0 ${-s * 1.1}V${s * 0.55}M0 ${-s * 0.5}L${s * 0.5} ${-s * 0.1}M0 ${-s * 0.5}L${-s * 0.5} ${-s * 0.1}M0 0L${s * 0.6} ${s * 0.4}M0 0L${-s * 0.6} ${s * 0.4}" stroke="#E8F0E4" stroke-width="1" fill="none" stroke-linecap="round"/></g>`;
+    return { back: vine("M26 40L18 22M30 40L38 18M28 40V28", "#5D7F52", 1.6) + arrow(17, 15, 9, -25) + arrow(38, 12, 9, 22) + arrow(28, 26, 6, 0) };
+  },
+  aspidistra: () => ({ back: [[22, 6, 8, 8], [29, 7, 27, 1], [35, 6, 48, 10]].map(([x, w, tx, ty]) => blade(x, w, tx, ty, "#3C6F48") + `<path d="M${x} 40Q${(x + tx) / 2} ${(40 + ty) / 2} ${tx} ${ty}" stroke="#2C5638" stroke-width="0.8" fill="none"/>`).join("") + [[17, 18], [15, 12], [31, 10], [29, 20], [33, 28], [41, 16], [39, 24], [20, 28]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="0.9" fill="${PK.cream}"/>`).join("") }),
+  fittonia: () => {
+    const leaf = (x, y, a) => oval(x, y, 4.5, 6, a, "#3D7A4C", `<path d="M0 -5V5M0 -1.5L3 -3.5M0 -1.5L-3 -3.5M0 2L3 0.5M0 2L-3 0.5" stroke="#F1F4EC" stroke-width="0.8" fill="none"/>`);
+    return { back: [[14, 34, -60], [42, 34, 60], [18, 27, -35], [38, 27, 35], [24, 25, -10], [32, 24, 15], [28, 31, 0], [21, 34, -20], [35, 34, 20]].map(([x, y, a]) => leaf(x, y, a)).join("") };
+  },
+  succulent: () => {
+    const ring = (n, len, w, off, f) => Array.from({ length: n }, (_, i) => { const a = off + (360 / n) * i; return `<g transform="rotate(${a} 28 32)"><path d="M28 32C${28 - w} ${32 - len * 0.5} ${28 - w * 0.5} ${32 - len} 28 ${32 - len}C${28 + w * 0.5} ${32 - len} ${28 + w} ${32 - len * 0.5} 28 32z" fill="${f}"/></g>`; }).join("");
+    return { back: `<g transform="translate(0 36) scale(1 0.55) translate(0 -36)">${ring(9, 17, 5, 0, "#8FA9A0")}${ring(7, 12, 4.5, 20, "#A8BFB6")}${ring(5, 7, 3.5, 10, "#C3D5CC")}</g>` };
+  },
+  jade: () => ({ back: vine("M28 40V28M28 32L19 22M28 29L37 19M28 28V18", "#8A6A47", 2.2) + [[16, 20, -40], [21, 16, 20], [36, 16, 40], [40, 22, -20], [25, 14, -15], [31, 13, 15], [28, 23, 0], [19, 27, -60], [37, 27, 60]].map(([x, y, a]) => oval(x, y, 3.2, 4.6, a, "#4F8A55", "").replace("/>", ` stroke="#B5584A" stroke-width="0.6"/>`)).join("") }),
+  pothos: (v) => {
+    const base = v === "queen" ? PK.cream : v === "satin" ? "#2F5B45" : PK.leaf;
+    const mark = v === "golden" ? `<path d="M-1 -1C1 2 2 4 1 7" stroke="#E6CF63" stroke-width="1.4" fill="none"/>` : v === "queen" ? `<path d="M-2 0l1 3M2 1l-1 3M0 -1v2" stroke="#6E9F6A" stroke-width="1" fill="none"/>` : v === "satin" ? `<circle cx="-2" cy="1" r="0.8" fill="${PK.silver}"/><circle cx="2" cy="3" r="0.8" fill="${PK.silver}"/><circle cx="1" cy="-1" r="0.7" fill="${PK.silver}"/><circle cx="-1" cy="5" r="0.7" fill="${PK.silver}"/>` : v === "brasil" ? `<path d="M0 -1V6" stroke="#C9DE63" stroke-width="2.2" fill="none" stroke-linecap="round"/>` : "";
+    const h = (x, y, s, a) => heart(x, y, s, a, base, mark).replace("z\" fill", `z" ${v === "queen" ? `stroke="#7FAF74" stroke-width="0.9" ` : ""}fill`);
+    const top = [[15, 27, 8, 125], [41, 27, 8, -125], [21, 18, 8.5, 160], [35, 17, 8.5, -160], [28, 24, 8, 180]];
+    return { back: top.map(([x, y]) => vine(`M28 40Q${(28 + x) / 2} ${(40 + y) / 2 + 3} ${x} ${y}`)).join("") + top.map(([x, y, s, a]) => h(x, y, s, a)).join(""),
+      front: vine("M11 40C6 46 6 54 9 62M45 40C49 46 50 52 48 58") + h(8, 46, 5, 40) + h(9, 56, 4.6, -30) + h(48, 45, 5, -40) + h(49, 54, 4.4, 30) };
+  },
+  peru: () => {
+    const lf = (x, y, a) => oval(x, y, 5, 7.5, a, "#4C9A4E", `<path d="M0 -6V6M-3 -3l3 2 3 -2M-3 1l3 2 3 -2" stroke="#2E6F3A" stroke-width="0.9" fill="none"/>`);
+    return { back: vine("M28 40C26 32 22 26 18 22M28 40C30 32 34 26 38 22") + lf(17, 20, -25) + lf(39, 20, 25) + lf(28, 15, 0) + lf(23, 29, -15) + lf(33, 29, 15) };
+  },
+  pilea: () => {
+    const coin = (x, y, r) => `<line x1="28" y1="36" x2="${x}" y2="${y}" stroke="${PK.stem}" stroke-width="1"/><circle cx="${x}" cy="${y}" r="${r}" fill="#5C9E4F"/><circle cx="${x}" cy="${y}" r="0.9" fill="#3F7A3A"/>`;
+    return { back: vine("M28 40V30", PK.stem, 2) + [[14, 22, 6], [42, 22, 6], [21, 12, 6.5], [35, 12, 6.5], [28, 20, 5.5], [11, 33, 4.5], [45, 33, 4.5], [28, 6, 5]].map(([x, y, r]) => coin(x, y, r)).join("") };
+  },
+  hearts: () => {
+    const tiny = (x, y, a) => heart(x, y, 2.4, a, "#8FA89A", `<path d="M-1 0.5q1 -0.8 2 0" stroke="#E7EEEA" stroke-width="0.5" fill="none"/>`);
+    const strand = (pts, leaves) => vine(pts, "#9A6F7A", 0.9) + leaves.map(([x, y, a]) => tiny(x, y, a)).join("");
+    return { back: strand("M24 38C22 34 20 33 18 34M32 38C34 34 36 33 38 34", [[18, 33, 120], [38, 33, -120], [28, 34, 180]]),
+      front: strand("M12 41C10 50 11 58 10 68", [[11, 46, 20], [10, 52, -20], [11, 58, 15], [10, 64, -15]]) + strand("M20 42C19 50 20 56 19 62", [[20, 48, -15], [19, 55, 15], [19, 61, -10]]) + strand("M44 41C46 49 45 57 46 66", [[45, 47, -20], [45, 54, 20], [46, 61, -15]]) };
+  },
+  spider: () => {
+    const arc = (d) => `<path d="${d}" fill="none" stroke="#5E9A52" stroke-width="2.6" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#F2F1E4" stroke-width="0.9" stroke-linecap="round"/>`;
+    return { back: ["M28 38C26 28 18 18 8 20", "M28 38C30 28 38 18 48 20", "M28 38C27 26 24 14 18 6", "M28 38C29 26 32 14 38 6", "M28 38C28 26 28 16 28 4", "M28 38C24 32 14 30 6 34", "M28 38C32 32 42 30 50 34"].map(arc).join(""),
+      front: vine("M44 40C50 46 50 54 48 58", "#C6C79A", 0.9) + arc("M48 58c-4 -1 -6 -3 -7 -6") + arc("M48 58c4 -1 6 -3 6 -6") };
+  },
+  cane: () => {
+    const tuft = (x, y) => Array.from({ length: 9 }, (_, i) => { const a = (-150 + i * 30) * Math.PI / 180; return `<path d="M${x} ${y}L${r1(x + 9 * Math.cos(a))} ${r1(y + 9 * Math.sin(a) * 0.8)}" stroke="#4E8B4F" stroke-width="1.6" stroke-linecap="round"/>`; }).join("") + `<circle cx="${x}" cy="${y}" r="1.2" fill="#B5584A"/>`;
+    return { back: vine("M24 40C23 30 20 22 19 16M30 40C31 30 34 20 36 10", "#8A6A47", 2.2) + tuft(19, 16) + tuft(36, 10) };
+  },
+};
+
+function plantKind(p) {
+  const s = `${p.species || ""} ${p.common || ""} ${p.name || ""}`.toLowerCase();
+  const pick = [
+    [/angolensis|cylindric|spear|sansevieria cyl/, ["snake", "spear"]], [/black gold/, ["snake", "gold"]], [/rosette|hahnii|whitney/, ["snake", "rosette"]],
+    [/trifasciata|snake|sansevier/, ["snake", ""]], [/marginata|dragon tree|dracaena/, ["cane"]], [/aspidistra|cast iron/, ["aspidistra"]],
+    [/thai/, ["monstera", "thai"]], [/karstenianum|peru/, ["peru"]], [/adansonii|swiss cheese/, ["adansonii"]],
+    [/deliciosa.*varieg|albo/, ["monstera", "variegated"]], [/monstera|burle|philodendron (?!hederaceum)|split/, ["monstera", ""]],
+    [/alocasia|elephant ear/, ["alocasia"]], [/fittonia|nerve/, ["fittonia"]], [/pilea|money plant/, ["pilea"]],
+    [/ceropegia|string of hearts/, ["hearts"]], [/chlorophytum|spider/, ["spider"]], [/crassula|jade/, ["jade"]],
+    [/succulent|echeveria|cact|haworthia|aloe|sedum|kalanchoe|gasteria/, ["succulent"]],
+    [/brasil/, ["pothos", "brasil"]], [/scindapsus|satin/, ["pothos", "satin"]], [/snow queen|marble/, ["pothos", "queen"]],
+    [/golden|neon|aureum|pothos|epipremnum|hederaceum|heartleaf|ivy|hoya|vine/, ["pothos", /golden/.test(s) ? "golden" : ""]],
+  ].find(([re]) => re.test(s));
+  return pick ? pick[1] : [["pothos", "monstera", "pilea"][hash(p.id) % 3], ""];
+}
+
+function potSvg(p, scale = 1) {
+  const [body, rim] = glaze(p), [kind, v] = plantKind(p), d = PLANTS[kind](v);
+  return `<svg class="plant" width="${Math.round(56 * scale)}" height="${Math.round(70 * scale)}" viewBox="0 0 56 70" aria-hidden="true">${d.back}<path d="M10 42h36l-4 26H14z" fill="${body}"/><rect x="8" y="38" width="40" height="6" rx="2" fill="${rim}"/>${d.front || ""}</svg>`;
+}
+
+/* ---------- render ---------- */
+function render() {
+  document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-current", b.dataset.tab === S.tab ? "page" : "false"));
+  const dueCount = S.plants.filter((p) => dueItems(p).now.length).length;
+  $("#n-today").textContent = dueCount ? dueCount : "";
+  $("#n-plants").textContent = S.plants.length || "";
+  $("#n-rooms").textContent = S.rooms.length || "";
+  $("#n-props").textContent = S.props.filter((x) => !["sold", "gifted"].includes(x.status)).length || "";
+  const add = { plants: ["new-plant", "Add a plant"], rooms: ["new-room", "Add a room"], props: ["new-prop", "Log a cutting"] }[S.tab];
+  // The installed app (window.windowsill, from the PWA build) adds a Settings gear; the artifact view has none.
+  const gear = window.windowsill ? `<button class="round" data-act="settings" aria-label="Settings">${IC.gear}</button>` : "";
+  const plus = add && !S.noDb ? `<button class="round" data-act="${add[0]}" aria-label="${add[1]}">${IC.plus}</button>` : "";
+  $("#topAction").innerHTML = gear || plus ? `<span style="display:inline-flex;gap:8px">${gear}${plus}</span>` : "";
+  const v = $("#view");
+  if (S.noDb) { v.innerHTML = `<div class="banner">Your plant list lives in this page's own storage, which this view can't reach. Open the page from claude.ai while signed in.</div>`; return; }
+  if (S.tab === "plants") return renderPlantsShell(v);
+  v.innerHTML = S.tab === "today" ? viewToday() : S.tab === "rooms" ? viewRooms() : viewProps();
+}
+
+function dueItems(p) {
+  const t = today(), soonEdge = addDays(t, 3);
+  const w = waterDue(p), f = feedDue(p), i = inspectDue(p);
+  const now = [], soon = [];
+  (w <= t ? now : w <= soonEdge ? soon : []).push({ k: "water", due: w });
+  if (f && f <= t && w <= soonEdge) (w <= t ? now : soon).push({ k: "feed", due: f });
+  if (i <= t) now.push({ k: "inspect", due: i });
+  return { now, soon, w, f, i };
+}
+
+function emptyPlants() {
+  return `<div class="empty"><h3>No plants yet</h3>
+    <p>Send Claude a typed list or a video walking past each plant while you talk about it. Claude adds them here with care facts filled in.</p>
+    <div class="actions"><button class="btn primary" data-act="new-plant">Add a plant by hand</button></div></div>`;
+}
+
+function viewToday() {
+  if (!S.loaded.plants) return `<p class="muted">Loading your plants…</p>`;
+  if (!S.plants.length) return emptyPlants();
+  const t = today(), now = [], soon = [];
+  for (const p of S.plants) { const d = dueItems(p); if (d.now.length) now.push([p, d]); else if (d.soon.length) soon.push([p, d]); }
+  const lead = (d) => (d.now.find((x) => x.k === "water") || d.now[0]).due;
+  now.sort((a, b) => lead(a[1]).localeCompare(lead(b[1])) || nm(a[0]).localeCompare(nm(b[0])));
+  soon.sort((a, b) => a[1].w.localeCompare(b[1].w));
+  const thirsty = now.filter(([, d]) => d.now.some((x) => x.k === "water"));
+  const checks = now.length - thirsty.length;
+  const next = S.plants.filter((p) => !thirsty.some(([q]) => q.id === p.id)).map(waterDue).filter((w) => w > t).sort()[0];
+
+  const title = thirsty.length === 1 ? `${esc(nm(thirsty[0][0]))} is thirsty.` : thirsty.length ? `${thirsty.length} are thirsty.` : "All watered.";
+  let line = next ? (thirsty.length ? `Everyone else is fine until ${esc(dayName(next))}.` : `Next drink: ${esc(dayName(next))}.`) : "";
+  if (checks) line += ` Plus ${checks === 1 ? "a quick pest check" : checks + " quick pest checks"}.`;
+  const m = new Date().getMonth() + 1;
+  let h = `<section class="hero"><h2>${title}</h2>${line ? `<p>${line.trim()}</p>` : ""}${m >= 11 || m <= 2 ? `<p class="season">Dim season: most plants drink less until March.</p>` : ""}</section>`;
+
+  const queued = (thirsty.length || soon.length ? [...thirsty, ...now.filter((x) => !thirsty.includes(x)), ...soon].map(([p]) => p)
+    : S.plants.slice().sort((a, b) => waterDue(a).localeCompare(waterDue(b))));
+  const shone = S.plants.filter((p) => fresh(p) && !queued.includes(p)).sort((a, b) => b.lastWatered.localeCompare(a.lastWatered));
+  const keep = Math.min(shone.length, 5);
+  const shelf = thirsty.length || soon.length ? [...queued.slice(0, 14 - keep), ...shone.slice(0, keep)] : [...shone, ...queued].slice(0, 14);
+  h += `<section class="sill" aria-label="Your sill"><div class="pots">${shelf.map((p) => {
+    const w = waterDue(p), due = w <= t;
+    return `<button class="pot${w < t ? " late" : ""}" data-act="open-plant" data-id="${p.id}" aria-label="${esc(nm(p))}${due ? ", needs water" : ""}"><span class="drop${!due && fresh(p) ? " shine" : ""}">${due ? IC.dropFill : fresh(p) ? IC.shine : ""}</span>${potSvg(p)}</button>`;
+  }).join("")}</div><div class="board" aria-hidden="true"></div></section>`;
+
+  if (now.length) h += `<section class="group">${now.map(([p, d]) => todayRow(p, d, "now")).join("")}</section>`;
+  if (soon.length) h += `<details class="soon"${S.soonOpen ? " open" : ""}><summary class="more"><span>${soon.length} more in the next 3 days</span>${IC.chev}</summary><div class="group">${soon.map(([p, d]) => todayRow(p, d, "soon")).join("")}</div></details>`;
+  const done = S.plants.flatMap((p) => doneToday(p).map((e) => [p, e])).sort((a, b) => b[1].at.localeCompare(a[1].at));
+  if (done.length) h += `<section><h2 class="group-h">Done today</h2><div class="group">${done.map(([p, e]) => doneRow(p, e)).join("")}</div></section>`;
+  h += `<button class="more" data-act="activity"><span>Recent activity</span>${IC.chev}</button>`;
+  return h;
+}
+
+function doneRow(p, e, withDate) {
+  const bits = [`<span class="done-t">${esc(actLabel(e))}</span>`];
+  if (e.cues?.length && e.t === "water") bits.push(esc(e.cues.join(", ")));
+  if (e.note && e.t !== "note") bits.push(esc(e.note));
+  bits.push(esc(withDate ? `${cap(rel(e.d))}${e.at ? " " + hhmm(e.at) : ""}` : hhmm(e.at)));
+  const undo = e.at && e.prev ? `<button class="btn small" data-act="undo" data-id="${p.id}" data-at="${esc(e.at)}" aria-label="Undo ${esc(actLabel(e).toLowerCase())} for ${esc(nm(p))}">Undo</button>` : "";
+  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}</span><span class="sub">${bits.join(" · ")}</span></span></button>${undo}</div>`;
+}
+function activitySheet() {
+  const since = addDays(today(), -14);
+  const all = [...S.plants, ...(S.gifted || [])].flatMap((p) => (p.log || []).filter((e) => e.d >= since && e.d <= today()).map((e) => [p, e]))
+    .sort((a, b) => (b[1].d + (b[1].at || "")).localeCompare(a[1].d + (a[1].at || ""))).slice(0, 80);
+  return sheetTop("Recent activity", "The last two weeks") +
+    (all.length ? `<div class="group">${all.map(([p, e]) => doneRow(p, e, true)).join("")}</div>` : `<p class="lede">Nothing logged in the last two weeks.</p>`);
+}
+function refreshActivity() { if ($("#sheet").hidden || !S.actOpen) return; const top = $("#sheetBody").scrollTop; $("#sheetBody").innerHTML = activitySheet(); $("#sheetBody").scrollTop = top; }
+function waterSheet(p) {
+  const d = dueItems(p), n = daysBetween(today(), d.w), picked = S.cues[p.id] || [];
+  const feedDueNow = !!(d.f && d.f <= today()), feedable = (p.care?.feed || "standard") !== "none";
+  S.wq = { id: p.id, fed: feedDueNow };
+  const sub = [n < 0 ? `${-n} day${n === -1 ? "" : "s"} late` : n === 0 ? "Due today" : `Due ${dayName(d.w)}`, roomOf(p)?.name].filter(Boolean).join(" · ");
+  return sheetTop(`Water ${nm(p)}`, sub) + `<form class="f" id="waterForm" data-id="${p.id}">
+    <div class="field"><label>Anything to add?</label><div class="tags">
+      ${feedable ? `<button type="button" class="toggle" data-act="wq-fed" aria-pressed="${feedDueNow}">Fed too</button>` : ""}
+      ${CUE_WORDS.map((cw) => `<button type="button" class="toggle" data-act="cue" data-id="${p.id}" data-cue="${cw}" aria-pressed="${picked.includes(cw)}">${cw}</button>`).join("")}
+    </div>${feedDueNow ? `<small>Feeding is due, so Fed too is on. Tap it off if you skipped it.</small>` : ""}</div>
+    <div class="field"><label for="wf-note">Note</label><input type="text" id="wf-note" name="note" placeholder="Drained fast, new leaf coming"></div>
+    <div class="actions"><button class="btn primary wide" type="submit">Watered</button><button class="btn wide" type="button" data-act="damp" data-id="${p.id}">Still damp</button></div>
+    <button class="btn plain" type="button" data-act="open-plant" data-id="${p.id}">More about ${esc(nm(p))}</button></form>`;
+}
+
+// freshly watered (today or yesterday) and nothing flagged: gets a little shine on the sill
+function fresh(p) { return !!p.lastWatered && !p.health && daysBetween(p.lastWatered, today()) <= 1; }
+
+function todayRow(p, d, mode) {
+  const items = mode === "now" ? d.now : d.soon;
+  const water = items.find((x) => x.k === "water"), feed = items.find((x) => x.k === "feed"), insp = items.find((x) => x.k === "inspect");
+  const bits = [esc(roomOf(p)?.name || p.spot || "No room yet")];
+  let late = false;
+  if (water) {
+    const n = daysBetween(today(), water.due);
+    if (n < 0) { late = true; bits.push(`<span class="late-t">${-n} day${n === -1 ? "" : "s"} late</span>`); }
+    else if (mode === "soon") bits.push(esc(cap(dayName(water.due))));
+  }
+  if (feed) bits.push("feed too");
+  if (insp) bits.push("pest check");
+  if (p.health) bits.push(`<span class="late-t">needs a look</span>`);
+  else if (p.catReach === "yes" && p.care?.toxic) bits.push(`<span class="late-t">cats can reach</span>`);
+  let btn;
+  if (water && mode === "now") btn = `<button class="act${late ? " late" : ""}" data-act="water-ask" data-id="${p.id}" aria-label="Water ${esc(nm(p))}">${IC.drop}</button>`;
+  else if (mode === "now") btn = `<button class="act" data-act="open-plant" data-id="${p.id}" aria-label="Pest check ${esc(nm(p))}">${IC.search}</button>`;
+  else btn = IC.chev;
+  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}</span><span class="sub">${bits.join(" · ")}</span></span></button>${btn}</div>`;
+}
+
+function renderPlantsShell(v) {
+  if (!v.querySelector("#plist")) {
+    v.innerHTML = `<input type="search" class="search" id="q" placeholder="Search" aria-label="Search plants"><div id="plist" style="display:flex;flex-direction:column;gap:22px"></div>`;
+    const q = v.querySelector("#q"); q.value = S.q;
+    q.addEventListener("input", () => { S.q = q.value; renderPlantList(); });
+  }
+  renderPlantList();
+}
+function renderPlantList() {
+  const el = $("#plist"); if (!el) return;
+  if (!S.loaded.plants) { el.innerHTML = `<p class="muted">Loading your plants…</p>`; return; }
+  if (!S.plants.length) { el.innerHTML = emptyPlants(); return; }
+  const q = S.q.trim().toLowerCase();
+  const list = S.plants.filter((p) => !q || [p.name, p.common, p.species, roomOf(p)?.name, p.spot].join(" ").toLowerCase().includes(q));
+  const groups = new Map();
+  for (const p of list) { const k = roomOf(p)?.name || "No room yet"; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(p); }
+  const keys = [...groups.keys()].sort((a, b) => a === "No room yet" ? 1 : b === "No room yet" ? -1 : a.localeCompare(b));
+  const gifted = (S.gifted || []).filter((p) => !q || [p.name, p.common, p.species, p.gifted?.to].join(" ").toLowerCase().includes(q))
+    .sort((a, b) => String(b.gifted?.date || "").localeCompare(String(a.gifted?.date || "")));
+  const giftH = gifted.length ? `<section><h2 class="group-h">Gifted</h2><div class="group">${gifted.map((p) => `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}</span><span class="sub">${esc(["to " + (p.gifted.to || "someone"), p.gifted.date && short(p.gifted.date), lastVisit(p) && "visited " + short(lastVisit(p).d)].filter(Boolean).join(" · "))}</span></span></button>${IC.chev}</div>`).join("")}</div></section>` : "";
+  el.innerHTML = keys.length || giftH ? keys.map((k) => `<section><h2 class="group-h">${esc(k)}</h2><div class="group">${groups.get(k).sort((a, b) => nm(a).localeCompare(nm(b))).map(plantRow).join("")}</div></section>`).join("") + giftH
+    : `<p class="lede">No plants match "${esc(S.q)}".</p>`;
+}
+function mark(p) {
+  const ph = latestPhoto(p);
+  return ph ? `<img class="thumb" src="${blobUrl(ph.assetId)}" alt="" loading="lazy">` : `<span class="dot" style="background:${glaze(p)[0]}"></span>`;
+}
+function plantRow(p) {
+  const w = waterDue(p), late = w < today(), mm = mismatch(p);
+  const sub = p.health ? `<span class="late-t">needs a look</span>` : p.catReach === "yes" && p.care?.toxic ? `<span class="late-t">toxic, cats can reach</span>`
+    : mm ? `<span class="late-t">${esc(mm)}</span>` : esc(p.name ? p.common || p.spot || "" : p.spot || "");
+  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}</span>${sub ? `<span class="sub">${sub}</span>` : ""}</span></button><span class="trail${late ? " late" : ""}">${esc(dueShort(w))}</span>${IC.chev}</div>`;
+}
+function mismatch(p) {
+  const need = GRADES.indexOf(p.care?.lightNeed), have = GRADES.indexOf(roomOf(p)?.light);
+  if (need < 0 || have < 0) return "";
+  if (have < need) return "too dark here";
+  if (have === 3 && need <= 1) return "too much sun here";
+  return "";
+}
+function roomIssues(r) {
+  const ps = S.plants.filter((p) => p.roomId === r.id);
+  return [...(r.cats === "closed" ? [] : ps.filter(catRisk).map((p) => `${nm(p)} is toxic. Check the cats can't reach it.`)), ...ps.filter(mismatch).map((p) => `${nm(p)}: ${mismatch(p)}.`)];
+}
+
+function viewRooms() {
+  if (!S.loaded.rooms) return `<p class="muted">Loading rooms…</p>`;
+  if (!S.rooms.length) return `<div class="empty"><h3>No rooms yet</h3><p>Start with the rooms that have plants in them. Which way the window faces is the most useful detail.</p><div class="actions"><button class="btn primary" data-act="new-room">Add a room</button></div></div>`;
+  const rows = S.rooms.slice().sort((a, b) => (a.name || "").localeCompare(b.name || "")).map((r) => {
+    const n = S.plants.filter((p) => p.roomId === r.id).length, issues = roomIssues(r).length;
+    const sub = [r.facing && cap(r.facing) + "-facing", r.light && cap(r.light)].filter(Boolean).map(esc);
+    if (issues) sub.push(`<span class="late-t">${issues} to check</span>`);
+    return `<div class="row"><button class="main" data-act="edit-room" data-id="${r.id}"><span class="lines"><span class="name">${esc(r.name)}</span><span class="sub">${sub.join(" · ") || "No window details yet"}</span></span></button><span class="trail">${n} plant${n === 1 ? "" : "s"}</span>${IC.chev}</div>`;
+  }).join("");
+  return `<section class="group">${rows}</section><p class="lede">Which way each window faces and how bright it is tell Claude where each plant will be happiest.</p>`;
+}
+
+function viewProps() {
+  if (!S.loaded.props) return `<p class="muted">Loading props…</p>`;
+  if (!S.props.length) return `<div class="empty"><h3>No cuttings yet</h3><p>Log one here, or just tell Claude "took two pothos cuttings, in water on the kitchen sill".</p><div class="actions"><button class="btn primary" data-act="new-prop">Log a cutting</button></div></div>`;
+  let h = "";
+  for (const st of STATUSES) {
+    const list = S.props.filter((x) => (x.status || "rooting") === st);
+    if (!list.length) continue;
+    h += `<section><h2 class="group-h">${esc(st)}</h2><div class="group">${list.map((x) => {
+      const parent = getPlant(x.parentId), age = x.taken ? daysBetween(x.taken, today()) : null;
+      const sub = [parent && "from " + nm(parent), x.method, age !== null && `${age} days`].filter(Boolean).map(esc).join(" · ");
+      const trail = x.price ? `$${esc(x.price)}` : x.qty > 1 ? `×${esc(x.qty)}` : "";
+      return `<div class="row"><button class="main" data-act="edit-prop" data-id="${x.id}"><span class="lines"><span class="name">${esc(x.species || parent?.species || "Cutting")}</span>${sub ? `<span class="sub">${sub}</span>` : ""}</span></button>${trail ? `<span class="trail">${trail}</span>` : ""}${IC.chev}</div>`;
+    }).join("")}</div></section>`;
+  }
+  return h;
+}
+
+/* ---------- sheets ---------- */
+const PUSH_MSG = { on: "On. You'll get a nudge when plants are due, and again each day they stay overdue.", off: "Off.",
+  denied: "Notifications are off in Settings. Turn them on for Windowsill in your phone's Settings, then come back.",
+  unsupported: "Add Windowsill to your Home Screen to turn on reminders: tap Share, then Add to Home Screen, and open it from there." };
+function settingsSheet(push) {
+  const ws = window.windowsill, email = ws?.email?.() || "";
+  const btn = push === "on" ? `<button class="btn small" data-act="push-off">Turn off</button>` : push === "off" ? `<button class="btn small primary" data-act="push-on">Turn on</button>` : "";
+  return sheetTop("Settings", email) + `<section><h3 class="group-h">Reminders</h3><div class="group">
+      <div class="kv"><span>Push reminders</span>${push ? btn || `<span class="muted">${push === "denied" ? "Blocked" : "Unavailable"}</span>` : `<span class="muted">Checking…</span>`}</div>
+      ${push && PUSH_MSG[push] && push !== "off" ? `<p class="kv" style="display:block;color:var(--muted);font-size:15px">${esc(PUSH_MSG[push])}</p>` : ""}
+    </div></section>
+    <section><h3 class="group-h">Account</h3><div class="group"><button class="kv" data-act="sign-out" style="color:var(--late)">Sign out</button></div></section>`;
+}
+async function openSettings() {
+  S.sheetPlant = null; S.shotOpen = null; S.settingsOpen = true; openSheet(settingsSheet(null));
+  let st = "unsupported"; try { st = await window.windowsill.pushStatus(); } catch {}
+  if (S.settingsOpen && !$("#sheet").hidden) $("#sheetBody").innerHTML = settingsSheet(st);
+}
+function openSheet(html) { $("#sheetBody").innerHTML = html; $("#sheet").hidden = false; $("#sheetBody").scrollTop = 0; }
+function closeSheet() { $("#sheet").hidden = true; $("#sheetBody").innerHTML = ""; S.sheetPlant = null; S.shotOpen = null; S.settingsOpen = false; S.actOpen = false; S.wq = null; }
+const sheetTop = (title, sub) => `<div class="sheet-top"><div><h2>${esc(title)}</h2>${sub ? `<p class="sp">${esc(sub)}</p>` : ""}</div><button class="x" data-act="close" aria-label="Close">${IC.x}</button></div>`;
+
+const visits = (p) => (p.log || []).filter((e) => e.t === "visit");
+const lastVisit = (p) => visits(p).slice(-1)[0];
+function giftedSheet(p) {
+  const g = p.gifted, vs = visits(p).slice().reverse(), log = (p.log || []).filter((e) => e.t !== "visit").slice(-15).reverse();
+  return `<div class="p-head"><button class="x" data-act="close" aria-label="Close">${IC.x}</button>${headArt(p)}
+      <h2>${esc(nm(p))}</h2>${p.name && p.common ? `<p class="common">${esc(p.common)}</p>` : ""}${p.species ? `<p class="sp">${esc(p.species)}</p>` : ""}
+      <p class="where">Gifted to ${esc(g.to || "someone")}${g.date ? ` on ${esc(short(g.date))}` : ""}</p></div>
+    ${g.note ? `<section class="status"><div><p class="k">Where it lives now</p><p class="small" style="white-space:pre-wrap;color:var(--ink)">${esc(g.note)}</p></div></section>` : ""}
+    <section><h3 class="group-h">Visits</h3><div class="group">
+      ${vs.length ? `<ul class="log">${vs.map((e) => `<li><span>${esc(short(e.d))}</span><span>${esc(e.note || "Visited")}</span></li>`).join("")}</ul>` : `<p class="kv" style="display:block;color:var(--muted)">No visits yet.</p>`}
+      <button class="kv" data-act="visit" data-id="${p.id}">Log a visit</button>
+    </div></section>
+    ${progressSection(p)}
+    ${p.notes ? `<section><h3 class="group-h">Notes</h3><div class="group"><p class="kv" style="white-space:pre-wrap;display:block">${esc(p.notes)}</p></div></section>` : ""}
+    ${log.length ? `<details class="more-d"><summary>History · ${log.length}</summary><div class="group" style="margin-top:8px"><ul class="log">${log.map((e) => `<li><span>${esc(short(e.d))}</span><span>${esc(e.t === "water" ? "Watered" : e.t)}${e.note ? ` · ${esc(e.note)}` : ""}</span></li>`).join("")}</ul></div></details>` : ""}
+    <div class="actions"><button class="btn wide" data-act="gift" data-id="${p.id}">Edit gift details</button><button class="btn wide" data-act="ungift" data-id="${p.id}">It's back with me</button><button class="btn danger" data-act="del-plant" data-id="${p.id}">Delete plant</button></div>`;
+}
+function progressSection(p) {
+  const all = shotsOf(p.id), pics = all.filter((c) => c.assetId);
+  const canAdd = !!S.assets && !!S.db;
+  const tiles = all.slice().reverse().map((c) => `<button class="shot" data-act="shot" data-cid="${esc(c.id)}" aria-label="Check-in ${esc(short(c.d))}">${c.assetId ? `<img src="${blobUrl(c.assetId)}" alt="" loading="lazy">` : `<span class="ph">No photo</span>`}<span class="d"><span class="hd ${esc(c.health || "")}"></span>${esc(short(c.d))}</span></button>`).join("");
+  const cmp = pics.length >= 2 ? (() => { const a = pics[0], b = pics[pics.length - 1], n = daysBetween(a.d, b.d);
+    return `<div class="compare"><figure><img src="${blobUrl(a.assetId)}" alt="First photo"><figcaption>${esc(short(a.d))}</figcaption></figure><figure><img src="${blobUrl(b.assetId)}" alt="Latest photo"><figcaption>${esc(short(b.d))} · ${n >= 60 ? Math.round(n / 30) + " months later" : n + " days later"}</figcaption></figure></div>`; })() : "";
+  const body = all.length ? `${cmp}<div class="strip">${tiles}</div>` : `<p class="kv" style="display:block;color:var(--muted)">${canAdd ? "Add a photo every month or so to see how it's growing." : "No check-ins yet."}</p>`;
+  return `<section><h3 class="group-h">Progress${all.length ? ` · ${all.length}` : ""}</h3><div class="group">${body}${canAdd ? `<button class="kv" data-act="checkin" data-id="${p.id}">Add a check-in</button>` : ""}</div></section>`;
+}
+function headArt(p) {
+  const ph = latestPhoto(p);
+  return ph ? `<img class="p-photo" src="${blobUrl(ph.assetId)}" alt="${esc(nm(p))}, ${esc(short(ph.d))}">` : potSvg(p, 1.4);
+}
+function checkinForm(p) {
+  const c = S.ci || {};
+  return sheetTop("Check in", nm(p)) + `<form class="f" id="ciForm" data-id="${p.id}">
+    <label class="pick">${c.url ? `<img src="${c.url}" alt="Photo preview">` : `<span>Take or choose a photo</span>`}<input type="file" id="ci-file" accept="image/*" aria-label="Photo"></label>
+    <div class="field"><span class="lab">How's it doing?</span><div class="tags" role="group" aria-label="Health">${Object.entries(HEALTH).map(([k, v]) => `<button type="button" class="toggle" data-act="ci-health" data-v="${k}" aria-pressed="${c.health === k}">${v}</button>`).join("")}</div></div>
+    <div class="field"><span class="lab">Anything new?</span><div class="tags" role="group" aria-label="Tags">${CI_TAGS.map((tg) => `<button type="button" class="toggle" data-act="ci-tag" data-v="${esc(tg)}" aria-pressed="${!!c.tags?.includes(tg)}">${esc(tg)}</button>`).join("")}</div></div>
+    <div class="row2"><div class="field"><label for="ci-date">Date</label><input type="date" id="ci-date" name="d" value="${esc(c.d || today())}"></div><div></div></div>
+    <div class="field"><label for="ci-note">Note</label><textarea id="ci-note" name="note" placeholder="Third new leaf this month, lowest one yellowing">${esc(c.note || "")}</textarea></div>
+    <div class="actions"><button class="btn primary" type="submit">Save check-in</button><button class="btn" type="button" data-act="open-plant" data-id="${p.id}">Cancel</button></div>
+  </form>`;
+}
+function shotSheet(cid) {
+  const c = S.checkins.find((x) => x.id === cid); if (!c) return "";
+  const p = getPlant(c.plantId), list = shotsOf(c.plantId), i = list.findIndex((x) => x.id === cid);
+  const prev = list[i - 1], next = list[i + 1];
+  return sheetTop(p ? nm(p) : "Check-in", short(c.d)) + `${c.assetId ? `<img class="big-photo" src="${blobUrl(c.assetId)}" alt="${esc(p ? nm(p) : "Plant")} on ${esc(short(c.d))}">` : ""}
+    <section class="group">${c.health ? `<div class="kv"><span>Health</span><span style="display:inline-flex;align-items:center;gap:6px"><span class="hd ${esc(c.health)}"></span>${esc(HEALTH[c.health] || c.health)}</span></div>` : ""}
+      ${c.tags?.length ? `<div class="kv"><span>Noticed</span><span>${esc(c.tags.join(", "))}</span></div>` : ""}
+      ${c.note ? `<div class="kv long"><span>Note</span><span style="white-space:pre-wrap">${esc(c.note)}</span></div>` : ""}
+      ${!c.health && !c.tags?.length && !c.note ? `<p class="kv" style="display:block;color:var(--muted)">No notes on this one.</p>` : ""}</section>
+    <div class="actions">${prev ? `<button class="btn wide" data-act="shot" data-cid="${esc(prev.id)}">‹ Earlier</button>` : ""}${next ? `<button class="btn wide" data-act="shot" data-cid="${esc(next.id)}">Later ›</button>` : ""}</div>
+    <div class="actions">${p ? `<button class="btn wide" data-act="open-plant" data-id="${p.id}">Back to ${esc(nm(p))}</button>` : ""}${S.assets ? `<button class="btn danger" data-act="ci-del" data-cid="${esc(c.id)}">Delete check-in</button>` : ""}</div>`;
+}
+function openShot(cid) { const h = shotSheet(cid); if (!h) { S.shotOpen = null; return closeSheet(); } S.sheetPlant = null; S.shotOpen = cid; openSheet(h); }
+// Phone photos are large: scale to 1600px on the long side as JPEG before upload.
+async function shrink(file) {
+  try {
+    const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
+    const k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+    const cv = document.createElement("canvas"); cv.width = Math.round(bmp.width * k); cv.height = Math.round(bmp.height * k);
+    cv.getContext("2d").drawImage(bmp, 0, 0, cv.width, cv.height); bmp.close?.();
+    const out = await new Promise((r) => cv.toBlob(r, "image/jpeg", 0.84));
+    if (out) return out;
+  } catch {}
+  return file;
+}
+function plantSheet(p) {
+  if (p.gifted) return giftedSheet(p);
+  const c = p.care || {}, d = dueItems(p), t = today(), w = d.w, n = daysBetween(t, w);
+  const feedNow = !!(d.f && d.f <= t), inspNow = d.i <= t, picked = S.cues[p.id] || [];
+  const big = n < 0 ? `${-n} day${n === -1 ? "" : "s"} late` : cap(dayName(w));
+  const how = [c.method === "bottom" ? "Bottom water: sit it in a tray for 20 to 30 minutes." : "Water until it drains, then empty the saucer.", c.tapWater === "avoid" ? "Use filtered, distilled or rain water." : ""].filter(Boolean).join(" ");
+  const notes = [];
+  if (p.health) notes.push(`<div class="note">${IC.alert}<span>${esc(p.health)}</span><button class="btn small" data-act="clear-health" data-id="${p.id}">Clear</button></div>`);
+  if (catRisk(p)) notes.push(`<div class="note">${IC.alert}<span>Toxic to cats. ${p.catReach === "yes" ? "They can reach it here: move it up high or to a closed room." : "Can the cats reach this spot? Set it in Edit."}</span></div>`);
+  if (mismatch(p)) notes.push(`<div class="note">${IC.alert}<span>This spot looks ${esc(mismatch(p).replace(" here", ""))} for it. Ask Claude where it would do better.</span></div>`);
+  const kv = (k, v) => v ? `<div class="kv long"><span>${k}</span><span>${esc(v)}</span></div>` : "";
+  const care = [kv("Light", c.light), kv("Water", c.water), kv("Humidity", c.humidity),
+    kv("Pets", c.toxic ? (typeof c.toxic === "string" ? c.toxic : "Toxic to cats and dogs") : (c.toxic === false ? "Pet-safe" : "")),
+    kv("Rest season", c.dormancy), kv("Feed", FEED[c.feed || "standard"]), kv("Propagate", c.propagate), kv("Pot", p.pot), kv("Soil", p.soil),
+    kv("Got it", [p.acquired, p.source].filter(Boolean).join(" · "))].join("");
+  const log = (p.log || []).slice(-15).reverse();
+  const label = { water: "Watered", check: "Checked", inspect: "Pest check", issue: "Problem", repot: "Repotted", move: "Moved", note: "Note" };
+  return `<div class="p-head"><button class="x" data-act="close" aria-label="Close">${IC.x}</button>${headArt(p)}
+      <h2>${esc(nm(p))}</h2>${p.name && p.common ? `<p class="common">${esc(p.common)}</p>` : ""}${p.species ? `<p class="sp">${esc(p.species)}</p>` : ""}<p class="where">${esc(where(p))}</p>${p.name ? "" : `<button class="btn small" data-act="edit-plant" data-id="${p.id}" style="margin-top:6px">Give it a nickname</button>`}</div>
+    ${notes.join("")}
+    <section class="status">
+      <div><p class="k">Next drink</p><p class="big${n < 0 ? " late-t" : ""}">${esc(big)}</p><p class="small">Last watered ${esc(rel(p.lastWatered))} · every ${p.waterEvery || 7} days${feedNow ? " · feed with this one" : ""}</p></div>
+      ${n <= 0 ? `<div class="cuepick" role="group" aria-label="What you noticed">${CUE_WORDS.map((cw) => `<button class="toggle" data-act="cue" data-id="${p.id}" data-cue="${cw}" aria-pressed="${picked.includes(cw)}">${cw}</button>`).join("")}</div>` : ""}
+      <div class="actions">
+        ${feedNow ? `<button class="btn primary wide" data-act="water" data-fed="1" data-id="${p.id}">Watered + fed</button><button class="btn wide" data-act="water" data-id="${p.id}">Water only</button>`
+                  : `<button class="btn primary wide" data-act="water" data-id="${p.id}">${n > 0 ? "Watered today" : "Watered"}</button>`}
+        ${n <= 0 ? `<button class="btn wide" data-act="damp" data-id="${p.id}">Still damp</button>` : ""}
+      </div>
+      <details class="more-d"><summary>How to tell if it needs water</summary><ul><li>${esc(how)}</li>${(c.cues?.length ? c.cues : GENERIC_CUES).map((x) => `<li>${esc(x)}</li>`).join("")}</ul></details>
+    </section>
+    ${inspNow ? `<section class="status"><div><p class="k">Pest check</p><p class="small">Look under the leaves and at the soil for pests, webbing or sticky spots.</p></div>
+      <div class="actions"><button class="btn wide" data-act="inspect-ok" data-id="${p.id}">All clear</button><button class="btn wide" data-act="inspect-issue" data-id="${p.id}">Found a problem</button></div></section>` : ""}
+    ${progressSection(p)}
+    <section><h3 class="group-h">Schedule</h3><div class="group">
+      <div class="kv"><span>Check water</span><span class="stepper"><button class="btn small" data-act="int" data-d="-1" data-id="${p.id}" aria-label="Check more often">−</button><span>every ${p.waterEvery || 7} days</span><button class="btn small" data-act="int" data-d="1" data-id="${p.id}" aria-label="Check less often">+</button></span></div>
+      <div class="kv"><span>Last fed</span><span>${esc(short(p.lastFed))}${d.f ? ` · next ${esc(rel(d.f))}` : ` · resting till spring`}</span></div>
+      <div class="kv"><span>Pest check</span><span>${esc(rel(d.i))}</span></div>
+      ${p.repotted ? `<div class="kv"><span>Repotted</span><span>${esc(short(p.repotted))}</span></div>` : ""}
+      <button class="kv" data-act="fed" data-id="${p.id}">Fed today</button>
+      <button class="kv" data-act="repot" data-id="${p.id}">Repotted today</button>
+    </div></section>
+    ${care ? `<section><h3 class="group-h">Care</h3><div class="group">${care}</div></section>` : ""}
+    ${p.notes ? `<section><h3 class="group-h">Notes</h3><div class="group"><p class="kv" style="white-space:pre-wrap;display:block">${esc(p.notes)}</p></div></section>` : ""}
+    <details class="more-d"><summary>History${log.length ? ` · ${log.length}` : ""}</summary>${log.length ? `<div class="group" style="margin-top:8px"><ul class="log">${log.map((e) => `<li><span>${esc(short(e.d))}</span><span>${esc(label[e.t] || e.t)}${e.fed ? " and fed" : ""}${e.cues?.length ? ` · ${esc(e.cues.join(", "))}` : ""}${e.note ? ` · ${esc(e.note)}` : ""}</span></li>`).join("")}</ul></div>` : `<p class="lede" style="margin-top:6px">Nothing logged yet.</p>`}</details>
+    <div class="actions"><button class="btn wide" data-act="edit-plant" data-id="${p.id}">Edit details</button><button class="btn wide" data-act="gift" data-id="${p.id}">Gifted it</button><button class="btn danger" data-act="del-plant" data-id="${p.id}">Delete plant</button></div>`;
+}
+function refreshPlantSheet() {
+  if ($("#sheet").hidden || !S.sheetPlant) return;
+  const p = getPlant(S.sheetPlant);
+  if (!p) return closeSheet();
+  const top = $("#sheetBody").scrollTop;
+  $("#sheetBody").innerHTML = plantSheet(p);
+  $("#sheetBody").scrollTop = top;
+}
+
+const opt = (v, cur, label) => `<option value="${esc(v)}"${String(v) === String(cur ?? "") ? " selected" : ""}>${esc(label ?? v)}</option>`;
+function plantForm(p) {
+  p = p || {}; const c = p.care || {};
+  return sheetTop(p.id ? "Edit plant" : "Add a plant") + `<form class="f" id="plantForm" data-id="${esc(p.id || "")}">
+    <div class="row2"><div class="field"><label for="pf-name">Nickname</label><input type="text" id="pf-name" name="name" value="${esc(p.name)}" placeholder="Big Monty"></div>
+    <div class="field"><label for="pf-common">Common name</label><input type="text" id="pf-common" name="common" value="${esc(p.common)}" placeholder="Swiss cheese plant"></div></div>
+    <div><div class="field"><label for="pf-species">Species</label><input type="text" id="pf-species" name="species" value="${esc(p.species)}" placeholder="Monstera deliciosa"></div></div>
+    <div class="row2"><div class="field"><label for="pf-room">Room</label><select id="pf-room" name="roomId">${opt("", p.roomId, "No room yet")}${S.rooms.map((r) => opt(r.id, p.roomId, r.name)).join("")}${opt("__new", "", "New room…")}</select></div>
+    <div class="field"><label for="pf-spot">Spot</label><input type="text" id="pf-spot" name="spot" value="${esc(p.spot)}" placeholder="East window sill"></div></div>
+    <div class="field"><label for="pf-cat">Can the cats reach it?</label><select id="pf-cat" name="catReach">${opt("", p.catReach, "Not sure")}${opt("yes", p.catReach, "Yes")}${opt("no", p.catReach, "No, it's out of reach")}</select></div>
+    <div class="field" id="pf-newroom-wrap" hidden><label for="pf-newroom">New room name</label><input type="text" id="pf-newroom" name="newRoom" placeholder="Bedroom"></div>
+    <div class="row2"><div class="field"><label for="pf-pot">Pot</label><input type="text" id="pf-pot" name="pot" value="${esc(p.pot)}" placeholder="6 in terracotta"></div>
+    <div class="field"><label for="pf-soil">Soil</label><input type="text" id="pf-soil" name="soil" value="${esc(p.soil)}" placeholder="Aroid mix"></div></div>
+    <div class="row2"><div class="field"><label for="pf-every">Check water every</label><input type="number" id="pf-every" name="waterEvery" min="1" max="60" value="${esc(p.waterEvery || 7)}"><small>days</small></div>
+    <div class="field"><label for="pf-last">Last watered</label><input type="date" id="pf-last" name="lastWatered" value="${esc(p.lastWatered || "")}"></div></div>
+    <div class="row2"><div class="field"><label for="pf-acq">Got it</label><input type="text" id="pf-acq" name="acquired" value="${esc(p.acquired)}" placeholder="2025-03"></div>
+    <div class="field"><label for="pf-src">From</label><input type="text" id="pf-src" name="source" value="${esc(p.source)}" placeholder="Cutting from a friend"></div></div>
+    <div class="field"><label for="pf-notes">Notes</label><textarea id="pf-notes" name="notes" placeholder="Leans left, thrips in August">${esc(p.notes)}</textarea></div>
+    <details><summary class="muted" style="cursor:pointer;font-weight:700">Care facts (Claude usually fills these)</summary><fieldset style="margin-top:10px"><legend>Care</legend>
+      <div class="row2"><div class="field"><label for="pf-light">Light</label><input type="text" id="pf-light" name="c.light" value="${esc(c.light)}" placeholder="Bright indirect"></div>
+      <div class="field"><label for="pf-lneed">Light grade it needs</label><select id="pf-lneed" name="c.lightNeed">${opt("", c.lightNeed, "Not set")}${GRADES.map((g) => opt(g, c.lightNeed)).join("")}</select></div></div>
+      <div class="field"><label for="pf-water">Watering style</label><input type="text" id="pf-water" name="c.water" value="${esc(c.water)}" placeholder="Let the top half dry out"></div>
+      <div class="row2"><div class="field"><label for="pf-hum">Humidity</label><input type="text" id="pf-hum" name="c.humidity" value="${esc(c.humidity)}" placeholder="Average is fine"></div>
+      <div class="field"><label for="pf-dorm">Rest season</label><input type="text" id="pf-dorm" name="c.dormancy" value="${esc(c.dormancy)}" placeholder="Slows Nov to Feb"></div></div>
+      <div class="row2"><div class="field"><label for="pf-feed">Feeding</label><select id="pf-feed" name="c.feed">${Object.keys(FEED).map((k) => opt(k, c.feed || "standard", FEED[k])).join("")}</select></div>
+      <div class="field"><label for="pf-tox">Pets</label><select id="pf-tox" name="c.toxic">${opt("", c.toxic === true ? "1" : c.toxic === false ? "0" : "", "Unknown")}${opt("1", c.toxic === true || typeof c.toxic === "string" ? "1" : "", "Toxic")}${opt("0", c.toxic === false ? "0" : "", "Pet-safe")}</select></div></div>
+      <div class="row2"><div class="field"><label for="pf-meth">Watering method</label><select id="pf-meth" name="c.method">${opt("top", c.method || "top", "From the top")}${opt("bottom", c.method, "Bottom water")}</select></div>
+      <div class="field"><label for="pf-tap">Tap water</label><select id="pf-tap" name="c.tapWater">${opt("", c.tapWater, "Fine")}${opt("avoid", c.tapWater, "Avoid")}</select></div></div>
+      <div class="field"><label for="pf-cues">Signs it needs water</label><textarea id="pf-cues" name="c.cues" placeholder="One per line">${esc((c.cues || []).join("\n"))}</textarea></div>
+      <div class="field"><label for="pf-prop">How to propagate</label><input type="text" id="pf-prop" name="c.propagate" value="${esc(c.propagate)}" placeholder="Node cutting in water, roots in 2 to 4 weeks"></div>
+    </fieldset></details>
+    <div class="actions"><button class="btn primary" type="submit">${p.id ? "Save changes" : "Add plant"}</button><button class="btn" type="button" data-act="close">Cancel</button></div>
+  </form>`;
+}
+async function savePlant(form) {
+  const fd = new FormData(form), id = form.dataset.id, old = id ? getPlant(id) : null;
+  const care = { ...(old?.care || {}) };
+  const rec = {};
+  for (const [k, v] of fd.entries()) {
+    const val = String(v).trim();
+    if (k.startsWith("c.")) {
+      const f = k.slice(2);
+      if (f === "cues") care.cues = val ? val.split("\n").map((s) => s.trim()).filter(Boolean) : [];
+      else if (f === "toxic") { if (val === "1") care.toxic = typeof old?.care?.toxic === "string" ? old.care.toxic : true; else if (val === "0") care.toxic = false; else delete care.toxic; }
+      else care[f] = val;
+    } else if (k !== "newRoom") rec[k] = val;
+  }
+  if (!rec.name && !rec.species) { toast("Give it a nickname or a species."); return; }
+  rec.waterEvery = Math.max(1, Math.min(60, parseInt(rec.waterEvery, 10) || 7));
+  rec.lastWatered = rec.lastWatered || null;
+  rec.care = care;
+  if (rec.roomId === "__new") {
+    const nm = String(fd.get("newRoom") || "").trim();
+    if (!nm) { toast("Name the new room, or pick one from the list."); return; }
+    let ref; const ok = await write(async () => { ref = await S.db.collection("rooms").add({ name: nm }); });
+    if (!ok) return; rec.roomId = ref.id;
+  }
+  if (old && old.roomId !== rec.roomId && old.roomId) rec.log = withLog(old, { t: "move", note: "to " + (S.rooms.find((r) => r.id === rec.roomId)?.name || "new room") });
+  const ok = id ? await write(() => plantRef(id).update(rec), "Saved")
+               : await write(() => S.db.collection("plants").add({ ...rec, created: today(), log: [] }), `Added ${rec.name || rec.species}`);
+  if (ok) { if (id) { S.sheetPlant = id; refreshPlantSheet(); } else closeSheet(); }
+}
+
+function roomForm(r) {
+  r = r || {};
+  const n = r.id ? S.plants.filter((p) => p.roomId === r.id).length : 0;
+  const issues = r.id ? roomIssues(r) : [];
+  return sheetTop(r.id ? r.name : "Add a room or spot") + issues.map((x) => `<div class="note">${IC.alert}<span>${esc(x)}</span></div>`).join("") + `<form class="f" id="roomForm" data-id="${esc(r.id || "")}">
+    <div class="field"><label for="rf-name">Name</label><input type="text" id="rf-name" name="name" value="${esc(r.name)}" placeholder="Living room"></div>
+    <div class="row2"><div class="field"><label for="rf-face">Window faces</label><select id="rf-face" name="facing">${opt("", r.facing, "No window / not sure")}${["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"].map((d) => opt(d, r.facing)).join("")}</select></div>
+    <div class="field"><label for="rf-light">Light grade</label><select id="rf-light" name="light">${opt("", r.light, "Let Claude grade it")}${GRADES.map((g) => opt(g, r.light)).join("")}</select></div></div>
+    <div class="field"><label for="rf-cats">Cats</label><select id="rf-cats" name="cats">${opt("", r.cats, "Not set")}${opt("everywhere", r.cats, "Cats can reach every spot")}${opt("some", r.cats, "Some spots are out of reach")}${opt("closed", r.cats, "Cats aren't allowed in")}</select></div>
+    <div class="field"><label for="rf-notes">Details</label><textarea id="rf-notes" name="notes" placeholder="Sheer curtain, tree outside, plants sit about 3 ft from the glass">${esc(r.notes)}</textarea></div>
+    <div class="actions"><button class="btn primary" type="submit">${r.id ? "Save" : "Add room"}</button><button class="btn" type="button" data-act="close">Cancel</button>
+    ${r.id ? `<button class="btn danger" type="button" data-act="del-room" data-id="${r.id}" ${n ? "disabled title=\"Move its plants first\"" : ""}>${n ? `Has ${n} plant${n === 1 ? "" : "s"}` : "Delete room"}</button>` : ""}</div>
+  </form>`;
+}
+async function saveRoom(form) {
+  const fd = new FormData(form), id = form.dataset.id;
+  const rec = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, String(v).trim()]));
+  if (!rec.name) { toast("Give the room a name."); return; }
+  const ok = id ? await write(() => S.db.collection("rooms").doc(id).update(rec), "Saved") : await write(() => S.db.collection("rooms").add(rec), `Added ${rec.name}`);
+  if (ok) closeSheet();
+}
+
+function propForm(x) {
+  x = x || { status: "rooting", taken: today(), qty: 1 };
+  return sheetTop(x.id ? "Edit cutting" : "Log a cutting") + `<form class="f" id="propForm" data-id="${esc(x.id || "")}">
+    <div class="row2"><div class="field"><label for="xf-parent">From plant</label><select id="xf-parent" name="parentId">${opt("", x.parentId, "Not from my plants")}${S.plants.map((p) => opt(p.id, x.parentId, p.name ? `${p.name} (${p.species || "?"})` : p.species)).join("")}</select></div>
+    <div class="field"><label for="xf-sp">Species</label><input type="text" id="xf-sp" name="species" value="${esc(x.species)}" placeholder="Same as parent if blank"></div></div>
+    <div class="row2"><div class="field"><label for="xf-taken">Taken on</label><input type="date" id="xf-taken" name="taken" value="${esc(x.taken || "")}"></div>
+    <div class="field"><label for="xf-qty">How many</label><input type="number" id="xf-qty" name="qty" min="1" max="99" value="${esc(x.qty || 1)}"></div></div>
+    <div class="row2"><div class="field"><label for="xf-meth">Method</label><select id="xf-meth" name="method">${["water", "soil", "sphagnum", "leca", "division", "air layer", "leaf cutting"].map((m) => opt(m, x.method || "water")).join("")}</select></div>
+    <div class="field"><label for="xf-st">Status</label><select id="xf-st" name="status">${STATUSES.map((s) => opt(s, x.status)).join("")}</select></div></div>
+    <div class="row2"><div class="field"><label for="xf-spot">Where it sits</label><input type="text" id="xf-spot" name="spot" value="${esc(x.spot)}" placeholder="Kitchen sill"></div>
+    <div class="field"><label for="xf-price">Asking price ($)</label><input type="number" id="xf-price" name="price" min="0" step="1" value="${esc(x.price || "")}"></div></div>
+    <div class="field"><label for="xf-notes">Notes</label><input type="text" id="xf-notes" name="notes" value="${esc(x.notes)}" placeholder="Roots showing"></div>
+    <div class="actions"><button class="btn primary" type="submit">${x.id ? "Save" : "Log cutting"}</button><button class="btn" type="button" data-act="close">Cancel</button>
+    ${x.id ? `<button class="btn danger" type="button" data-act="del-prop" data-id="${x.id}">Delete</button>` : ""}</div>
+  </form>`;
+}
+async function saveProp(form) {
+  const fd = new FormData(form), id = form.dataset.id;
+  const rec = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, String(v).trim()]));
+  rec.qty = Math.max(1, parseInt(rec.qty, 10) || 1);
+  rec.price = rec.price ? Number(rec.price) : null;
+  if (!rec.species && rec.parentId) rec.species = getPlant(rec.parentId)?.species || "";
+  const old = id ? S.props.find((x) => x.id === id) : null;
+  if (old && old.status !== rec.status) rec.statusSince = today();
+  const ok = id ? await write(() => S.db.collection("props").doc(id).update(rec), "Saved")
+               : await write(() => S.db.collection("props").add({ ...rec, statusSince: today() }), "Cutting logged");
+  if (ok) closeSheet();
+}
+
+/* ---------- actions ---------- */
+const armed = new Set();
+function arm(btn, key, label) {
+  if (armed.has(key)) { armed.delete(key); return true; }
+  armed.add(key); btn.classList.add("armed"); btn.textContent = label;
+  setTimeout(() => { armed.delete(key); if (btn.isConnected) { btn.classList.remove("armed"); btn.textContent = btn.dataset.orig || btn.textContent; } }, 4000);
+  return false;
+}
+
+document.addEventListener("click", async (ev) => {
+  const t = ev.target.closest("[data-act], [data-tab]"); if (!t) return;
+  if (t.dataset.tab) { S.tab = t.dataset.tab; $("#view").innerHTML = ""; render(); window.scrollTo(0, 0); return; }
+  const act = t.dataset.act, id = t.dataset.id, p = id ? getPlant(id) : null;
+  if (act === "close") return closeSheet();
+  if (act === "settings" && window.windowsill) return openSettings();
+  if ((act === "push-on" || act === "push-off") && window.windowsill) {
+    t.disabled = true; let st;
+    try { st = act === "push-on" ? await window.windowsill.enablePush() : await window.windowsill.disablePush(); } catch { st = null; }
+    if (!st) { toast("That didn't work. Try again."); t.disabled = false; return; }
+    if (st === "on") toast("Reminders on"); else if (st === "off") toast("Reminders off");
+    if (S.settingsOpen) $("#sheetBody").innerHTML = settingsSheet(st); return;
+  }
+  if (act === "sign-out" && window.windowsill) {
+    t.dataset.orig = "Sign out";
+    if (!arm(t, "signout", "Tap again to sign out")) return;
+    try { await window.windowsill.signOut(); } catch { toast("Couldn't sign out. Try again."); } return;
+  }
+  if (!S.db && act !== "cue") return;
+  switch (act) {
+    case "checkin": if (p) { S.sheetPlant = null; S.shotOpen = null; S.ci = { plantId: id, tags: [] }; openSheet(checkinForm(p)); } return;
+    case "ci-health": case "ci-tag": {
+      if (!S.ci) return; const v = t.dataset.v;
+      if (act === "ci-health") { S.ci.health = S.ci.health === v ? null : v; t.parentElement.querySelectorAll(".toggle").forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === S.ci.health)); }
+      else { const tg = new Set(S.ci.tags); tg.has(v) ? tg.delete(v) : tg.add(v); S.ci.tags = [...tg]; t.setAttribute("aria-pressed", tg.has(v)); }
+      return;
+    }
+    case "shot": return openShot(t.dataset.cid);
+    case "ci-del": {
+      const c = S.checkins.find((x) => x.id === t.dataset.cid); if (!c) return;
+      t.dataset.orig = "Delete check-in";
+      if (!arm(t, "ci" + c.id, "Tap again to delete")) return;
+      if (await write(() => S.db.collection("checkins").doc(c.id).delete(), "Check-in deleted")) {
+        if (c.assetId && S.assets) S.assets.delete(c.assetId).catch(() => {});
+        const p2 = getPlant(c.plantId); if (p2) { S.shotOpen = null; S.sheetPlant = p2.id; openSheet(plantSheet(p2)); } else closeSheet();
+      }
+      return;
+    }
+    case "cue": {
+      const cur = new Set(S.cues[id] || []); cur.has(t.dataset.cue) ? cur.delete(t.dataset.cue) : cur.add(t.dataset.cue);
+      S.cues[id] = [...cur]; t.setAttribute("aria-pressed", cur.has(t.dataset.cue)); return;
+    }
+    case "water": {
+      if (!p) return; const fed = !!t.dataset.fed; t.disabled = true;
+      const upd = { lastWatered: today(), snoozeUntil: null };
+      if (fed) upd.lastFed = today();
+      if (await logAct(p, { t: "water", fed, cues: S.cues[id] || [] }, upd, `Watered ${nm(p)}${fed ? " and fed" : ""}`)) delete S.cues[id];
+      t.disabled = false; return;
+    }
+    case "water-ask": if (p) { S.sheetPlant = null; S.actOpen = false; openSheet(waterSheet(p)); } return;
+    case "wq-fed": if (S.wq) { S.wq.fed = !S.wq.fed; t.setAttribute("aria-pressed", S.wq.fed); } return;
+    case "undo": t.disabled = true; await undoEntry(id, t.dataset.at); return;
+    case "activity": S.sheetPlant = null; S.actOpen = true; openSheet(activitySheet()); return;
+    case "damp": {
+      if (!p) return; const wait = (p.waterEvery || 7) >= 10 ? 3 : 2;
+      const fromStep = !!$("#waterForm");
+      if (await logAct(p, { t: "check", cues: ["damp", ...(S.cues[id] || [])] }, { snoozeUntil: addDays(today(), wait) }, `OK, checking ${nm(p)} again in ${wait} days`)) { delete S.cues[id]; if (fromStep) closeSheet(); }
+      return;
+    }
+    case "fed": return p && logAct(p, { t: "note", note: "fed" }, { lastFed: today() }, `Fed ${nm(p)}`);
+    case "repot": return p && logAct(p, { t: "repot" }, { repotted: today(), noFeedUntil: addDays(today(), 42) }, "Repot logged. Feeding pauses for six weeks.");
+    case "inspect-ok": return p && logAct(p, { t: "inspect", note: "all clear" }, { lastInspected: today() }, "Pest check logged");
+    case "inspect-issue": {
+      if (!p) return;
+      S.sheetPlant = null;
+      return openSheet(sheetTop("What did you find?", nm(p)) + `<form class="f" id="issueForm" data-id="${p.id}"><div class="field"><label for="if-note">Describe it</label><textarea id="if-note" name="note" placeholder="Tiny webs under the leaves, a few yellow spots" required></textarea><small>Send Claude a photo in the project chat too. It diagnoses from this plant's history.</small></div><div class="actions"><button class="btn primary" type="submit">Save and flag plant</button><button class="btn" type="button" data-act="close">Cancel</button></div></form>`);
+    }
+    case "clear-health": return p && logAct(p, { t: "note", note: "cleared: " + p.health }, { health: null }, "Flag cleared");
+    case "int": {
+      if (!p) return; const n = Math.max(1, Math.min(60, (p.waterEvery || 7) + Number(t.dataset.d)));
+      return write(() => plantRef(id).update({ waterEvery: n }));
+    }
+    case "open-plant": if (p) { S.shotOpen = null; S.ci = null; S.sheetPlant = id; openSheet(plantSheet(p)); } return;
+    case "new-plant": S.sheetPlant = null; openSheet(plantForm()); wireRoomSelect(); return;
+    case "gift": {
+      if (!p) return; S.sheetPlant = null; const g = p.gifted || {};
+      return openSheet(sheetTop(p.gifted ? "Gift details" : "Who's it going to?", nm(p)) + `<form class="f" id="giftForm" data-id="${p.id}">
+        <div class="field"><label for="gf-to">Gifted to</label><input type="text" id="gf-to" name="to" value="${esc(g.to)}" placeholder="A friend, a client" required></div>
+        <div class="field"><label for="gf-date">When</label><input type="date" id="gf-date" name="date" value="${esc(g.date || today())}"></div>
+        <div class="field"><label for="gf-note">Where it lives now</label><textarea id="gf-note" name="note" placeholder="Their office, by the east window">${esc(g.note)}</textarea></div>
+        ${p.gifted ? "" : `<small class="muted" style="padding-left:4px">It leaves your schedule and moves to Gifted at the bottom of Plants.</small>`}
+        <div class="actions"><button class="btn primary" type="submit">${p.gifted ? "Save" : "Move to Gifted"}</button><button class="btn" type="button" data-act="close">Cancel</button></div></form>`);
+    }
+    case "visit": {
+      if (!p) return; S.sheetPlant = null;
+      return openSheet(sheetTop("Log a visit", nm(p)) + `<form class="f" id="visitForm" data-id="${p.id}">
+        <div class="field"><label for="vf-date">When</label><input type="date" id="vf-date" name="date" value="${today()}"></div>
+        <div class="field"><label for="vf-note">How's it doing?</label><textarea id="vf-note" name="note" placeholder="Twice the size, new leaf unfurling"></textarea></div>
+        <div class="actions"><button class="btn primary" type="submit">Save visit</button><button class="btn" type="button" data-act="close">Cancel</button></div></form>`);
+    }
+    case "ungift": return p && write(() => plantRef(id).update({ gifted: null, lastWatered: today(), log: withLog(p, { t: "note", note: "back home" }) }), `${nm(p)} is back on your schedule`);
+    case "edit-plant": if (p) { S.sheetPlant = null; openSheet(plantForm(p)); wireRoomSelect(); } return;
+    case "del-plant": {
+      t.dataset.orig = "Delete plant";
+      if (!arm(t, "plant" + id, "Tap again to delete")) return;
+      if (await write(() => plantRef(id).delete(), "Plant deleted")) closeSheet(); return;
+    }
+    case "new-room": return openSheet(roomForm());
+    case "edit-room": return openSheet(roomForm(S.rooms.find((r) => r.id === id)));
+    case "del-room": {
+      t.dataset.orig = "Delete room";
+      if (!arm(t, "room" + id, "Tap again to delete")) return;
+      if (await write(() => S.db.collection("rooms").doc(id).delete(), "Room deleted")) closeSheet(); return;
+    }
+    case "new-prop": return openSheet(propForm());
+    case "edit-prop": return openSheet(propForm(S.props.find((x) => x.id === id)));
+    case "del-prop": {
+      t.dataset.orig = "Delete";
+      if (!arm(t, "prop" + id, "Tap again to delete")) return;
+      if (await write(() => S.db.collection("props").doc(id).delete(), "Cutting deleted")) closeSheet(); return;
+    }
+  }
+});
+document.addEventListener("change", (ev) => {
+  if (ev.target.id !== "ci-file" || !S.ci) return;
+  const file = ev.target.files?.[0]; if (!file) return;
+  const form = $("#ciForm"); if (form) { S.ci.note = form.note.value; S.ci.d = form.d.value; }
+  if (S.ci.url) URL.revokeObjectURL(S.ci.url);
+  S.ci.file = file; S.ci.url = URL.createObjectURL(file);
+  const p = getPlant(S.ci.plantId); if (p) { const top = $("#sheetBody").scrollTop; $("#sheetBody").innerHTML = checkinForm(p); $("#sheetBody").scrollTop = top; }
+});
+function wireRoomSelect() {
+  const sel = $("#pf-room"), wrap = $("#pf-newroom-wrap");
+  if (sel) sel.addEventListener("change", () => { wrap.hidden = sel.value !== "__new"; if (!wrap.hidden) $("#pf-newroom").focus(); });
+}
+document.addEventListener("submit", async (ev) => {
+  ev.preventDefault(); if (!S.db) return;
+  const f = ev.target, btn = f.querySelector('[type="submit"]'); if (btn) btn.disabled = true;
+  try {
+    if (f.id === "plantForm") await savePlant(f);
+    else if (f.id === "roomForm") await saveRoom(f);
+    else if (f.id === "propForm") await saveProp(f);
+    else if (f.id === "giftForm") {
+      const p = getPlant(f.dataset.id), fd = new FormData(f), to = String(fd.get("to") || "").trim(), date = String(fd.get("date") || "") || today(), note = String(fd.get("note") || "").trim();
+      if (!p || !to) return;
+      const upd = { gifted: { to, date, note } };
+      if (!p.gifted) upd.log = withLog(p, { t: "note", note: "gifted to " + to });
+      if (await write(() => plantRef(p.id).update(upd), p.gifted ? "Saved" : `${nm(p)} moved to Gifted`)) { S.sheetPlant = p.gifted ? p.id : null; p.gifted ? openSheet(plantSheet(getPlant(p.id))) : closeSheet(); }
+    }
+    else if (f.id === "visitForm") {
+      const p = getPlant(f.dataset.id), fd = new FormData(f), d = String(fd.get("date") || "") || today(), note = String(fd.get("note") || "").trim();
+      if (!p) return;
+      const log = [...(p.log || []), { d, t: "visit", note }].sort((a, b) => String(a.d).localeCompare(String(b.d))).slice(-150);
+      if (await write(() => plantRef(p.id).update({ log }), "Visit logged")) { S.sheetPlant = p.id; openSheet(plantSheet(getPlant(p.id))); }
+    }
+    else if (f.id === "ciForm") {
+      const p = getPlant(f.dataset.id), fd = new FormData(f), ci = S.ci || {};
+      const note = String(fd.get("note") || "").trim(), d = String(fd.get("d") || "") || today();
+      if (!p) return;
+      if (!ci.file && !note && !ci.health && !ci.tags?.length) { toast("Add a photo or a note first."); return; }
+      let assetId = null;
+      if (ci.file) {
+        if (!S.assets) { toast("Photos can only be added by the page's owner."); return; }
+        if (btn) btn.textContent = "Uploading…";
+        try { assetId = (await S.assets.upload(await shrink(ci.file))).id; }
+        catch (e) {
+          toast(e?.code === "too_large" ? "That photo is too big. Try a smaller one." : e?.code === "unsupported_type" ? "That file type isn't supported. Use a JPEG or PNG." : e?.code === "quota_or_state" ? "Photo storage is full." : "The photo didn't upload. Try again.");
+          if (btn) btn.textContent = "Save check-in"; return;
+        }
+      }
+      const rec = { plantId: p.id, d, assetId, health: ci.health || null, tags: ci.tags || [], note, at: new Date().toISOString() };
+      const ok = await write(() => S.db.collection("checkins").add(rec), "Check-in saved");
+      if (!ok && assetId) S.assets.delete(assetId).catch(() => {});
+      if (ok) {
+        if (ci.health === "bad" && !p.health) await write(() => plantRef(p.id).update({ health: note ? (note.length > 60 ? note.slice(0, 57) + "…" : note) : "Marked as needing help", log: withLog(p, { t: "issue", note: note || "check-in: needs help" }) }));
+        if (ci.url) URL.revokeObjectURL(ci.url); S.ci = null; S.sheetPlant = p.id; openSheet(plantSheet(getPlant(p.id)));
+      }
+    }
+    else if (f.id === "issueForm") {
+      const p = getPlant(f.dataset.id), note = String(new FormData(f).get("note") || "").trim();
+      if (p && note && await logAct(p, { t: "issue", note }, { lastInspected: today(), health: note.length > 60 ? note.slice(0, 57) + "…" : note }, "Saved. The plant is flagged until you clear it.")) closeSheet();
+    }
+    else if (f.id === "waterForm") {
+      const p = getPlant(f.dataset.id), note = String(new FormData(f).get("note") || "").trim(), fed = !!S.wq?.fed;
+      if (!p) return;
+      const upd = { lastWatered: today(), snoozeUntil: null }; if (fed) upd.lastFed = today();
+      const entry = { t: "water", fed, cues: S.cues[p.id] || [] }; if (note) entry.note = note;
+      if (await logAct(p, entry, upd, `Watered ${nm(p)}${fed ? " and fed" : ""}`)) { delete S.cues[p.id]; closeSheet(); }
+    }
+  } finally { if (btn && btn.isConnected) btn.disabled = false; }
+});
+document.addEventListener("toggle", (e) => { if (e.target.matches?.("details.soon")) S.soonOpen = e.target.open; }, true);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#sheet").hidden) closeSheet(); });
+
+let toastTimer;
+function toast(msg, action) {
+  const el = $("#toast"); el.textContent = msg;
+  if (action) {
+    const b = document.createElement("button"); b.type = "button"; b.className = "toast-act"; b.textContent = action.label;
+    b.addEventListener("click", () => { el.hidden = true; clearTimeout(toastTimer); action.run(); });
+    el.append(b);
+  }
+  el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.hidden = true), action ? 6000 : 2800);
+}
+
+boot();
+</script>

@@ -1,0 +1,10 @@
+# Personal plant data never goes in git. Keep exports/backups here locally.
+data/
+*.local.*
+*.export.json
+backup*.json
+.env
+.env.*
+.DS_Store
+dist/
+js/config.js

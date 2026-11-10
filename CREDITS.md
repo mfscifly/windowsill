@@ -15,4 +15,4 @@ The original SVGs and a file-to-source index are kept on the `art-candidates` br
 
 ## Everything else
 
-All other drawings and code are original to this project.
+The pot shapes and all code are original to this project.

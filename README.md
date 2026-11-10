@@ -25,6 +25,7 @@ This repo holds code only. Plant records, logs, photos and keys never go in git:
 | `manifest.webmanifest`, `sw.js`, `icons/` | Home-screen install, offline shell, notifications. |
 | `scripts/build.sh` | Wraps the page into `dist/` and writes `js/config.js` from env vars. |
 | `docs/` | [Setup guide](docs/setup.md) and [data schema](docs/schema.md). |
+| `CREDITS.md` | Attribution for adapted artwork. |
 
 `src/app.html` also runs unchanged as a Claude Artifact using that platform's own storage;
 `js/backend.js` steps aside when it detects it.

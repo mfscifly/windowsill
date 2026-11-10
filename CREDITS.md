@@ -1,7 +1,18 @@
 # Credits
 
-- Alocasia drawing (`ARROW_FILL`, `ARROW_LINE` in `src/app.html`): adapted from
-  "Arrowhead" by chinnan, *Vector Collection For Indoor Plants*, [tosvg.com](https://tosvg.com),
-  under a Creative Commons license that requires attribution. The credit also appears in the app
-  on alocasia plant sheets.
-- All other drawings and code are original to this project.
+## Plant drawings
+
+Most plant drawings in `src/app.html` (`ART`, `ARROW_FILL`, `ARROW_LINE`) are adapted from
+**"Vector Collection For Indoor Plants"** by **chinnan**, via
+[tosvg.com](https://tosvg.com/collections/vector-collection-for-indoor-plants).
+
+License: Creative Commons, free for personal and commercial use, with credit required
+("chinnan, via tosvg.com"). The app also shows this credit on each plant sheet that uses one of
+these drawings.
+
+The original SVGs and a file-to-source index are kept on the `art-candidates` branch
+(`art-candidates/tosvg/`).
+
+## Everything else
+
+All other drawings and code are original to this project.

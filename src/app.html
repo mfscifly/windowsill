@@ -66,8 +66,8 @@ main.wrap { position: relative; z-index: 1; padding-top: 18px; padding-bottom: c
 /* iOS grouped list */
 .group-h { font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); padding: 0 4px 6px; }
 .group { background: var(--surface); border-radius: var(--r); box-shadow: 0 1px 2px rgba(60, 50, 30, 0.06); overflow: hidden; }
-.row { display: flex; align-items: center; gap: 12px; padding: 0 12px 0 14px; min-height: 60px; position: relative; }
-.row + .row::before { content: ""; position: absolute; top: 0; left: 36px; right: 0; height: 1px; background: var(--line); }
+.row { display: flex; align-items: center; gap: 12px; padding: 0 12px 0 12px; min-height: 68px; position: relative; }
+.row + .row::before { content: ""; position: absolute; top: 0; left: 72px; right: 0; height: 1px; background: var(--line); }
 .row .main { all: unset; flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 10px 0; cursor: pointer; }
 .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14); }
 .lines { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
@@ -174,7 +174,9 @@ fieldset { border: 0; background: var(--fill); border-radius: var(--r); padding:
 legend { display: none; }
 
 /* photo check-ins */
-.thumb { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; flex: none; background: var(--fill); display: block; }
+.thumb { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; flex: none; background: var(--fill); display: block; }
+.thumb.art { display: flex; align-items: flex-end; justify-content: center; overflow: hidden; }
+.thumb.art svg { display: block; margin-bottom: -1px; }
 .p-photo { width: 132px; height: 132px; border-radius: 50%; object-fit: cover; background: var(--fill); display: block; box-shadow: 0 6px 18px var(--sill-shadow); }
 .strip { display: flex; gap: 10px; overflow-x: auto; padding: 14px; scrollbar-width: none; }
 .strip::-webkit-scrollbar { display: none; }
@@ -691,7 +693,8 @@ function renderPlantList() {
 }
 function mark(p) {
   const ph = latestPhoto(p);
-  return ph ? `<img class="thumb" src="${blobUrl(ph.assetId)}" alt="" loading="lazy">` : `<span class="dot" style="background:${glaze(p)[0]}"></span>`;
+  // newest photo, like Planta; the drawing stands in until a photo is added
+  return ph ? `<img class="thumb" src="${blobUrl(ph.assetId)}" alt="" loading="lazy">` : `<span class="thumb art" aria-hidden="true">${potSvg(p, 0.66)}</span>`;
 }
 function plantRow(p) {
   const w = waterDue(p), late = w < today(), mm = mismatch(p);

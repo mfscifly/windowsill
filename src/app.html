@@ -175,8 +175,13 @@ legend { display: none; }
 
 /* photo check-ins */
 .thumb { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; flex: none; background: var(--fill); display: block; }
-.thumb.art { display: flex; align-items: flex-end; justify-content: center; overflow: hidden; }
-.thumb.art svg { display: block; margin-bottom: -1px; }
+.thumb.art { display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 3px; box-sizing: border-box; }
+.thumb.art svg { display: block; width: 100%; height: 100%; }
+.cat { display: inline-flex; vertical-align: -2px; margin-left: 6px; color: var(--late); }
+.cat.maybe { color: var(--muted); }
+h2 .cat svg { width: 20px; height: 20px; }
+.sheet { bottom: auto; top: var(--vv-top, 0px); height: var(--vv-h, 100%); }
+.sheet form.f > .actions { position: sticky; bottom: calc(-28px - env(safe-area-inset-bottom, 0px)); background: var(--bg); padding: 10px 0 calc(28px + env(safe-area-inset-bottom, 0px)); margin-bottom: calc(-28px - env(safe-area-inset-bottom, 0px)); z-index: 2; }
 .p-photo { width: 132px; height: 132px; border-radius: 50%; object-fit: cover; background: var(--fill); display: block; box-shadow: 0 6px 18px var(--sill-shadow); }
 .strip { display: flex; gap: 10px; overflow-x: auto; padding: 14px; scrollbar-width: none; }
 .strip::-webkit-scrollbar { display: none; }
@@ -359,6 +364,7 @@ const IC = {
   plus: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`,
   x: `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8"/></svg>`,
   gear: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`,
+  cat: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3.5l3.6 4h6.8L19 3.5V13a7 7 0 0 1-14 0z"/><path d="M9.5 12.5v.01M14.5 12.5v.01"/></svg>`,
   alert: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>`,
 };
 const nm = (p) => p.name || p.common || String(p.species || "").replace(/\s*\([^)]*\)?/g, "").trim() || p.species || "Unnamed plant";
@@ -619,7 +625,7 @@ function doneRow(p, e, withDate) {
   if (e.note && e.t !== "note") bits.push(esc(e.note));
   bits.push(esc(withDate ? `${cap(rel(e.d))}${e.at ? " " + hhmm(e.at) : ""}` : hhmm(e.at)));
   const undo = e.at && e.prev ? `<button class="btn small" data-act="undo" data-id="${p.id}" data-at="${esc(e.at)}" aria-label="Undo ${esc(actLabel(e).toLowerCase())} for ${esc(nm(p))}">Undo</button>` : "";
-  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}</span><span class="sub">${bits.join(" · ")}</span></span></button>${undo}</div>`;
+  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}${catTag(p)}</span><span class="sub">${bits.join(" · ")}</span></span></button>${undo}</div>`;
 }
 function activitySheet() {
   const since = addDays(today(), -14);
@@ -660,12 +666,11 @@ function todayRow(p, d, mode) {
   if (feed) bits.push("feed too");
   if (insp) bits.push("pest check");
   if (p.health) bits.push(`<span class="late-t">needs a look</span>`);
-  else if (p.catReach === "yes" && p.care?.toxic) bits.push(`<span class="late-t">cats can reach</span>`);
   let btn;
   if (water && mode === "now") btn = `<button class="act${late ? " late" : ""}" data-act="water-ask" data-id="${p.id}" aria-label="Water ${esc(nm(p))}">${IC.drop}</button>`;
   else if (mode === "now") btn = `<button class="act" data-act="open-plant" data-id="${p.id}" aria-label="Pest check ${esc(nm(p))}">${IC.search}</button>`;
   else btn = IC.chev;
-  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}</span><span class="sub">${bits.join(" · ")}</span></span></button>${btn}</div>`;
+  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}${catTag(p)}</span><span class="sub">${bits.join(" · ")}</span></span></button>${btn}</div>`;
 }
 
 function renderPlantsShell(v) {
@@ -691,6 +696,8 @@ function renderPlantList() {
   el.innerHTML = keys.length || giftH ? keys.map((k) => `<section><h2 class="group-h">${esc(k)}</h2><div class="group">${groups.get(k).sort((a, b) => nm(a).localeCompare(nm(b))).map(plantRow).join("")}</div></section>`).join("") + giftH
     : `<p class="lede">No plants match "${esc(S.q)}".</p>`;
 }
+// toxic-to-cats as a small cat icon after the name: orange when cats can reach it, grey when not known
+const catTag = (p) => catRisk(p) ? `<span class="cat${p.catReach === "yes" ? "" : " maybe"}" title="Toxic to cats" aria-label="Toxic to cats${p.catReach === "yes" ? ", cats can reach it" : ""}">${IC.cat}</span>` : "";
 function mark(p) {
   const ph = latestPhoto(p);
   // newest photo, like Planta; the drawing stands in until a photo is added
@@ -698,9 +705,8 @@ function mark(p) {
 }
 function plantRow(p) {
   const w = waterDue(p), late = w < today(), mm = mismatch(p);
-  const sub = p.health ? `<span class="late-t">needs a look</span>` : p.catReach === "yes" && p.care?.toxic ? `<span class="late-t">toxic, cats can reach</span>`
-    : mm ? `<span class="late-t">${esc(mm)}</span>` : esc(p.name ? p.common || p.spot || "" : p.spot || "");
-  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}</span>${sub ? `<span class="sub">${sub}</span>` : ""}</span></button><span class="trail${late ? " late" : ""}">${esc(dueShort(w))}</span>${IC.chev}</div>`;
+  const sub = p.health ? `<span class="late-t">needs a look</span>` : mm ? `<span class="late-t">${esc(mm)}</span>` : esc(p.name ? p.common || p.spot || "" : p.spot || "");
+  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}${catTag(p)}</span>${sub ? `<span class="sub">${sub}</span>` : ""}</span></button><span class="trail${late ? " late" : ""}">${esc(dueShort(w))}</span>${IC.chev}</div>`;
 }
 function mismatch(p) {
   const need = GRADES.indexOf(p.care?.lightNeed), have = GRADES.indexOf(roomOf(p)?.light);
@@ -788,7 +794,7 @@ function progressSection(p) {
   const tiles = all.slice().reverse().map((c) => `<button class="shot" data-act="shot" data-cid="${esc(c.id)}" aria-label="Check-in ${esc(short(c.d))}">${c.assetId ? `<img src="${blobUrl(c.assetId)}" alt="" loading="lazy">` : `<span class="ph">No photo</span>`}<span class="d"><span class="hd ${esc(c.health || "")}"></span>${esc(short(c.d))}</span></button>`).join("");
   const cmp = pics.length >= 2 ? (() => { const a = pics[0], b = pics[pics.length - 1], n = daysBetween(a.d, b.d);
     return `<div class="compare"><figure><img src="${blobUrl(a.assetId)}" alt="First photo"><figcaption>${esc(short(a.d))}</figcaption></figure><figure><img src="${blobUrl(b.assetId)}" alt="Latest photo"><figcaption>${esc(short(b.d))} · ${n >= 60 ? Math.round(n / 30) + " months later" : n + " days later"}</figcaption></figure></div>`; })() : "";
-  const body = all.length ? `${cmp}<div class="strip">${tiles}</div>` : `<p class="kv" style="display:block;color:var(--muted)">${canAdd ? "Add a photo every month or so to see how it's growing." : "No check-ins yet."}</p>`;
+  const body = all.length ? `${cmp}<div class="strip">${tiles}</div>` : (canAdd ? "" : `<p class="kv" style="display:block;color:var(--muted)">No check-ins yet.</p>`);
   return `<section><h3 class="group-h">Progress${all.length ? ` · ${all.length}` : ""}</h3><div class="group">${body}${canAdd ? `<button class="kv" data-act="checkin" data-id="${p.id}">Add a check-in</button>` : ""}</div></section>`;
 }
 function headArt(p) {
@@ -839,7 +845,7 @@ function plantSheet(p) {
   const how = [c.method === "bottom" ? "Bottom water: sit it in a tray for 20 to 30 minutes." : "Water until it drains, then empty the saucer.", c.tapWater === "avoid" ? "Use filtered, distilled or rain water." : ""].filter(Boolean).join(" ");
   const notes = [];
   if (p.health) notes.push(`<div class="note">${IC.alert}<span>${esc(p.health)}</span><button class="btn small" data-act="clear-health" data-id="${p.id}">Clear</button></div>`);
-  if (catRisk(p)) notes.push(`<div class="note">${IC.alert}<span>Toxic to cats. ${p.catReach === "yes" ? "They can reach it here: move it up high or to a closed room." : "Can the cats reach this spot? Set it in Edit."}</span></div>`);
+  if (catRisk(p) && p.catReach === "yes") notes.push(`<div class="note">${IC.cat}<span>Cats can reach it. Move it up high.</span></div>`);
   if (mismatch(p)) notes.push(`<div class="note">${IC.alert}<span>This spot looks ${esc(mismatch(p).replace(" here", ""))} for it. Ask Claude where it would do better.</span></div>`);
   const kv = (k, v) => v ? `<div class="kv long"><span>${k}</span><span>${esc(v)}</span></div>` : "";
   const care = [kv("Light", c.light), kv("Water", c.water), kv("Humidity", c.humidity),
@@ -849,7 +855,7 @@ function plantSheet(p) {
   const log = (p.log || []).slice(-15).reverse();
   const label = { water: "Watered", check: "Checked", inspect: "Pest check", issue: "Problem", repot: "Repotted", move: "Moved", note: "Note" };
   return `<div class="p-head"><button class="x" data-act="close" aria-label="Close">${IC.x}</button>${headArt(p)}
-      <h2>${esc(nm(p))}</h2>${p.name && p.common ? `<p class="common">${esc(p.common)}</p>` : ""}${p.species ? `<p class="sp">${esc(p.species)}</p>` : ""}<p class="where">${esc(where(p))}</p>${p.name ? "" : `<button class="btn small" data-act="edit-plant" data-id="${p.id}" style="margin-top:6px">Give it a nickname</button>`}</div>
+      <h2>${esc(nm(p))}${catTag(p)}</h2>${p.name && p.common ? `<p class="common">${esc(p.common)}</p>` : ""}${p.species ? `<p class="sp">${esc(p.species)}</p>` : ""}<p class="where">${esc(where(p))}</p>${p.name ? "" : `<button class="btn small" data-act="edit-plant" data-id="${p.id}" style="margin-top:6px">Give it a nickname</button>`}</div>
     ${notes.join("")}
     <section class="status">
       <div><p class="k">Next drink</p><p class="big${n < 0 ? " late-t" : ""}">${esc(big)}</p><p class="small">Last watered ${esc(rel(p.lastWatered))} · every ${p.waterEvery || 7} days${feedNow ? " · feed with this one" : ""}</p></div>
@@ -1192,6 +1198,9 @@ document.addEventListener("submit", async (ev) => {
   } finally { if (btn && btn.isConnected) btn.disabled = false; }
 });
 document.addEventListener("toggle", (e) => { if (e.target.matches?.("details.soon")) S.soonOpen = e.target.open; }, true);
+(() => { const vv = window.visualViewport; if (!vv) return;
+  const fit = () => { const r = document.documentElement.style; r.setProperty("--vv-h", vv.height + "px"); r.setProperty("--vv-top", vv.offsetTop + "px"); };
+  vv.addEventListener("resize", fit); vv.addEventListener("scroll", fit); fit(); })();
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#sheet").hidden) closeSheet(); });
 
 let toastTimer;

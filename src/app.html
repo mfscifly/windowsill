@@ -199,6 +199,20 @@ h2 .cat svg { width: 20px; height: 20px; }
 .pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .pick img { width: 100%; max-height: 46vh; object-fit: contain; display: block; }
 .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+/* family tree */
+.fam { padding: 6px 0; }
+.fam-row { all: unset; box-sizing: border-box; width: 100%; display: flex; align-items: center; gap: 12px; padding: 6px 14px 6px calc(14px + var(--depth, 0) * 26px); min-height: 60px; position: relative; cursor: pointer; }
+.fam-row.me { cursor: default; background: linear-gradient(90deg, transparent calc(6px + var(--depth, 0) * 26px), #F1F7EC calc(6px + var(--depth, 0) * 26px)); }
+.fam-row .thumb { width: 42px; height: 42px; border-radius: 11px; }
+.fam-row .name { font-size: 16px; }
+.fam-row .sub { font-size: 13px; }
+.fam-row.kid::before { content: ""; position: absolute; left: calc(var(--depth) * 26px - 6px); top: 0; height: 50%; width: 12px; border-left: 2px solid var(--sill); border-bottom: 2px solid var(--sill); border-bottom-left-radius: 9px; }
+.fam-row.kid:not(.last)::after { content: ""; position: absolute; left: calc(var(--depth) * 26px - 6px); top: 50%; bottom: 0; border-left: 2px solid var(--sill); }
+.fam-row .rail { position: absolute; left: calc(var(--at) * 26px - 6px); top: 0; bottom: 0; border-left: 2px solid var(--sill); }
+.fam-row .you { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; background: var(--shine); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; vertical-align: 2px; }
+.fam-row .glass { width: 42px; height: 42px; border-radius: 11px; background: var(--water-soft); color: var(--water); display: flex; align-items: center; justify-content: center; flex: none; }
+.fam-acts { display: flex; gap: 10px; padding: 4px 14px 14px; }
+.fam-acts .btn { flex: 1; }
 .toast:not([hidden]) { display: flex; align-items: center; gap: 14px; }
 .toast-act { border: 0; background: none; color: var(--water-soft); font: inherit; font-weight: 700; padding: 6px 2px; margin: -6px 0; cursor: pointer; }
 .done-t { color: var(--ok); }
@@ -301,7 +315,8 @@ async function boot() {
       else S[name] = docs;
       S.loaded[name] = true;
       render();
-      if (S.sheetPlant && name !== "props") refreshPlantSheet();
+      if (S.sheetPlant) refreshPlantSheet();
+      if (name === "plants" && S.openNext && getPlant(S.openNext)) { const id = S.openNext; S.openNext = null; S.sheetPlant = id; openSheet(plantSheet(getPlant(id))); }
       if (name === "checkins" && S.shotOpen) openShot(S.shotOpen);
       if (name === "plants" && S.actOpen) refreshActivity();
     }, () => { S.noDb = true; render(); });
@@ -599,7 +614,7 @@ function viewToday() {
   let line = next ? (thirsty.length ? `Everyone else is fine until ${esc(dayName(next))}.` : `Next drink: ${esc(dayName(next))}.`) : "";
   if (checks) line += ` Plus ${checks === 1 ? "a quick pest check" : checks + " quick pest checks"}.`;
   const m = new Date().getMonth() + 1;
-  let h = `<section class="hero"><h2>${title}</h2>${line ? `<p>${line.trim()}</p>` : ""}${m >= 11 || m <= 2 ? `<p class="season">Dim season: most plants drink less until March.</p>` : ""}</section>`;
+  let h = `<section class="hero"><h2>${title}</h2>${line ? `<p>${line.trim()}</p>` : ""}</section>`;
 
   const queued = (thirsty.length || soon.length ? [...thirsty, ...now.filter((x) => !thirsty.includes(x)), ...soon].map(([p]) => p)
     : S.plants.slice().sort((a, b) => waterDue(a).localeCompare(waterDue(b))));
@@ -800,6 +815,7 @@ function giftedSheet(p) {
       <button class="kv" data-act="visit" data-id="${p.id}">Log a visit</button>
     </div></section>
     ${progressSection(p)}
+    ${familySection(p)}
     ${p.notes ? `<section><h3 class="group-h">Notes</h3><div class="group"><p class="kv" style="white-space:pre-wrap;display:block">${esc(p.notes)}</p></div></section>` : ""}
     ${log.length ? `<details class="more-d"><summary>History · ${log.length}</summary><div class="group" style="margin-top:8px"><ul class="log">${log.map((e) => `<li><span>${esc(short(e.d))}</span><span>${esc(e.t === "water" ? "Watered" : e.t)}${e.note ? ` · ${esc(e.note)}` : ""}</span></li>`).join("")}</ul></div></details>` : ""}
     <div class="actions"><button class="btn wide" data-act="gift" data-id="${p.id}">Edit gift details</button><button class="btn wide" data-act="ungift" data-id="${p.id}">It's back with me</button><button class="btn danger" data-act="del-plant" data-id="${p.id}">Delete plant</button></div>`;
@@ -853,6 +869,87 @@ async function shrink(file) {
   } catch {}
   return file;
 }
+/* ---------- family tree: divisions, pups and potted-up cuttings point at their mother with parentId ---------- */
+const allPlants = () => [...S.plants, ...(S.gifted || [])];
+const kidsOf = (id) => allPlants().filter((q) => q.parentId === id && q.id !== id).sort((a, b) => String(a.acquired || a.created || "").localeCompare(String(b.acquired || b.created || "")) || nm(a).localeCompare(nm(b)));
+const propsOf = (id) => S.props.filter((x) => x.parentId === id && !x.plantId && !["sold", "gifted"].includes(x.status));
+const ORIGIN = { division: "Division", pup: "Pup", cutting: "Cutting", "leaf cutting": "Leaf cutting", "air layer": "Air layer", seed: "From seed" };
+function originOf(q) {
+  if (q.origin?.t) return q.origin;
+  if (!q.parentId) return null;
+  const src = String(q.source || q.notes || "");
+  return { t: /divi|split/i.test(src) ? "division" : /pup/i.test(src) ? "pup" : /cutting/i.test(src) ? "cutting" : "", d: q.acquired || "" };
+}
+function rootOf(p) {
+  let q = p; const seen = new Set([p.id]);
+  while (q.parentId && !seen.has(q.parentId)) { const m = getPlant(q.parentId); if (!m) break; seen.add(m.id); q = m; }
+  return q;
+}
+const GLASS = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h8l-1 5v10a3 3 0 0 1-6 0V8z"/><path d="M12 14c0-3 2-5 4-6"/></svg>`;
+const railsHtml = (rails) => rails.map((at) => `<i class="rail" style="--at:${at}" aria-hidden="true"></i>`).join("");
+function famRow(q, depth, meId, last, rails = []) {
+  const me = q.id === meId, o = originOf(q), kids = kidsOf(q.id).length + propsOf(q.id).length;
+  const tag = q.gifted ? `Gifted to ${q.gifted.to || "someone"}`
+    : depth === 0 ? (kids ? `Mother plant · ${kids} offshoot${kids === 1 ? "" : "s"}` : "")
+    : [o?.t ? ORIGIN[o.t] || cap(o.t) : "Offshoot", o?.d && short(o.d)].filter(Boolean).join(" · ");
+  const cls = `fam-row${me ? " me" : ""}${depth ? " kid" : ""}${last ? " last" : ""}`;
+  const attrs = me ? `aria-current="true"` : `data-act="open-plant" data-id="${q.id}"`;
+  return `<button class="${cls}" ${attrs} style="--depth:${depth}">${railsHtml(rails)}${mark(q)}<span class="lines"><span class="name">${esc(nm(q))}${me ? `<span class="you">this one</span>` : ""}</span>${tag ? `<span class="sub">${esc(tag)}</span>` : ""}</span>${me ? "" : IC.chev}</button>`;
+}
+function famPropRow(x, depth, last, rails = []) {
+  const n = x.qty > 1 ? `${x.qty} cuttings` : "Cutting";
+  const sub = [x.status || "rooting", x.method, x.taken && short(x.taken)].filter(Boolean).join(" · ");
+  return `<button class="fam-row kid${last ? " last" : ""}" data-act="edit-prop" data-id="${x.id}" style="--depth:${depth}">${railsHtml(rails)}<span class="glass">${GLASS}</span><span class="lines"><span class="name">${esc(n)}</span><span class="sub">${esc(sub)}</span></span>${IC.chev}</button>`;
+}
+// rails: depths whose vertical line keeps running past this row (an ancestor with more siblings below)
+function famTree(q, depth, meId, seen, last, rails = []) {
+  if (seen.has(q.id) || depth > 6) return ""; seen.add(q.id);
+  const kids = kidsOf(q.id), props = propsOf(q.id), n = kids.length + props.length;
+  const under = depth > 0 && !last ? [...rails, depth] : rails;
+  return famRow(q, depth, meId, last, rails) + kids.map((k, i) => famTree(k, depth + 1, meId, seen, i === n - 1, under)).join("")
+    + props.map((x, i) => famPropRow(x, depth + 1, kids.length + i === n - 1, under)).join("");
+}
+function familySection(p) {
+  const root = rootOf(p), tree = famTree(root, 0, p.id, new Set(), true);
+  const has = root.id !== p.id || kidsOf(p.id).length || propsOf(p.id).length;
+  const acts = p.gifted ? "" : `<div class="fam-acts"><button class="btn small" data-act="divide" data-id="${p.id}">Divided it</button><button class="btn small" data-act="new-cutting" data-id="${p.id}">Took a cutting</button></div>`;
+  if (!has && !acts) return "";
+  return `<section><h3 class="group-h">Family</h3><div class="group">${has ? `<div class="fam">${tree}</div>` : `<p class="kv" style="display:block;color:var(--muted);font-size:15px">Split it or took cuttings? Record them here and they stay linked to ${esc(nm(p))}.</p>`}${acts}</div></section>`;
+}
+function divideForm(p) {
+  const d = today();
+  return sheetTop(`Divided ${nm(p)}`, `New pots stay linked to ${nm(p)}`) + `<form class="f" id="divideForm" data-id="${p.id}">
+    <div class="row2"><div class="field"><label for="df-n">New pots</label><input type="number" id="df-n" name="n" min="1" max="12" value="2"><small>Not counting ${esc(nm(p))}</small></div>
+    <div class="field"><label for="df-d">Split on</label><input type="date" id="df-d" name="d" value="${d}"></div></div>
+    <div class="field"><label for="df-names">Nicknames</label><input type="text" id="df-names" name="names" placeholder="Fern, Moss"><small>Optional. One per pot, with commas.</small></div>
+    <div class="row2"><div class="field"><label for="df-pot">Pots</label><input type="text" id="df-pot" name="pot" placeholder="4 in nursery pot"></div>
+    <div class="field"><label for="df-spot">Spot</label><input type="text" id="df-spot" name="spot" value="${esc(p.spot)}"></div></div>
+    <div class="cuepick" role="group" aria-label="Done at potting"><button type="button" class="toggle" data-act="df-flag" data-k="watered" aria-pressed="true">Watered them</button><button type="button" class="toggle" data-act="df-flag" data-k="fed" aria-pressed="false">Fed them</button></div>
+    <input type="hidden" name="watered" value="1"><input type="hidden" name="fed" value="">
+    <div class="actions"><button class="btn primary" type="submit">Add the new pots</button><button class="btn" type="button" data-act="open-plant" data-id="${p.id}">Cancel</button></div>
+  </form>`;
+}
+async function saveDivide(f) {
+  const p = getPlant(f.dataset.id); if (!p) return;
+  const fd = new FormData(f), n = Math.max(1, Math.min(12, parseInt(fd.get("n"), 10) || 1)), d = String(fd.get("d") || "") || today();
+  const names = String(fd.get("names") || "").split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
+  const watered = !!fd.get("watered"), fed = !!fd.get("fed");
+  const pot = String(fd.get("pot") || "").trim(), spot = String(fd.get("spot") || "").trim();
+  const entry = { d, t: "water", fed };
+  const base = { species: p.species || "", common: p.common || "", care: p.care || {}, roomId: p.roomId || "", spot, catReach: p.catReach || "", soil: p.soil || "", pot,
+    waterEvery: p.waterEvery || 7, lastWatered: watered ? d : p.lastWatered || null, lastFed: fed ? d : p.lastFed || null, repotted: d, noFeedUntil: addDays(d, 42),
+    acquired: d, source: `Divided from ${nm(p)}`, parentId: p.id, origin: { t: "division", d }, created: today() };
+  const ok = await write(async () => {
+    for (let i = 0; i < n; i++) await S.db.collection("plants").add({ ...base, name: names[i] || "", log: [{ d, t: "repot", note: `divided from ${nm(p)}` }, ...(watered ? [entry] : [])] });
+    let log = withLog(p, { d, t: "repot", note: `divided into ${n + 1}` });
+    if (watered) log = [...log, entry].slice(-150);
+    const upd = { repotted: d, noFeedUntil: addDays(d, 42), log };
+    if (watered) upd.lastWatered = d; if (fed) upd.lastFed = d;
+    await plantRef(p.id).update(upd);
+  }, n === 1 ? `Added a division of ${nm(p)}` : `Added ${n} divisions of ${nm(p)}`);
+  if (ok) { S.sheetPlant = p.id; openSheet(plantSheet(getPlant(p.id))); }
+}
+
 function plantSheet(p) {
   if (p.gifted) return giftedSheet(p);
   const c = p.care || {}, d = dueItems(p), t = today(), w = d.w, n = daysBetween(t, w);
@@ -894,12 +991,15 @@ function plantSheet(p) {
       <button class="kv" data-act="fed" data-id="${p.id}">Fed today</button>
       <button class="kv" data-act="repot" data-id="${p.id}">Repotted today</button>
     </div></section>
+    ${familySection(p)}
     ${care ? `<section><h3 class="group-h">Care</h3><div class="group">${care}</div></section>` : ""}
     ${p.notes ? `<section><h3 class="group-h">Notes</h3><div class="group"><p class="kv" style="white-space:pre-wrap;display:block">${esc(p.notes)}</p></div></section>` : ""}
     <details class="more-d"><summary>History${log.length ? ` · ${log.length}` : ""}</summary>${log.length ? `<div class="group" style="margin-top:8px"><ul class="log">${log.map((e) => `<li><span>${esc(short(e.d))}</span><span>${esc(label[e.t] || e.t)}${e.fed ? " and fed" : ""}${e.cues?.length ? ` · ${esc(e.cues.join(", "))}` : ""}${e.note ? ` · ${esc(e.note)}` : ""}</span></li>`).join("")}</ul></div>` : `<p class="lede" style="margin-top:6px">Nothing logged yet.</p>`}</details>
     <div class="actions"><button class="btn wide" data-act="edit-plant" data-id="${p.id}">Edit details</button><button class="btn wide" data-act="gift" data-id="${p.id}">Gifted it</button><button class="btn danger" data-act="del-plant" data-id="${p.id}">Delete plant</button></div>
     ${((k) => k === "alocasia" || artFor(...plantKind(p)) ? `<p class="lede" style="font-size:12px;color:var(--faint);text-align:center">${k === "alocasia" ? ARROW_CREDIT : ART_CREDIT}</p>` : "")(plantKind(p)[0])}`;
 }
+// open a plant that was just added, as soon as the database hands it back
+function openSoon(id) { if (getPlant(id)) { S.sheetPlant = id; openSheet(plantSheet(getPlant(id))); } else { S.openNext = id; closeSheet(); } }
 function refreshPlantSheet() {
   if ($("#sheet").hidden || !S.sheetPlant) return;
   const p = getPlant(S.sheetPlant);
@@ -926,6 +1026,8 @@ function plantForm(p) {
     <div class="field"><label for="pf-last">Last watered</label><input type="date" id="pf-last" name="lastWatered" value="${esc(p.lastWatered || "")}"></div></div>
     <div class="row2"><div class="field"><label for="pf-acq">Got it</label><input type="text" id="pf-acq" name="acquired" value="${esc(p.acquired)}" placeholder="2025-03"></div>
     <div class="field"><label for="pf-src">From</label><input type="text" id="pf-src" name="source" value="${esc(p.source)}" placeholder="Cutting from a friend"></div></div>
+    <div class="field"><label for="pf-parent">Came from</label><select id="pf-parent" name="parentId">${opt("", p.parentId, "Not one of my plants")}${allPlants().filter((q) => q.id !== p.id).sort((a, b) => nm(a).localeCompare(nm(b))).map((q) => opt(q.id, p.parentId, nm(q) + (q.name && q.common ? ` (${q.common})` : ""))).join("")}</select><small>Links it to its mother plant in the Family tree.</small></div>
+    <input type="hidden" name="fromProp" value="${esc(p.fromProp || "")}">
     <div class="field"><label for="pf-notes">Notes</label><textarea id="pf-notes" name="notes" placeholder="Leans left, thrips in August">${esc(p.notes)}</textarea></div>
     <details><summary class="muted" style="cursor:pointer;font-weight:700">Care facts (Claude usually fills these)</summary><fieldset style="margin-top:10px"><legend>Care</legend>
       <div class="row2"><div class="field"><label for="pf-light">Light</label><input type="text" id="pf-light" name="c.light" value="${esc(c.light)}" placeholder="Bright indirect"></div>
@@ -954,7 +1056,7 @@ async function savePlant(form) {
       if (f === "cues") care.cues = val ? val.split("\n").map((s) => s.trim()).filter(Boolean) : [];
       else if (f === "toxic") { if (val === "1") care.toxic = typeof old?.care?.toxic === "string" ? old.care.toxic : true; else if (val === "0") care.toxic = false; else delete care.toxic; }
       else care[f] = val;
-    } else if (k !== "newRoom") rec[k] = val;
+    } else if (k !== "newRoom" && k !== "fromProp") rec[k] = val;
   }
   if (!rec.name && !rec.species) { toast("Give it a nickname or a species."); return; }
   rec.waterEvery = Math.max(1, Math.min(60, parseInt(rec.waterEvery, 10) || 7));
@@ -966,10 +1068,16 @@ async function savePlant(form) {
     let ref; const ok = await write(async () => { ref = await S.db.collection("rooms").add({ name: nm }); });
     if (!ok) return; rec.roomId = ref.id;
   }
+  const fromProp = String(fd.get("fromProp") || ""), prop = fromProp ? S.props.find((x) => x.id === fromProp) : null;
+  if (!rec.parentId) rec.parentId = null;
+  if (!old && prop) rec.origin = { t: prop.method === "division" ? "division" : prop.method === "leaf cutting" ? "leaf cutting" : prop.method === "air layer" ? "air layer" : "cutting", d: prop.taken || today() };
+  if (!old && rec.parentId && !rec.origin) rec.origin = { t: "", d: today() };
   if (old && old.roomId !== rec.roomId && old.roomId) rec.log = withLog(old, { t: "move", note: "to " + (S.rooms.find((r) => r.id === rec.roomId)?.name || "new room") });
+  let ref;
   const ok = id ? await write(() => plantRef(id).update(rec), "Saved")
-               : await write(() => S.db.collection("plants").add({ ...rec, created: today(), log: [] }), `Added ${rec.name || rec.species}`);
-  if (ok) { if (id) { S.sheetPlant = id; refreshPlantSheet(); } else closeSheet(); }
+               : await write(async () => { ref = await S.db.collection("plants").add({ ...rec, created: today(), log: [] }); }, `Added ${rec.name || rec.common || rec.species}`);
+  if (ok && !id && prop) await write(() => S.db.collection("props").doc(prop.id).update({ status: "potted", statusSince: today(), plantId: ref?.id || "" }));
+  if (ok) { if (id) { S.sheetPlant = id; refreshPlantSheet(); } else if (ref?.id && (prop || rec.parentId)) openSoon(ref.id); else closeSheet(); }
 }
 
 function roomForm(r) {
@@ -1008,6 +1116,7 @@ function propForm(x) {
     <div class="field"><label for="xf-notes">Notes</label><input type="text" id="xf-notes" name="notes" value="${esc(x.notes)}" placeholder="Roots showing"></div>
     <div class="actions"><button class="btn primary" type="submit">${x.id ? "Save" : "Log cutting"}</button><button class="btn" type="button" data-act="close">Cancel</button>
     ${x.id ? `<button class="btn danger" type="button" data-act="del-prop" data-id="${x.id}">Delete</button>` : ""}</div>
+    ${x.id && !x.plantId ? `<button class="btn plain" type="button" data-act="prop-to-plant" data-id="${x.id}">Potted it up? Add it as a plant</button>` : ""}
   </form>`;
 }
 async function saveProp(form) {
@@ -1020,7 +1129,8 @@ async function saveProp(form) {
   if (old && old.status !== rec.status) rec.statusSince = today();
   const ok = id ? await write(() => S.db.collection("props").doc(id).update(rec), "Saved")
                : await write(() => S.db.collection("props").add({ ...rec, statusSince: today() }), "Cutting logged");
-  if (ok) closeSheet();
+  if (ok && !id && getPlant(rec.parentId)) { S.sheetPlant = rec.parentId; openSheet(plantSheet(getPlant(rec.parentId))); }
+  else if (ok) closeSheet();
 }
 
 /* ---------- actions ---------- */
@@ -1137,6 +1247,17 @@ document.addEventListener("click", async (ev) => {
       if (await write(() => S.db.collection("rooms").doc(id).delete(), "Room deleted")) closeSheet(); return;
     }
     case "new-prop": return openSheet(propForm());
+    case "new-cutting": if (p) { S.sheetPlant = null; openSheet(propForm({ parentId: p.id, species: p.species || "", status: "rooting", taken: today(), qty: 1, method: "water", spot: p.spot || "" })); } return;
+    case "divide": if (p) { S.sheetPlant = null; openSheet(divideForm(p)); } return;
+    case "df-flag": { const on = t.getAttribute("aria-pressed") !== "true"; t.setAttribute("aria-pressed", on); t.form.elements[t.dataset.k].value = on ? "1" : ""; return; }
+    case "prop-to-plant": {
+      const x = S.props.find((y) => y.id === id); if (!x) return;
+      const m = getPlant(x.parentId) || {};
+      S.sheetPlant = null;
+      openSheet(plantForm({ species: x.species || m.species || "", common: m.common || "", care: m.care || {}, roomId: m.roomId || "", catReach: m.catReach || "", soil: m.soil || "",
+        spot: x.spot || "", waterEvery: m.waterEvery || 7, lastWatered: today(), acquired: x.taken || "", source: m.id ? `Cutting from ${nm(m)}` : "Cutting", parentId: x.parentId || "", fromProp: x.id }));
+      wireRoomSelect(); return;
+    }
     case "edit-prop": return openSheet(propForm(S.props.find((x) => x.id === id)));
     case "del-prop": {
       t.dataset.orig = "Delete";
@@ -1164,6 +1285,7 @@ document.addEventListener("submit", async (ev) => {
     if (f.id === "plantForm") await savePlant(f);
     else if (f.id === "roomForm") await saveRoom(f);
     else if (f.id === "propForm") await saveProp(f);
+    else if (f.id === "divideForm") await saveDivide(f);
     else if (f.id === "giftForm") {
       const p = getPlant(f.dataset.id), fd = new FormData(f), to = String(fd.get("to") || "").trim(), date = String(fd.get("date") || "") || today(), note = String(fd.get("note") || "").trim();
       if (!p || !to) return;

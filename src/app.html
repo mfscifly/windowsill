@@ -673,7 +673,8 @@ function fresh(p) { return !!p.lastWatered && !p.health && daysBetween(p.lastWat
 function todayRow(p, d, mode) {
   const items = mode === "now" ? d.now : d.soon;
   const water = items.find((x) => x.k === "water"), feed = items.find((x) => x.k === "feed"), insp = items.find((x) => x.k === "inspect");
-  const bits = [esc(roomOf(p)?.name || p.spot || "No room yet")];
+  const who = [kindName(p), roomOf(p)?.name || p.spot || "No room yet"].filter(Boolean).map(esc).join(" · ");
+  const bits = [];
   let late = false;
   if (water) {
     const n = daysBetween(today(), water.due);
@@ -687,7 +688,7 @@ function todayRow(p, d, mode) {
   if (water && mode === "now") btn = `<button class="act${late ? " late" : ""}" data-act="water-ask" data-id="${p.id}" aria-label="Water ${esc(nm(p))}">${IC.drop}</button>`;
   else if (mode === "now") btn = `<button class="act" data-act="open-plant" data-id="${p.id}" aria-label="Pest check ${esc(nm(p))}">${IC.search}</button>`;
   else btn = IC.chev;
-  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}${catTag(p)}</span><span class="sub multi">${bits.join(" · ")}</span></span></button>${btn}</div>`;
+  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}${catTag(p)}</span><span class="sub">${who}</span>${bits.length ? `<span class="sub multi">${bits.join(" · ")}</span>` : ""}</span></button>${btn}</div>`;
 }
 
 function renderPlantsShell(v) {
@@ -738,11 +739,46 @@ function mark(p) {
 }
 function plantRow(p) {
   const w = waterDue(p), late = w < today(), mm = mismatch(p);
-  const sub = p.health ? `<span class="late-t">needs a look</span>` : mm ? `<span class="late-t">${esc(mm)}</span>` : esc(p.name ? p.common || p.spot || "" : p.spot || "");
-  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}${catTag(p)}</span>${sub ? `<span class="sub">${sub}</span>` : ""}</span></button><span class="trail${late ? " late" : ""}">${esc(dueShort(w))}</span>${IC.chev}</div>`;
+  const who = [kindName(p), p.spot || ""].filter(Boolean).map(esc).join(" · ");
+  const flag = p.health ? `<span class="sub"><span class="late-t">needs a look</span></span>` : mm ? `<span class="sub"><span class="late-t">${esc(mm)}</span></span>` : "";
+  const sub = who;
+  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}${catTag(p)}</span>${sub ? `<span class="sub">${sub}</span>` : ""}${flag}</span></button><span class="trail${late ? " late" : ""}">${esc(dueShort(w))}</span>${IC.chev}</div>`;
+}
+// Environment: this plant's own setup (pot, light it actually gets), as opposed to care facts about the kind of plant.
+const POT_TYPES = ["terracotta", "glazed ceramic", "plastic", "nursery pot", "self-watering", "glass", "hanging basket", "cachepot (pot inside a pot)", "other"];
+const LIGHT_SRC = { window: "Window", grow: "Grow light", both: "Window + grow light", none: "No window or light" };
+const EXPOSURE_IN = ["direct", "bright indirect", "medium", "low"];
+const EXPOSURE_OUT = { "full sun": "direct", "partial shade": "bright indirect", "shade": "medium" };
+const envOf = (p) => p.env || {};
+function lightGets(p) {
+  const e = envOf(p);
+  if (e.exposure) return EXPOSURE_OUT[e.exposure] || e.exposure;
+  return roomOf(p)?.light || "";
+}
+function envLight(p) {
+  const e = envOf(p), out = [];
+  if (e.exposure) out.push(cap(e.exposure) + (e.source && e.source !== "none" ? " from " + (e.source === "both" ? "a window + grow light" : e.source === "grow" ? "a grow light" : "a window") : ""));
+  else if (e.source) out.push(LIGHT_SRC[e.source]);
+  if (e.sunHours) out.push(`about ${e.sunHours} h of light a day`);
+  if (e.growHours) out.push(`grow light ${e.growHours} h a day`);
+  return out.join(" · ");
+}
+function envPot(p) {
+  const e = envOf(p);
+  if (!e.potSize && !e.potType && e.drainage == null) return p.pot || "";
+  return [e.potSize, e.potType].filter(Boolean).join(" ") + (e.drainage === "yes" ? ", drainage holes" : e.drainage === "no" ? ", no drainage holes" : "");
+}
+const gotIt = (s) => /^\d{4}-\d{2}(-\d{2})?$/.test(s || "") ? parse(s.length === 7 ? s + "-01" : s).toLocaleDateString(undefined, s.length === 7 ? { month: "short", year: "numeric" } : { month: "short", day: "numeric", year: "numeric" }) : s;
+const kindName = (p) => p.name ? (p.common || String(p.species || "").replace(/\s*\([^)]*\)?/g, "").replace(/\s*'[^']*'/g, "").trim()) : "";
+function feedLine(p, f) {
+  if (f) return `next ${rel(f)}`;
+  const type = p.care?.feed || "standard";
+  if (type === "none") return "doesn't need feeding";
+  if (p.noFeedUntil && p.noFeedUntil > today()) return `paused until ${short(p.noFeedUntil)}`;
+  return "off season · feeding Mar to Sep";
 }
 function mismatch(p) {
-  const need = GRADES.indexOf(p.care?.lightNeed), have = GRADES.indexOf(roomOf(p)?.light);
+  const need = GRADES.indexOf(p.care?.lightNeed), have = GRADES.indexOf(lightGets(p));
   if (need < 0 || have < 0) return "";
   if (have < need) return "too dark here";
   if (have === 3 && need <= 1) return "too much sun here";
@@ -963,10 +999,12 @@ function plantSheet(p) {
   if (catRisk(p) && p.catReach === "yes") notes.push(`<div class="note">${IC.cat}<span>Cats can reach it. Move it up high.</span></div>`);
   if (mismatch(p)) notes.push(`<div class="note">${IC.alert}<span>This spot looks ${esc(mismatch(p).replace(" here", ""))} for it.</span></div>`);
   const kv = (k, v) => v ? `<div class="kv long"><span>${k}</span><span>${esc(v)}</span></div>` : "";
-  const care = [kv("Light", c.light), kv("Water", c.water), kv("Humidity", c.humidity),
+  const care = [kv("Light it likes", [c.light, c.lightNeed && !String(c.light || "").toLowerCase().includes(c.lightNeed) ? `(${c.lightNeed})` : ""].filter(Boolean).join(" ")), kv("Water", c.water), kv("Humidity", c.humidity),
     kv("Pets", c.toxic ? (typeof c.toxic === "string" ? c.toxic : "Toxic to cats and dogs") : (c.toxic === false ? "Pet-safe" : "")),
-    kv("Rest season", c.dormancy), kv("Feed", FEED[c.feed || "standard"]), kv("Propagate", c.propagate), kv("Pot", p.pot), kv("Soil", p.soil),
-    kv("Got it", [p.acquired, p.source].filter(Boolean).join(" · "))].join("");
+    kv("Rest season", c.dormancy), kv("Feed", FEED[c.feed || "standard"]), kv("Propagate", c.propagate)].join("");
+  const e = envOf(p);
+  const envH = [kv("Where", where(p)), kv("Setting", e.setting ? cap(e.setting) : ""), kv("Light it gets", envLight(p)), kv("Light reading", e.reading),
+    kv("Pot", envPot(p)), kv("Soil", p.soil), kv("Got it", [gotIt(p.acquired), p.source].filter(Boolean).join(" · "))].join("");
   const log = (p.log || []).slice(-15).reverse();
   const label = { water: "Watered", check: "Checked", inspect: "Pest check", issue: "Problem", repot: "Repotted", move: "Moved", note: "Note" };
   return `<div class="p-head"><button class="x" data-act="close" aria-label="Close">${IC.x}</button>${headArt(p)}
@@ -987,13 +1025,14 @@ function plantSheet(p) {
     ${progressSection(p)}
     <section><h3 class="group-h">Schedule</h3><div class="group">
       <div class="kv"><span>Check water</span><span class="stepper"><button class="btn small" data-act="int" data-d="-1" data-id="${p.id}" aria-label="Check more often">−</button><span>every ${p.waterEvery || 7} days</span><button class="btn small" data-act="int" data-d="1" data-id="${p.id}" aria-label="Check less often">+</button></span></div>
-      <div class="kv"><span>Last fed</span><span>${esc(short(p.lastFed))}${d.f ? ` · next ${esc(rel(d.f))}` : ` · resting till spring`}</span></div>
+      <div class="kv"><span>Last fed</span><span>${esc(short(p.lastFed))} · ${esc(feedLine(p, d.f))}</span></div>
       <div class="kv"><span>Pest check</span><span>${esc(rel(d.i))}</span></div>
       ${p.repotted ? `<div class="kv"><span>Repotted</span><span>${esc(short(p.repotted))}</span></div>` : ""}
       <button class="kv" data-act="fed" data-id="${p.id}">Fed today</button>
       <button class="kv" data-act="repot" data-id="${p.id}">Repotted today</button>
     </div></section>
     ${familySection(p)}
+    ${envH ? `<section><h3 class="group-h">Environment</h3><div class="group">${envH}</div></section>` : ""}
     ${care ? `<section><h3 class="group-h">Care</h3><div class="group">${care}</div></section>` : ""}
     ${p.notes ? `<section><h3 class="group-h">Notes</h3><div class="group"><p class="kv" style="white-space:pre-wrap;display:block">${esc(p.notes)}</p></div></section>` : ""}
     <details class="more-d"><summary>History${log.length ? ` · ${log.length}` : ""}</summary>${log.length ? `<div class="group" style="margin-top:8px"><ul class="log">${log.map((e) => `<li><span>${esc(short(e.d))}</span><span>${esc(label[e.t] || e.t)}${e.fed ? " and fed" : ""}${e.cues?.length ? ` · ${esc(e.cues.join(", "))}` : ""}${e.note ? ` · ${esc(e.note)}` : ""}</span></li>`).join("")}</ul></div>` : `<p class="lede" style="margin-top:6px">Nothing logged yet.</p>`}</details>
@@ -1013,7 +1052,7 @@ function refreshPlantSheet() {
 
 const opt = (v, cur, label) => `<option value="${esc(v)}"${String(v) === String(cur ?? "") ? " selected" : ""}>${esc(label ?? v)}</option>`;
 function plantForm(p) {
-  p = p || {}; const c = p.care || {};
+  p = p || {}; const c = p.care || {}, e = p.env || {};
   return sheetTop(p.id ? "Edit plant" : "Add a plant") + `<form class="f" id="plantForm" data-id="${esc(p.id || "")}">
     <div class="row2"><div class="field"><label for="pf-name">Nickname</label><input type="text" id="pf-name" name="name" value="${esc(p.name)}" placeholder="Big Monty"></div>
     <div class="field"><label for="pf-common">Common name</label><input type="text" id="pf-common" name="common" value="${esc(p.common)}" placeholder="Swiss cheese plant"></div></div>
@@ -1022,16 +1061,35 @@ function plantForm(p) {
     <div class="field"><label for="pf-spot">Spot</label><input type="text" id="pf-spot" name="spot" value="${esc(p.spot)}" placeholder="East window sill"></div></div>
     <div class="field"><label for="pf-cat">Can the cats reach it?</label><select id="pf-cat" name="catReach">${opt("", p.catReach, "Not sure")}${opt("yes", p.catReach, "Yes")}${opt("no", p.catReach, "No, it's out of reach")}</select></div>
     <div class="field" id="pf-newroom-wrap" hidden><label for="pf-newroom">New room name</label><input type="text" id="pf-newroom" name="newRoom" placeholder="Bedroom"></div>
-    <div class="row2"><div class="field"><label for="pf-pot">Pot</label><input type="text" id="pf-pot" name="pot" value="${esc(p.pot)}" placeholder="6 in terracotta"></div>
-    <div class="field"><label for="pf-soil">Soil</label><input type="text" id="pf-soil" name="soil" value="${esc(p.soil)}" placeholder="Aroid mix"></div></div>
-    <div class="row2"><div class="field"><label for="pf-every">Check water every</label><input type="number" id="pf-every" name="waterEvery" min="1" max="60" value="${esc(p.waterEvery || 7)}"><small>days</small></div>
-    <div class="field"><label for="pf-last">Last watered</label><input type="date" id="pf-last" name="lastWatered" value="${esc(p.lastWatered || "")}"></div></div>
     <div class="row2"><div class="field"><label for="pf-acq">Got it</label><input type="text" id="pf-acq" name="acquired" value="${esc(p.acquired)}" placeholder="2025-03"></div>
     <div class="field"><label for="pf-src">From</label><input type="text" id="pf-src" name="source" value="${esc(p.source)}" placeholder="Cutting from a friend"></div></div>
     <div class="field"><label for="pf-parent">Came from</label><select id="pf-parent" name="parentId">${opt("", p.parentId, "Not one of my plants")}${allPlants().filter((q) => q.id !== p.id).sort((a, b) => nm(a).localeCompare(nm(b))).map((q) => opt(q.id, p.parentId, nm(q) + (q.name && q.common ? ` (${q.common})` : ""))).join("")}</select><small>Links it to its mother plant in the Family tree.</small></div>
     <input type="hidden" name="fromProp" value="${esc(p.fromProp || "")}">
     <div class="field"><label for="pf-notes">Notes</label><textarea id="pf-notes" name="notes" placeholder="Leans left, thrips in August">${esc(p.notes)}</textarea></div>
-    <details><summary class="muted" style="cursor:pointer;font-weight:700">Care facts</summary><fieldset style="margin-top:10px"><legend>Care</legend>
+    <details><summary class="muted" style="cursor:pointer;font-weight:700">Environment: pot and light</summary><fieldset style="margin-top:10px"><legend>Environment</legend>
+      <div class="row2"><div class="field"><label for="pf-set">Setting</label><select id="pf-set" name="e.setting">${opt("", e.setting, "Not set")}${opt("indoors", e.setting, "Indoors")}${opt("outdoors", e.setting, "Outdoors")}</select></div>
+      <div class="field"><label for="pf-src2">Light source</label><select id="pf-src2" name="e.source">${opt("", e.source, "Not set")}${Object.entries(LIGHT_SRC).map(([k, v]) => opt(k, e.source, v)).join("")}</select></div></div>
+      <div class="field"><label for="pf-exp">Light it gets</label><select id="pf-exp" name="e.exposure">${opt("", e.exposure, "Same as the room")}<optgroup label="Indoors">${EXPOSURE_IN.map((g) => opt(g, e.exposure, cap(g))).join("")}</optgroup><optgroup label="Outdoors">${Object.keys(EXPOSURE_OUT).map((g) => opt(g, e.exposure, cap(g))).join("")}</optgroup></select></div>
+      <div class="row2"><div class="field"><label for="pf-sunh">Hours of light a day</label><input type="number" id="pf-sunh" name="e.sunHours" min="0" max="24" step="0.5" value="${esc(e.sunHours ?? "")}" placeholder="6"></div>
+      <div class="field"><label for="pf-growh">Grow light hours a day</label><input type="number" id="pf-growh" name="e.growHours" min="0" max="24" step="0.5" value="${esc(e.growHours ?? "")}" placeholder="12"></div></div>
+      <div class="field"><label for="pf-read">Light meter reading</label><input type="text" id="pf-read" name="e.reading" value="${esc(e.reading)}" placeholder="250 foot-candles at noon, Nov"></div>
+      <div class="row2"><div class="field"><label for="pf-ptype">Pot type</label><select id="pf-ptype" name="e.potType">${opt("", e.potType, "Not set")}${POT_TYPES.map((t) => opt(t, e.potType, cap(t))).join("")}</select></div>
+      <div class="field"><label for="pf-psize">Pot size</label><input type="text" id="pf-psize" name="e.potSize" value="${esc(e.potSize ?? (e.potType ? "" : p.pot || ""))}" placeholder="6 in"></div></div>
+      <div class="row2"><div class="field"><label for="pf-drain">Drainage holes</label><select id="pf-drain" name="e.drainage">${opt("", e.drainage, "Not sure")}${opt("yes", e.drainage, "Yes")}${opt("no", e.drainage, "No")}</select></div>
+      <div class="field"><label for="pf-soil">Soil</label><input type="text" id="pf-soil" name="soil" value="${esc(p.soil)}" placeholder="Aroid mix"></div></div>
+    </fieldset></details>
+    <details><summary class="muted" style="cursor:pointer;font-weight:700">Schedule: water, feed, pest checks</summary><fieldset style="margin-top:10px"><legend>Schedule</legend>
+  <div class="row2"><div class="field"><label for="pf-every">Check water every</label><input type="number" id="pf-every" name="waterEvery" min="1" max="60" value="${esc(p.waterEvery || 7)}"><small>days</small></div>
+      <div class="field"><label for="pf-last">Last watered</label><input type="date" id="pf-last" name="lastWatered" value="${esc(p.lastWatered || "")}"></div></div>
+      <div class="row2"><div class="field"><label for="pf-fedlast">Last fed</label><input type="date" id="pf-fedlast" name="lastFed" value="${esc(p.lastFed || "")}"></div>
+      <div class="field"><label for="pf-fedevery">Feed every</label><input type="number" id="pf-fedevery" name="feedEvery" min="1" max="365" value="${esc(p.feedEvery || "")}" placeholder="${FEED_DAYS[c.feed || "standard"] || ""}"><small>days</small></div></div>
+      <div class="row2"><div class="field"><label for="pf-season">Feed when</label><select id="pf-season" name="feedYearRound">${opt("", p.feedYearRound ? "1" : "", "Spring and summer")}${opt("1", p.feedYearRound ? "1" : "", "All year")}</select></div>
+      <div class="field"><label for="pf-nofeed">Pause feeding until</label><input type="date" id="pf-nofeed" name="noFeedUntil" value="${esc(p.noFeedUntil || "")}"></div></div>
+      <div class="row2"><div class="field"><label for="pf-insp">Pest check every</label><input type="number" id="pf-insp" name="inspectEvery" min="1" max="365" value="${esc(p.inspectEvery || "")}" placeholder="30"><small>days</small></div>
+      <div class="field"><label for="pf-insplast">Last pest check</label><input type="date" id="pf-insplast" name="lastInspected" value="${esc(p.lastInspected || "")}"></div></div>
+      <div class="field"><label for="pf-repot">Last repotted</label><input type="date" id="pf-repot" name="repotted" value="${esc(p.repotted || "")}"></div>
+    </fieldset></details>
+    <details><summary class="muted" style="cursor:pointer;font-weight:700">Care: what this kind of plant likes</summary><fieldset style="margin-top:10px"><legend>Care</legend>
       <div class="row2"><div class="field"><label for="pf-light">Light</label><input type="text" id="pf-light" name="c.light" value="${esc(c.light)}" placeholder="Bright indirect"></div>
       <div class="field"><label for="pf-lneed">Light grade it needs</label><select id="pf-lneed" name="c.lightNeed">${opt("", c.lightNeed, "Not set")}${GRADES.map((g) => opt(g, c.lightNeed)).join("")}</select></div></div>
       <div class="field"><label for="pf-water">Watering style</label><input type="text" id="pf-water" name="c.water" value="${esc(c.water)}" placeholder="Let the top half dry out"></div>
@@ -1049,7 +1107,7 @@ function plantForm(p) {
 }
 async function savePlant(form) {
   const fd = new FormData(form), id = form.dataset.id, old = id ? getPlant(id) : null;
-  const care = { ...(old?.care || {}) };
+  const care = { ...(old?.care || {}) }, env = { ...(old?.env || {}) };
   const rec = {};
   for (const [k, v] of fd.entries()) {
     const val = String(v).trim();
@@ -1058,12 +1116,20 @@ async function savePlant(form) {
       if (f === "cues") care.cues = val ? val.split("\n").map((s) => s.trim()).filter(Boolean) : [];
       else if (f === "toxic") { if (val === "1") care.toxic = typeof old?.care?.toxic === "string" ? old.care.toxic : true; else if (val === "0") care.toxic = false; else delete care.toxic; }
       else care[f] = val;
+    } else if (k.startsWith("e.")) {
+      const f = k.slice(2);
+      if (f === "sunHours" || f === "growHours") { if (val === "") delete env[f]; else env[f] = Math.max(0, Math.min(24, parseFloat(val) || 0)); }
+      else if (val === "") delete env[f]; else env[f] = val;
     } else if (k !== "newRoom" && k !== "fromProp") rec[k] = val;
   }
   if (!rec.name && !rec.species) { toast("Give it a nickname or a species."); return; }
   rec.waterEvery = Math.max(1, Math.min(60, parseInt(rec.waterEvery, 10) || 7));
   rec.lastWatered = rec.lastWatered || null;
-  rec.care = care;
+  for (const k of ["lastFed", "noFeedUntil", "lastInspected", "repotted"]) rec[k] = rec[k] || null;
+  for (const k of ["feedEvery", "inspectEvery"]) rec[k] = rec[k] ? Math.max(1, Math.min(365, parseInt(rec[k], 10) || 0)) || null : null;
+  rec.feedYearRound = rec.feedYearRound === "1";
+  rec.care = care; rec.env = env;
+  if (env.potSize || env.potType || env.drainage) rec.pot = envPot({ env });
   if (rec.roomId === "__new") {
     const nm = String(fd.get("newRoom") || "").trim();
     if (!nm) { toast("Name the new room, or pick one from the list."); return; }

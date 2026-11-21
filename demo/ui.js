@@ -18,7 +18,8 @@
     .demo-sheet li { display:flex; gap:12px; align-items:flex-start; background: var(--surface); border-radius: 14px; padding: 12px 14px; }
     .demo-sheet li b { display:block; font-weight:600; }
     .demo-sheet li span { color: var(--muted); font-size: 15px; }
-    .demo-sheet .ic { flex: 0 0 28px; height: 28px; border-radius: 8px; display:grid; place-items:center; background: var(--water-soft); color: var(--water-deep); font-size: 15px; }
+    .demo-sheet .ic { flex: 0 0 28px; height: 28px; border-radius: 8px; display:grid; place-items:center; background: var(--water-soft); color: var(--water-deep); }
+    .demo-sheet .ic svg { width: 18px; height: 18px; display: block; }
     .demo-notify { display:grid; gap:8px; background: var(--surface); border-radius: 14px; padding: 14px; }
     .demo-notify h3 { font-size: 17px; }
     .demo-notify p { color: var(--muted); font-size: 15px; }
@@ -43,14 +44,18 @@
         <button class="btn primary" type="submit">Notify me</button></form>
       <p class="err" role="alert" style="color:var(--late)"></p></div>` : "";
 
+  // Same line icons as the app: its drop, the Plants and Props tab icons, and a camera drawn to match.
+  const tabIcon = (t) => document.querySelector(`[data-tab="${t}"] svg`)?.outerHTML || "";
+  const camera = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>`;
+
   function openWelcome(first) {
     openSheet(sheetTop(first ? "Welcome to Windowsill" : "This is a demo", "A calm plant care tracker") + `<div class="demo-sheet">
       <p class="lede">These ${S.plants.length || 16} plants are made up. Water them, move them, add your own. Everything stays in this browser.</p>
       <ul>
-        <li><span class="ic">💧</span><div><b>Tap a drop to water</b><span>Today shows what's thirsty. Late ones stay until they're done.</span></div></li>
-        <li><span class="ic">🌱</span><div><b>Open Mother Snake</b><span>Scroll to Family to see the plants she was divided into.</span></div></li>
-        <li><span class="ic">🫙</span><div><b>Check Props</b><span>Cuttings rooting in jars, and a few for sale.</span></div></li>
-        <li><span class="ic">📷</span><div><b>Add a check-in</b><span>Snap a photo on any plant to track how it grows.</span></div></li>
+        <li><span class="ic">${IC.drop}</span><div><b>Tap a drop to water</b><span>Today shows what's thirsty. Late ones stay until they're done.</span></div></li>
+        <li><span class="ic">${tabIcon("plants")}</span><div><b>Open Mother Snake</b><span>Scroll to Family to see the plants she was divided into.</span></div></li>
+        <li><span class="ic">${tabIcon("props")}</span><div><b>Check Props</b><span>Cuttings rooting in jars, and a few for sale.</span></div></li>
+        <li><span class="ic">${camera}</span><div><b>Add a check-in</b><span>Snap a photo on any plant to track how it grows.</span></div></li>
       </ul>
       ${notifyHtml()}
       <div class="actions"><button class="btn primary wide" type="button" data-act="close">Start exploring</button>

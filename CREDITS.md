@@ -22,3 +22,7 @@ The pot shapes and all code are original to this project.
 The "toxic to cats" icon is the `cat` icon from [Lucide](https://lucide.dev) (ISC License).
 Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
+
+## Demo photos
+
+The growth photos in `demo/photos/` are the maintainer's own plant photos, shared for the demo (metadata removed). They are not covered by the MIT licence; please don't reuse them.

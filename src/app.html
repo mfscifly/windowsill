@@ -185,6 +185,8 @@ legend { display: none; }
 .cat { display: inline-flex; vertical-align: -2px; margin-left: 6px; color: var(--late); }
 .cat.maybe { color: var(--muted); }
 h2 .cat svg { width: 20px; height: 20px; }
+.tip { position: fixed; z-index: 100; pointer-events: none; background: var(--ink); color: #fff; font-size: 13px; font-weight: 600; line-height: 1.2; padding: 6px 9px; border-radius: 8px; white-space: nowrap; opacity: 0; transform: translateY(2px); transition: opacity .08s, transform .08s; }
+.tip.on { opacity: 1; transform: none; }
 .sheet { bottom: auto; top: var(--vv-top, 0px); height: var(--vv-h, 100%); }
 .sheet form.f > .actions { position: sticky; bottom: calc(-28px - env(safe-area-inset-bottom, 0px)); background: var(--bg); padding: 10px 0 calc(28px + env(safe-area-inset-bottom, 0px)); margin-bottom: calc(-28px - env(safe-area-inset-bottom, 0px)); z-index: 2; }
 .p-photo { width: 132px; height: 132px; border-radius: 50%; object-fit: cover; background: var(--fill); display: block; box-shadow: 0 6px 18px var(--sill-shadow); }
@@ -719,7 +721,7 @@ function renderPlantList() {
     : `<p class="lede">No plants match "${esc(S.q)}".</p>`;
 }
 // toxic-to-cats as a small cat icon after the name: orange when cats can reach it, grey when not known
-const catTag = (p) => catRisk(p) ? `<span class="cat${p.catReach === "yes" ? "" : " maybe"}" title="Toxic to cats" aria-label="Toxic to cats${p.catReach === "yes" ? ", cats can reach it" : ""}">${IC.cat}</span>` : "";
+const catTag = (p) => catRisk(p) ? `<span class="cat${p.catReach === "yes" ? "" : " maybe"}" data-tip="Toxic to cats${p.catReach === "yes" ? " · they can reach it" : ""}" aria-label="Toxic to cats${p.catReach === "yes" ? ", cats can reach it" : ""}">${IC.cat}</span>` : "";
 // crop a drawing's viewBox to what is actually drawn, so thumbnails have no empty band above the plant
 const TIGHT = new Map();
 function tight(svg) {
@@ -1230,6 +1232,22 @@ function arm(btn, key, label) {
   return false;
 }
 
+// Instant tooltip for the cat icon (the browser's own title tooltip waits about a second).
+const tipEl = document.createElement("div"); tipEl.className = "tip"; tipEl.setAttribute("aria-hidden", "true"); document.body.appendChild(tipEl);
+let tipTimer = 0;
+function showTip(el, ms) {
+  tipEl.textContent = el.dataset.tip; tipEl.classList.add("on");
+  const r = el.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+  const x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)), y = r.top - h - 6 < 8 ? r.bottom + 6 : r.top - h - 6;
+  tipEl.style.left = x + "px"; tipEl.style.top = y + "px";
+  clearTimeout(tipTimer); if (ms) tipTimer = setTimeout(hideTip, ms);
+}
+function hideTip() { clearTimeout(tipTimer); tipEl.classList.remove("on"); }
+document.addEventListener("pointerover", (ev) => { const t = ev.target.closest?.("[data-tip]"); if (t) showTip(t, ev.pointerType === "mouse" ? 0 : 1800); });
+document.addEventListener("pointerout", (ev) => { if (ev.pointerType === "mouse" && ev.target.closest?.("[data-tip]") && !ev.target.closest("[data-tip]").contains(ev.relatedTarget)) hideTip(); });
+document.addEventListener("scroll", hideTip, true);
+// On a phone, tapping the cat in a plant's header shows the tip for a moment.
+document.addEventListener("click", (ev) => { const t = ev.target.closest?.("h2 [data-tip]"); if (t) showTip(t, 1800); });
 document.addEventListener("click", async (ev) => {
   const t = ev.target.closest("[data-act], [data-tab]"); if (!t) return;
   if (t.dataset.tab) { S.tab = t.dataset.tab; $("#view").innerHTML = ""; render(); window.scrollTo(0, 0); return; }

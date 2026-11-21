@@ -187,14 +187,15 @@ h2 .cat svg { width: 20px; height: 20px; }
 .p-photo { width: 132px; height: 132px; border-radius: 50%; object-fit: cover; background: var(--fill); display: block; box-shadow: 0 6px 18px var(--sill-shadow); }
 .strip { display: flex; gap: 10px; overflow-x: auto; padding: 14px; scrollbar-width: none; }
 .strip::-webkit-scrollbar { display: none; }
-.shot { all: unset; flex: none; width: 96px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; }
-.shot img, .shot .ph { width: 96px; height: 120px; border-radius: 12px; object-fit: cover; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--faint); font-size: 13px; }
+.shot { all: unset; flex: none; max-width: 180px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; }
+.shot img { height: 120px; width: auto; min-width: 72px; max-width: 180px; border-radius: 12px; object-fit: cover; background: var(--fill); display: block; }
+.shot .ph { width: 96px; height: 120px; border-radius: 12px; object-fit: cover; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--faint); font-size: 13px; }
 .shot .d { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
 .hd { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--faint); }
 .hd.excellent { background: var(--ok); } .hd.good { background: var(--tint); } .hd.bad { background: var(--late); }
-.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; align-items: start; }
 .compare figure { margin: 0; display: flex; flex-direction: column; gap: 4px; }
-.compare img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 12px; background: var(--fill); display: block; }
+.compare img { width: 100%; height: auto; max-height: 300px; object-fit: contain; border-radius: 12px; background: var(--fill); display: block; }
 .compare figcaption { font-size: 13px; color: var(--muted); }
 .big-photo { width: 100%; max-height: 62vh; object-fit: contain; border-radius: var(--r); background: var(--fill); display: block; }
 .pick { display: flex; align-items: center; justify-content: center; min-height: 150px; border-radius: var(--r); background: var(--surface); color: var(--tint); font-weight: 600; cursor: pointer; overflow: hidden; position: relative; }
@@ -749,7 +750,18 @@ const POT_TYPES = ["terracotta", "glazed ceramic", "plastic", "nursery pot", "se
 const LIGHT_SRC = { window: "Window", grow: "Grow light", both: "Window + grow light", none: "No window or light" };
 const EXPOSURE_IN = ["direct", "bright indirect", "medium", "low"];
 const EXPOSURE_OUT = { "full sun": "direct", "partial shade": "bright indirect", "shade": "medium" };
+const LIGHT_UNITS = { fc: "foot-candles", lux: "lux", ppfd: "PPFD (µmol/m²/s)" };
+const SOILS = ["potting mix", "aroid mix (chunky)", "cactus & succulent mix", "orchid bark", "peat-free mix", "coco coir", "sphagnum moss", "LECA / semi-hydro", "pon / mineral mix", "water"];
 const envOf = (p) => p.env || {};
+// Older records kept the reading as a sentence ("300 foot-candles at noon"); pull the number and unit out of it.
+function lightReading(e) {
+  if (e.lightValue != null && e.lightValue !== "") return { v: e.lightValue, u: e.lightUnit || "fc" };
+  const m = String(e.reading || "").match(/([\d.,]+)\s*(fc|foot[- ]?candles?|lux|lx|ppfd)?/i);
+  if (!m) return { v: "", u: "fc" };
+  const u = /lux|lx/i.test(m[2] || "") ? "lux" : /ppfd/i.test(m[2] || "") ? "ppfd" : "fc";
+  return { v: parseFloat(m[1].replace(/,/g, "")) || "", u };
+}
+const readingText = (e) => { const r = lightReading(e); return r.v === "" ? (e.reading || "") : `${r.v.toLocaleString()} ${r.u === "fc" ? "fc" : r.u === "lux" ? "lux" : "PPFD"}`; };
 function lightGets(p) {
   const e = envOf(p);
   if (e.exposure) return EXPOSURE_OUT[e.exposure] || e.exposure;
@@ -1003,8 +1015,8 @@ function plantSheet(p) {
     kv("Pets", c.toxic ? (typeof c.toxic === "string" ? c.toxic : "Toxic to cats and dogs") : (c.toxic === false ? "Pet-safe" : "")),
     kv("Rest season", c.dormancy), kv("Feed", FEED[c.feed || "standard"]), kv("Propagate", c.propagate)].join("");
   const e = envOf(p);
-  const envH = [kv("Where", where(p)), kv("Setting", e.setting ? cap(e.setting) : ""), kv("Light it gets", envLight(p)), kv("Light reading", e.reading),
-    kv("Pot", envPot(p)), kv("Soil", p.soil), kv("Got it", [gotIt(p.acquired), p.source].filter(Boolean).join(" · "))].join("");
+  const envH = [kv("Where", where(p)), kv("Setting", e.setting ? cap(e.setting) : ""), kv("Light it gets", envLight(p)), kv("Light reading", readingText(e)),
+    kv("Pot", envPot(p)), kv("Growing medium", p.soil ? cap(p.soil) : ""), kv("Got it", [gotIt(p.acquired), p.source].filter(Boolean).join(" · "))].join("");
   const log = (p.log || []).slice(-15).reverse();
   const label = { water: "Watered", check: "Checked", inspect: "Pest check", issue: "Problem", repot: "Repotted", move: "Moved", note: "Note" };
   return `<div class="p-head"><button class="x" data-act="close" aria-label="Close">${IC.x}</button>${headArt(p)}
@@ -1072,11 +1084,13 @@ function plantForm(p) {
       <div class="field"><label for="pf-exp">Light it gets</label><select id="pf-exp" name="e.exposure">${opt("", e.exposure, "Same as the room")}<optgroup label="Indoors">${EXPOSURE_IN.map((g) => opt(g, e.exposure, cap(g))).join("")}</optgroup><optgroup label="Outdoors">${Object.keys(EXPOSURE_OUT).map((g) => opt(g, e.exposure, cap(g))).join("")}</optgroup></select></div>
       <div class="row2"><div class="field"><label for="pf-sunh">Hours of light a day</label><input type="number" id="pf-sunh" name="e.sunHours" min="0" max="24" step="0.5" value="${esc(e.sunHours ?? "")}" placeholder="6"></div>
       <div class="field"><label for="pf-growh">Grow light hours a day</label><input type="number" id="pf-growh" name="e.growHours" min="0" max="24" step="0.5" value="${esc(e.growHours ?? "")}" placeholder="12"></div></div>
-      <div class="field"><label for="pf-read">Light meter reading</label><input type="text" id="pf-read" name="e.reading" value="${esc(e.reading)}" placeholder="250 foot-candles at noon, Nov"></div>
+      ${(() => { const r = lightReading(e); return `<div class="row2"><div class="field"><label for="pf-read">Light meter reading</label><input type="number" id="pf-read" name="e.lightValue" min="0" step="any" inputmode="decimal" value="${esc(r.v)}" placeholder="300"></div>
+      <div class="field"><label for="pf-unit">Unit</label><select id="pf-unit" name="e.lightUnit">${Object.entries(LIGHT_UNITS).map(([k, v]) => opt(k, r.u, k === "fc" ? "Foot-candles" : k === "lux" ? "Lux" : "PPFD")).join("")}</select></div></div>`; })()}
       <div class="row2"><div class="field"><label for="pf-ptype">Pot type</label><select id="pf-ptype" name="e.potType">${opt("", e.potType, "Not set")}${POT_TYPES.map((t) => opt(t, e.potType, cap(t))).join("")}</select></div>
       <div class="field"><label for="pf-psize">Pot size</label><input type="text" id="pf-psize" name="e.potSize" value="${esc(e.potSize ?? (e.potType ? "" : p.pot || ""))}" placeholder="6 in"></div></div>
       <div class="row2"><div class="field"><label for="pf-drain">Drainage holes</label><select id="pf-drain" name="e.drainage">${opt("", e.drainage, "Not sure")}${opt("yes", e.drainage, "Yes")}${opt("no", e.drainage, "No")}</select></div>
-      <div class="field"><label for="pf-soil">Soil</label><input type="text" id="pf-soil" name="soil" value="${esc(p.soil)}" placeholder="Aroid mix"></div></div>
+      ${(() => { const known = SOILS.find((x) => x.toLowerCase() === String(p.soil || "").toLowerCase()), pick = !p.soil ? "" : known || "__other"; return `<div class="field"><label for="pf-soil">Growing medium</label><select id="pf-soil" name="soilPick">${opt("", pick, "Not set")}${SOILS.map((x) => opt(x, pick, cap(x))).join("")}${opt("__other", pick, "Something else…")}</select></div></div>
+      <div class="field" id="pf-soil-wrap"${pick === "__other" ? "" : " hidden"}><label for="pf-soil2">Describe the mix</label><input type="text" id="pf-soil2" name="soilOther" value="${esc(pick === "__other" ? p.soil : "")}" placeholder="Cactus mix + perlite"></div>`; })()}
     </fieldset></details>
     <details><summary class="muted" style="cursor:pointer;font-weight:700">Schedule: water, feed, pest checks</summary><fieldset style="margin-top:10px"><legend>Schedule</legend>
   <div class="row2"><div class="field"><label for="pf-every">Check water every</label><input type="number" id="pf-every" name="waterEvery" min="1" max="60" value="${esc(p.waterEvery || 7)}"><small>days</small></div>
@@ -1118,9 +1132,12 @@ async function savePlant(form) {
       else care[f] = val;
     } else if (k.startsWith("e.")) {
       const f = k.slice(2);
-      if (f === "sunHours" || f === "growHours") { if (val === "") delete env[f]; else env[f] = Math.max(0, Math.min(24, parseFloat(val) || 0)); }
+      if (f === "lightValue") { if (val === "") { delete env.lightValue; delete env.lightUnit; } else { env.lightValue = Math.max(0, parseFloat(val) || 0); delete env.reading; } }
+      else if (f === "lightUnit") { if (fd.get("e.lightValue")) env.lightUnit = val; }
+      else if (f === "sunHours" || f === "growHours") { if (val === "") delete env[f]; else env[f] = Math.max(0, Math.min(24, parseFloat(val) || 0)); }
       else if (val === "") delete env[f]; else env[f] = val;
-    } else if (k !== "newRoom" && k !== "fromProp") rec[k] = val;
+    } else if (k === "soilPick") rec.soil = val === "__other" ? String(fd.get("soilOther") || "").trim() : val;
+    else if (k !== "newRoom" && k !== "fromProp" && k !== "soilOther") rec[k] = val;
   }
   if (!rec.name && !rec.species) { toast("Give it a nickname or a species."); return; }
   rec.waterEvery = Math.max(1, Math.min(60, parseInt(rec.waterEvery, 10) || 7));
@@ -1345,6 +1362,8 @@ document.addEventListener("change", (ev) => {
 function wireRoomSelect() {
   const sel = $("#pf-room"), wrap = $("#pf-newroom-wrap");
   if (sel) sel.addEventListener("change", () => { wrap.hidden = sel.value !== "__new"; if (!wrap.hidden) $("#pf-newroom").focus(); });
+  const soil = $("#pf-soil"), sw = $("#pf-soil-wrap");
+  if (soil) soil.addEventListener("change", () => { sw.hidden = soil.value !== "__other"; if (!sw.hidden) $("#pf-soil2").focus(); });
 }
 document.addEventListener("submit", async (ev) => {
   ev.preventDefault(); if (!S.db) return;

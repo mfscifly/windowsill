@@ -4,8 +4,8 @@ Three collections. Dates are `YYYY-MM-DD` strings.
 
 ## plants/{id}
 - `name` (nickname), `common`, `species`, `roomId`, `spot`, `catReach`: `yes` | `no` | `""`
-- `pot` (summary text, kept in sync from `env`), `soil`, `acquired`, `source`, `notes`, `health` (flag text or null)
-- `env` (this plant's own setup, editable under Environment): `setting` indoors|outdoors, `source` window|grow|both|none, `exposure` direct|bright indirect|medium|low or full sun|partial shade|shade, `sunHours`, `growHours`, `reading` (light meter text), `potType`, `potSize`, `drainage` yes|no
+- `pot` (summary text, kept in sync from `env`), `soil` (growing medium: a preset like "aroid mix (chunky)" or free text), `acquired`, `source`, `notes`, `health` (flag text or null)
+- `env` (this plant's own setup, editable under Environment): `setting` indoors|outdoors, `source` window|grow|both|none, `exposure` direct|bright indirect|medium|low or full sun|partial shade|shade, `sunHours`, `growHours`, `lightValue` + `lightUnit` fc|lux|ppfd (light meter reading; older records may have a free-text `reading`), `potType`, `potSize`, `drainage` yes|no
 - Schedule fields are all editable in the plant form: `waterEvery`, `lastWatered`, `lastFed`, `feedEvery`, `feedYearRound`, `noFeedUntil`, `inspectEvery`, `lastInspected`, `repotted`
 - `waterEvery` (days), `lastWatered`, `snoozeUntil`
 - `lastFed`, `feedEvery` (days, optional), `noFeedUntil`, `feedYearRound`

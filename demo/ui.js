@@ -4,7 +4,7 @@
   // "Notify me" sign-ups go to a write-only Supabase table (supabase/waitlist.sql).
   // The anon key is public by design; the table's rules let it add rows but never read them.
   // Leave these empty to hide the form.
-  const WAITLIST = { url: "", anonKey: "" };
+  const WAITLIST = { url: "https://ajjhnxworidaebijoqcd.supabase.co", anonKey: "sb_publishable_iLnmuuKLgkK9NYkppRSh1g_HzWqH_0s" };
   const NOTIFY_ENDPOINT = WAITLIST.url && WAITLIST.anonKey ? WAITLIST.url.replace(/\/$/, "") + "/rest/v1/waitlist" : "";
   const SEEN = "windowsill-demo-welcomed";
 
@@ -65,7 +65,7 @@
       btn.disabled = true; err.textContent = "";
       try {
         const r = await fetch(NOTIFY_ENDPOINT, { method: "POST",
-          headers: { "Content-Type": "application/json", apikey: WAITLIST.anonKey, Authorization: "Bearer " + WAITLIST.anonKey, Prefer: "return=minimal" },
+          headers: { "Content-Type": "application/json", apikey: WAITLIST.anonKey, ...(WAITLIST.anonKey.startsWith("sb_") ? {} : { Authorization: "Bearer " + WAITLIST.anonKey }), Prefer: "return=minimal" },
           body: JSON.stringify({ email: f.email.value.trim(), source: "demo" }) });
         if (!r.ok && r.status !== 409) throw new Error(); // 409: already on the list, which is fine
         box.innerHTML = `<p class="done">Thanks! You'll hear when Windowsill is ready.</p>`;

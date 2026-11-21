@@ -73,6 +73,8 @@ main.wrap { position: relative; z-index: 1; padding-top: 18px; padding-bottom: c
 .lines { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .name { font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sub { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sub.multi { white-space: normal; }
+.sub.multi > span { white-space: nowrap; }
 .trail { font-size: 15px; color: var(--muted); white-space: nowrap; flex: none; }
 .trail.late { color: var(--late); font-weight: 600; }
 .chev { color: var(--faint); flex: none; }
@@ -594,7 +596,7 @@ function dueItems(p) {
 
 function emptyPlants() {
   return `<div class="empty"><h3>No plants yet</h3>
-    <p>Send Claude a typed list or a video walking past each plant while you talk about it. Claude adds them here with care facts filled in.</p>
+    <p>Add your first plant. A name, a room and how often you water it is enough to start.</p>
     <div class="actions"><button class="btn primary" data-act="new-plant">Add a plant by hand</button></div></div>`;
 }
 
@@ -685,7 +687,7 @@ function todayRow(p, d, mode) {
   if (water && mode === "now") btn = `<button class="act${late ? " late" : ""}" data-act="water-ask" data-id="${p.id}" aria-label="Water ${esc(nm(p))}">${IC.drop}</button>`;
   else if (mode === "now") btn = `<button class="act" data-act="open-plant" data-id="${p.id}" aria-label="Pest check ${esc(nm(p))}">${IC.search}</button>`;
   else btn = IC.chev;
-  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}${catTag(p)}</span><span class="sub">${bits.join(" · ")}</span></span></button>${btn}</div>`;
+  return `<div class="row"><button class="main" data-act="open-plant" data-id="${p.id}">${mark(p)}<span class="lines"><span class="name">${esc(nm(p))}${catTag(p)}</span><span class="sub multi">${bits.join(" · ")}</span></span></button>${btn}</div>`;
 }
 
 function renderPlantsShell(v) {
@@ -760,12 +762,12 @@ function viewRooms() {
     if (issues) sub.push(`<span class="late-t">${issues} to check</span>`);
     return `<div class="row"><button class="main" data-act="edit-room" data-id="${r.id}"><span class="lines"><span class="name">${esc(r.name)}</span><span class="sub">${sub.join(" · ") || "No window details yet"}</span></span></button><span class="trail">${n} plant${n === 1 ? "" : "s"}</span>${IC.chev}</div>`;
   }).join("");
-  return `<section class="group">${rows}</section><p class="lede">Which way each window faces and how bright it is tell Claude where each plant will be happiest.</p>`;
+  return `<section class="group">${rows}</section><p class="lede">Which way each window faces and how bright it is help match each plant to a spot where it will be happiest.</p>`;
 }
 
 function viewProps() {
   if (!S.loaded.props) return `<p class="muted">Loading props…</p>`;
-  if (!S.props.length) return `<div class="empty"><h3>No cuttings yet</h3><p>Log one here, or just tell Claude "took two pothos cuttings, in water on the kitchen sill".</p><div class="actions"><button class="btn primary" data-act="new-prop">Log a cutting</button></div></div>`;
+  if (!S.props.length) return `<div class="empty"><h3>No cuttings yet</h3><p>Log a cutting here and watch it root.</p><div class="actions"><button class="btn primary" data-act="new-prop">Log a cutting</button></div></div>`;
   let h = "";
   for (const st of STATUSES) {
     const list = S.props.filter((x) => (x.status || "rooting") === st);
@@ -959,7 +961,7 @@ function plantSheet(p) {
   const notes = [];
   if (p.health) notes.push(`<div class="note">${IC.alert}<span>${esc(p.health)}</span><button class="btn small" data-act="clear-health" data-id="${p.id}">Clear</button></div>`);
   if (catRisk(p) && p.catReach === "yes") notes.push(`<div class="note">${IC.cat}<span>Cats can reach it. Move it up high.</span></div>`);
-  if (mismatch(p)) notes.push(`<div class="note">${IC.alert}<span>This spot looks ${esc(mismatch(p).replace(" here", ""))} for it. Ask Claude where it would do better.</span></div>`);
+  if (mismatch(p)) notes.push(`<div class="note">${IC.alert}<span>This spot looks ${esc(mismatch(p).replace(" here", ""))} for it.</span></div>`);
   const kv = (k, v) => v ? `<div class="kv long"><span>${k}</span><span>${esc(v)}</span></div>` : "";
   const care = [kv("Light", c.light), kv("Water", c.water), kv("Humidity", c.humidity),
     kv("Pets", c.toxic ? (typeof c.toxic === "string" ? c.toxic : "Toxic to cats and dogs") : (c.toxic === false ? "Pet-safe" : "")),
@@ -1029,7 +1031,7 @@ function plantForm(p) {
     <div class="field"><label for="pf-parent">Came from</label><select id="pf-parent" name="parentId">${opt("", p.parentId, "Not one of my plants")}${allPlants().filter((q) => q.id !== p.id).sort((a, b) => nm(a).localeCompare(nm(b))).map((q) => opt(q.id, p.parentId, nm(q) + (q.name && q.common ? ` (${q.common})` : ""))).join("")}</select><small>Links it to its mother plant in the Family tree.</small></div>
     <input type="hidden" name="fromProp" value="${esc(p.fromProp || "")}">
     <div class="field"><label for="pf-notes">Notes</label><textarea id="pf-notes" name="notes" placeholder="Leans left, thrips in August">${esc(p.notes)}</textarea></div>
-    <details><summary class="muted" style="cursor:pointer;font-weight:700">Care facts (Claude usually fills these)</summary><fieldset style="margin-top:10px"><legend>Care</legend>
+    <details><summary class="muted" style="cursor:pointer;font-weight:700">Care facts</summary><fieldset style="margin-top:10px"><legend>Care</legend>
       <div class="row2"><div class="field"><label for="pf-light">Light</label><input type="text" id="pf-light" name="c.light" value="${esc(c.light)}" placeholder="Bright indirect"></div>
       <div class="field"><label for="pf-lneed">Light grade it needs</label><select id="pf-lneed" name="c.lightNeed">${opt("", c.lightNeed, "Not set")}${GRADES.map((g) => opt(g, c.lightNeed)).join("")}</select></div></div>
       <div class="field"><label for="pf-water">Watering style</label><input type="text" id="pf-water" name="c.water" value="${esc(c.water)}" placeholder="Let the top half dry out"></div>
@@ -1087,7 +1089,7 @@ function roomForm(r) {
   return sheetTop(r.id ? r.name : "Add a room or spot") + issues.map((x) => `<div class="note">${IC.alert}<span>${esc(x)}</span></div>`).join("") + `<form class="f" id="roomForm" data-id="${esc(r.id || "")}">
     <div class="field"><label for="rf-name">Name</label><input type="text" id="rf-name" name="name" value="${esc(r.name)}" placeholder="Living room"></div>
     <div class="row2"><div class="field"><label for="rf-face">Window faces</label><select id="rf-face" name="facing">${opt("", r.facing, "No window / not sure")}${["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"].map((d) => opt(d, r.facing)).join("")}</select></div>
-    <div class="field"><label for="rf-light">Light grade</label><select id="rf-light" name="light">${opt("", r.light, "Let Claude grade it")}${GRADES.map((g) => opt(g, r.light)).join("")}</select></div></div>
+    <div class="field"><label for="rf-light">Light grade</label><select id="rf-light" name="light">${opt("", r.light, "Not sure")}${GRADES.map((g) => opt(g, r.light)).join("")}</select></div></div>
     <div class="field"><label for="rf-cats">Cats</label><select id="rf-cats" name="cats">${opt("", r.cats, "Not set")}${opt("everywhere", r.cats, "Cats can reach every spot")}${opt("some", r.cats, "Some spots are out of reach")}${opt("closed", r.cats, "Cats aren't allowed in")}</select></div>
     <div class="field"><label for="rf-notes">Details</label><textarea id="rf-notes" name="notes" placeholder="Sheer curtain, tree outside, plants sit about 3 ft from the glass">${esc(r.notes)}</textarea></div>
     <div class="actions"><button class="btn primary" type="submit">${r.id ? "Save" : "Add room"}</button><button class="btn" type="button" data-act="close">Cancel</button>
@@ -1207,7 +1209,7 @@ document.addEventListener("click", async (ev) => {
     case "inspect-issue": {
       if (!p) return;
       S.sheetPlant = null;
-      return openSheet(sheetTop("What did you find?", nm(p)) + `<form class="f" id="issueForm" data-id="${p.id}"><div class="field"><label for="if-note">Describe it</label><textarea id="if-note" name="note" placeholder="Tiny webs under the leaves, a few yellow spots" required></textarea><small>Send Claude a photo in the project chat too. It diagnoses from this plant's history.</small></div><div class="actions"><button class="btn primary" type="submit">Save and flag plant</button><button class="btn" type="button" data-act="close">Cancel</button></div></form>`);
+      return openSheet(sheetTop("What did you find?", nm(p)) + `<form class="f" id="issueForm" data-id="${p.id}"><div class="field"><label for="if-note">Describe it</label><textarea id="if-note" name="note" placeholder="Tiny webs under the leaves, a few yellow spots" required></textarea></div><div class="actions"><button class="btn primary" type="submit">Save and flag plant</button><button class="btn" type="button" data-act="close">Cancel</button></div></form>`);
     }
     case "clear-health": return p && logAct(p, { t: "note", note: "cleared: " + p.health }, { health: null }, "Flag cleared");
     case "int": {

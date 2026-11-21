@@ -13,6 +13,15 @@
     .demo-pill { display:inline-flex; align-items:center; gap:6px; margin-top:6px; border:0; border-radius:999px; padding:4px 10px;
       background: var(--tint-soft); color: var(--tint); font-size:13px; font-weight:600; }
     .demo-pill i { width:7px; height:7px; border-radius:50%; background: var(--shine); }
+    .demo-bar { position: relative; z-index: 2; display: flex; align-items: center; gap: 8px; padding: max(10px, env(safe-area-inset-top, 0px)) 16px 10px;
+      background: var(--tint-soft); color: var(--tint); font-size: 14px; }
+    .demo-bar .what { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; font-weight: 600; margin-right: auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .demo-bar .what i { width: 7px; height: 7px; border-radius: 50%; background: var(--shine); flex: none; }
+    .demo-bar button.b { border: 0; border-radius: 999px; padding: 7px 12px; min-height: 34px; font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; background: var(--surface); color: var(--tint); }
+    .demo-bar button.b.go { background: var(--tint); color: #fff; }
+    .demo-bar button.b.warn { background: var(--late); color: #fff; }
+    .top { padding-top: 18px !important; }
+    @media (max-width: 480px) { .demo-bar .long { display: none; } }
     .demo-sheet { padding: 4px 4px 8px; display:grid; gap:14px; }
     .demo-sheet ul { margin:0; padding:0; list-style:none; display:grid; gap:10px; }
     .demo-sheet li { display:flex; gap:12px; align-items:flex-start; background: var(--surface); border-radius: 14px; padding: 12px 14px; }
@@ -31,11 +40,25 @@
   `;
   document.head.appendChild(css);
 
-  const pill = document.createElement("button");
-  pill.type = "button"; pill.className = "demo-pill"; pill.innerHTML = "<i></i>Demo · made-up plants";
-  pill.addEventListener("click", () => openWelcome(false));
-  const h1 = document.querySelector(".top h1");
-  if (h1) h1.insertAdjacentElement("afterend", pill);
+  // A bar across the top: what this is, start over, and sign up.
+  const bar = document.createElement("div");
+  bar.className = "demo-bar";
+  bar.innerHTML = `<button type="button" class="what" id="demoWhat"><i></i><span>Demo<span class="long"> · made-up plants</span></span></button>
+    <button type="button" class="b" id="demoStart">Start over</button>${NOTIFY_ENDPOINT ? `<button type="button" class="b go" id="demoSign">Get notified</button>` : ""}`;
+  document.querySelector(".top")?.insertAdjacentElement("beforebegin", bar);
+  bar.querySelector("#demoWhat").addEventListener("click", () => openWelcome(false));
+  const start = bar.querySelector("#demoStart"); let armed = 0;
+  start.addEventListener("click", () => {
+    if (armed) return window.windowsillDemo.reset();
+    start.textContent = "Tap to reset"; start.classList.add("warn");
+    armed = setTimeout(() => { armed = 0; start.textContent = "Start over"; start.classList.remove("warn"); }, 3000);
+  });
+  bar.querySelector("#demoSign")?.addEventListener("click", () => {
+    openSheet(sheetTop("Get Windowsill", "For your own plants") + `<div class="demo-sheet">${notified() ? `<div class="demo-notify"><p class="done">You're on the list. You'll hear when Windowsill is ready.</p></div>` : notifyHtml()}
+      <p class="demo-foot">Free and open source · <a href="https://github.com/mfscifly/windowsill" target="_blank" rel="noopener">View on GitHub</a></p></div>`);
+    wireNotify(); document.querySelector("#demoNotifyForm input")?.focus();
+  });
+  const notified = () => { try { return !!localStorage.getItem("windowsill-demo-notified"); } catch { return false; } };
 
   const notifyHtml = () => NOTIFY_ENDPOINT ? `<div class="demo-notify" id="demoNotify">
       <h3>Want Windowsill for your own plants?</h3>
@@ -63,6 +86,9 @@
       <p class="demo-foot">Free and open source · <a href="https://github.com/mfscifly/windowsill" target="_blank" rel="noopener">View on GitHub</a></p>
     </div>`);
     document.getElementById("demoReset")?.addEventListener("click", () => window.windowsillDemo.reset());
+    wireNotify();
+  }
+  function wireNotify() {
     const f = document.getElementById("demoNotifyForm");
     f?.addEventListener("submit", async (e) => {
       e.preventDefault();

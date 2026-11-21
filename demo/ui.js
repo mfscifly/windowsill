@@ -1,8 +1,11 @@
 /* Demo touches on top of the real app: a "Demo" pill, a first-visit welcome, start over, and a
  * "notify me" sign-up. Runs after src/app.html, so it can use the app's own sheet and toast. */
 (function () {
-  // Where "notify me" sign-ups go: a form endpoint that accepts a POST of {email}. Empty hides the form.
-  const NOTIFY_ENDPOINT = "";
+  // "Notify me" sign-ups go to a write-only Supabase table (supabase/waitlist.sql).
+  // The anon key is public by design; the table's rules let it add rows but never read them.
+  // Leave these empty to hide the form.
+  const WAITLIST = { url: "https://ajjhnxworidaebijoqcd.supabase.co", anonKey: "sb_publishable_iLnmuuKLgkK9NYkppRSh1g_HzWqH_0s" };
+  const NOTIFY_ENDPOINT = WAITLIST.url && WAITLIST.anonKey ? WAITLIST.url.replace(/\/$/, "") + "/rest/v1/waitlist" : "";
   const SEEN = "windowsill-demo-welcomed";
 
   const css = document.createElement("style");
@@ -61,9 +64,10 @@
       const box = document.getElementById("demoNotify"), err = box.querySelector(".err"), btn = f.querySelector("button");
       btn.disabled = true; err.textContent = "";
       try {
-        const r = await fetch(NOTIFY_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({ email: f.email.value.trim(), _subject: "Windowsill: notify me", source: "demo" }) });
-        if (!r.ok) throw new Error();
+        const r = await fetch(NOTIFY_ENDPOINT, { method: "POST",
+          headers: { "Content-Type": "application/json", apikey: WAITLIST.anonKey, ...(WAITLIST.anonKey.startsWith("sb_") ? {} : { Authorization: "Bearer " + WAITLIST.anonKey }), Prefer: "return=minimal" },
+          body: JSON.stringify({ email: f.email.value.trim(), source: "demo" }) });
+        if (!r.ok && r.status !== 409) throw new Error(); // 409: already on the list, which is fine
         box.innerHTML = `<p class="done">Thanks! You'll hear when Windowsill is ready.</p>`;
         try { localStorage.setItem("windowsill-demo-notified", "1"); } catch {}
       } catch { err.textContent = "That didn't go through. Try again in a moment."; btn.disabled = false; }

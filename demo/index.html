@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF8F3">
+<meta name="description" content="Windowsill: a calm, free plant care tracker. Try the demo with made-up plants.">
+<meta property="og:title" content="Windowsill demo">
+<meta property="og:description" content="A calm, free plant care tracker. Click through a sample collection: water plants, log cuttings, follow a plant's family tree.">
+<meta property="og:image" content="https://mfscifly.github.io/windowsill/docs/screenshots/hero.png">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<title>Windowsill demo</title>
+<style>html,body{background:#FAF8F3;margin:0}</style>
+<script src="demo.js"></script>
+</head>
+<body>
+<script>
+/* Loads the real app (src/app.html) so the demo always matches it, then adds the demo touches. */
+(async () => {
+  const res = await fetch("../src/app.html", { cache: "no-cache" });
+  let src = await res.text();
+  src = src.replace('const blobUrl = (aid) => "/_blob/" + encodeURIComponent(aid);', "const blobUrl = (aid) => window.__windowsillBlob(aid);");
+  const tpl = document.createElement("template");
+  tpl.innerHTML = src;
+  for (const node of [...tpl.content.childNodes]) {
+    if (node.nodeName === "SCRIPT") {
+      const s = document.createElement("script");
+      s.textContent = node.textContent;
+      document.body.appendChild(s);
+    } else document.body.appendChild(node);
+  }
+  const ui = document.createElement("script"); ui.src = "ui.js"; document.body.appendChild(ui);
+})();
+</script>
+</body>
+</html>

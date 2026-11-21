@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
-# Builds the standalone app into dist/ for any static host (Cloudflare Pages, Netlify, Vercel).
+# Builds the standalone app into dist/ for any static host (GitHub Pages, Cloudflare Pages, Netlify, Vercel).
 # src/app.html is the same page that runs as a Claude Artifact; this wraps it in a full
 # document, adds the PWA bits and the Supabase backend, and writes js/config.js from env vars.
-#   SUPABASE_URL=https://xxxx.supabase.co SUPABASE_ANON_KEY=... scripts/build.sh
+#   SUPABASE_URL=https://xxxx.supabase.co SUPABASE_KEY=sb_publishable_... bash scripts/build.sh
+# SUPABASE_KEY is the project's publishable (or legacy anon) key. Never the secret/service_role key.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-: "${SUPABASE_URL:?set SUPABASE_URL}"; : "${SUPABASE_ANON_KEY:?set SUPABASE_ANON_KEY}"
+: "${SUPABASE_URL:?set SUPABASE_URL}"
+SUPABASE_KEY="${SUPABASE_KEY:-${SUPABASE_ANON_KEY:-}}"; export SUPABASE_KEY
+: "${SUPABASE_KEY:?set SUPABASE_KEY (publishable key)}"
+case "$SUPABASE_KEY" in sb_secret_*) echo "Refusing to build with a secret key. Use the publishable key." >&2; exit 1;; esac
 rm -rf dist && mkdir -p dist/js dist/icons
 cp js/backend.js dist/js/; cp icons/* dist/icons/; cp manifest.webmanifest sw.js dist/
-python3 -c 'import json,os;print("window.WINDOWSILL_CONFIG = " + json.dumps({"supabaseUrl": os.environ["SUPABASE_URL"], "supabaseAnonKey": os.environ["SUPABASE_ANON_KEY"], "vapidPublicKey": os.environ.get("VAPID_PUBLIC_KEY", "")}) + ";")' > dist/js/config.js
+python3 -c 'import json,os;print("window.WINDOWSILL_CONFIG = " + json.dumps({"supabaseUrl": os.environ["SUPABASE_URL"], "supabaseAnonKey": os.environ["SUPABASE_KEY"], "vapidPublicKey": os.environ.get("VAPID_PUBLIC_KEY", "")}) + ";")' > dist/js/config.js
 python3 - <<'PY'
 src = open("src/app.html").read()
 old = 'const blobUrl = (aid) => "/_blob/" + encodeURIComponent(aid);'
@@ -25,7 +29,7 @@ head = """<!doctype html>
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Windowsill">
 <meta name="theme-color" content="#FAF8F3">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
 <script src="js/config.js"></script>
 <script src="js/backend.js"></script>
 <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});</script>

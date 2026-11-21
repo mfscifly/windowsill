@@ -64,15 +64,17 @@ git clone https://github.com/mfscifly/windowsill.git
 cd windowsill
 
 # 1. In Supabase: SQL Editor → paste and run supabase/schema.sql
-# 2. Build with your project's URL and public anon key
-SUPABASE_URL=https://xxxx.supabase.co SUPABASE_ANON_KEY=eyJ... bash scripts/build.sh
+# 2. Build with your project's URL and publishable key (never the secret key)
+SUPABASE_URL=https://xxxx.supabase.co SUPABASE_KEY=sb_publishable_... bash scripts/build.sh
 
 # 3. Try it locally
 python3 -m http.server -d dist 8080   # then open http://localhost:8080
 ```
 
-To deploy, point your host at this repo with build command `bash scripts/build.sh`,
-output directory `dist`, and the same two environment variables.
+To deploy on **GitHub Pages**, set Settings → Pages → Source to "GitHub Actions" and add the
+repository variables `SUPABASE_URL` and `SUPABASE_KEY`; the included workflow publishes the
+app at `/app/`. On any other host, use build command `bash scripts/build.sh`, output directory
+`dist`, and the same two environment variables.
 The full walkthrough, including the sign-in email template, is in **[docs/setup.md](docs/setup.md)**.
 
 > [!IMPORTANT]

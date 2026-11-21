@@ -171,6 +171,9 @@ form.f { display: flex; flex-direction: column; gap: 14px; }
 .row2 > * { min-width: 0; }
 input[type="text"], input[type="number"], input[type="date"], select, textarea {
   width: 100%; border: 0; border-radius: 12px; padding: 11px 14px; background: var(--surface); min-width: 0; font-size: 16px; min-height: 44px; }
+select { -webkit-appearance: none; appearance: none; padding-right: 38px; text-overflow: ellipsis;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%238A8478' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 12px 8px; }
 textarea { resize: vertical; min-height: 80px; }
 fieldset { border: 0; background: var(--fill); border-radius: var(--r); padding: 14px; margin: 0; display: flex; flex-direction: column; gap: 12px; }
 legend { display: none; }
@@ -1194,8 +1197,8 @@ function propForm(x) {
     <div class="field"><label for="xf-sp">Species</label><input type="text" id="xf-sp" name="species" value="${esc(x.species)}" placeholder="Same as parent if blank"></div></div>
     <div class="row2"><div class="field"><label for="xf-taken">Taken on</label><input type="date" id="xf-taken" name="taken" value="${esc(x.taken || "")}"></div>
     <div class="field"><label for="xf-qty">How many</label><input type="number" id="xf-qty" name="qty" min="1" max="99" value="${esc(x.qty || 1)}"></div></div>
-    <div class="row2"><div class="field"><label for="xf-meth">Method</label><select id="xf-meth" name="method">${["water", "soil", "sphagnum", "leca", "division", "air layer", "leaf cutting"].map((m) => opt(m, x.method || "water")).join("")}</select></div>
-    <div class="field"><label for="xf-st">Status</label><select id="xf-st" name="status">${STATUSES.map((s) => opt(s, x.status)).join("")}</select></div></div>
+    <div class="row2"><div class="field"><label for="xf-meth">Method</label><select id="xf-meth" name="method">${["water", "soil", "sphagnum", "leca", "division", "air layer", "leaf cutting"].map((m) => opt(m, x.method || "water", m === "leca" ? "LECA" : cap(m))).join("")}</select></div>
+    <div class="field"><label for="xf-st">Status</label><select id="xf-st" name="status">${STATUSES.map((s) => opt(s, x.status, cap(s))).join("")}</select></div></div>
     <div class="row2"><div class="field"><label for="xf-spot">Where it sits</label><input type="text" id="xf-spot" name="spot" value="${esc(x.spot)}" placeholder="Kitchen sill"></div>
     <div class="field"><label for="xf-price">Asking price ($)</label><input type="number" id="xf-price" name="price" min="0" step="1" value="${esc(x.price || "")}"></div></div>
     <div class="field"><label for="xf-notes">Notes</label><input type="text" id="xf-notes" name="notes" value="${esc(x.notes)}" placeholder="Roots showing"></div>

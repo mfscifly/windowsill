@@ -110,6 +110,11 @@
       shot("goldie", 40, "pothos-1.jpg", "excellent", [], "Thriving under the new grow light"),
       shot("pancake", 30, "pilea-1.jpg", "good", ["New leaf"], "Removed one bad leaf after a trip. Three new shoots now."),
     ];
+    // Watering schedule modes: a few intervals the owner trusts (the smart schedule is fitted to these),
+    // a few plants already on the smart schedule, and the rest on a plain interval awaiting review.
+    const sched = { "big-leaf": "trusted", goldie: "trusted", "mother-snake": "trusted", pancake: "trusted", silver: "trusted", twitchy: "trusted",
+      hiss: "smart", noodle: "smart", "pancake-jr": "smart", hearts: "smart", dragon: "smart" };
+    for (const pl of plants) if (sched[pl.id]) { pl.sched = sched[pl.id]; if (pl.sched === "trusted") pl.schedSince = ago(60); else pl.waterTune = 1; }
     return { plants, rooms, props, checkins };
   }
 

@@ -157,6 +157,9 @@ button.kv { all: unset; box-sizing: border-box; width: 100%; display: flex; just
 .stepper .btn { min-height: 32px; width: 36px; padding: 0; font-size: 18px; }
 details.more-d > summary { cursor: pointer; color: var(--tint); font-size: 16px; padding: 4px; list-style: none; }
 details.more-d > summary::-webkit-details-marker { display: none; }
+.why .kv > span:first-child, .why-row > span:first-child { flex: 1; min-width: 0; color: var(--ink, inherit); }
+.why .kv small, .why-row small { display: block; font-size: 13px; color: var(--muted); }
+.why .group { margin-top: 8px; } .why .small { margin: 8px 4px; } .why .actions { margin-top: 8px; }
 details.more-d ul { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: var(--muted); }
 .log { list-style: none; margin: 0; padding: 4px 0; }
 .log li { display: grid; grid-template-columns: 4.6rem 1fr; gap: 10px; padding: 8px 14px; font-size: 15px; }
@@ -273,7 +276,7 @@ const GENERIC_CUES = [
   "Lift the pot: noticeably light means water, heavy means wait.",
   "Leaves soft or drooping can mean thirsty; yellow and mushy means too much water.",
 ];
-const CUE_WORDS = ["dry", "light pot", "drooping", "crispy"];
+const CUE_WORDS = ["dry", "light pot", "bone dry", "drooping", "crispy"];
 const HEALTH = { excellent: "Thriving", good: "Doing fine", bad: "Needs help" };
 const CI_TAGS = ["New leaf", "Big leaves", "Flowering", "Yellowing", "Crispy tips", "Pests", "Repotted", "Pruned"];
 
@@ -287,8 +290,138 @@ function catChip(p) {
 }
 const catRisk = (p) => !!p.care?.toxic && p.catReach !== "no";
 function inSeason(p) { if (p.feedYearRound) return true; const m = new Date().getMonth() + 1; return m >= 3 && m <= 9; }
+// ---- Smart watering: days-until-dry worked out from the kind of plant and its setup, then tuned by check-ins. ----
+// Starting values are estimates (only the light factor rests on a measured study), which is why
+// trusted intervals calibrate the result and check-ins keep correcting it.
+const WATER_GROUPS = {
+  succulent: { label: "Succulent or cactus", days: 18, ref: "cactus & succulent mix" },
+  semi: { label: "Semi-succulent (snake plant, ZZ, jade, hoya)", days: 12, ref: "potting mix" },
+  foliage: { label: "Aroid or general foliage", days: 7, ref: "potting mix" },
+  thirsty: { label: "Moisture lover (fern, calathea, fittonia)", days: 5, ref: "potting mix" },
+  orchid: { label: "Orchid or epiphyte", days: 8, ref: "orchid bark" },
+};
+const MEDIUM_F = { "potting mix": 1, "peat-free mix": 1, "coco coir": 1.05, "sphagnum moss": 1.25, "aroid mix (chunky)": 0.8, "cactus & succulent mix": 0.7, "orchid bark": 0.6 };
+const RESERVOIR_MEDIA = ["leca / semi-hydro", "pon / mineral mix", "water"];
+const LIGHT_F = { low: 1.5, medium: 1.2, "bright indirect": 1, direct: 0.8 };
+const TOO_DRY = ["bone dry", "drooping", "crispy"];
+function guessGroup(p) {
+  const s = `${p.species || ""} ${p.common || ""}`.toLowerCase();
+  if (/orchid|phalaenopsis|dendrobium|tillandsia|air plant|bromeliad|staghorn/.test(s)) return "orchid";
+  if (/cact|echeveria|haworth|aloe|sedum|lithops|agave|euphorbia|gasteria|sempervivum|kalanchoe|succulent|string of (pearls|dolphins|bananas)/.test(s)) return "succulent";
+  if (/sansevieria|trifasciata|snake plant|zamioculcas|\bzz\b|jade|crassula|hoya|ceropegia|string of hearts|peperomia|ponytail|beaucarnea|yucca/.test(s)) return "semi";
+  if (/fern|calathea|goeppertia|maranta|prayer plant|fittonia|nerve plant|alocasia|peace lily|spathiphyllum|stromanthe|ctenanthe|selaginella|nepenthes/.test(s)) return "thirsty";
+  return "foliage";
+}
+// The dropdown value, or the closest match for a mix described in the owner's own words.
+function mediumKey(p) {
+  const s = String(p.soil || "").toLowerCase().trim();
+  if (!s || MEDIUM_F[s] || RESERVOIR_MEDIA.includes(s)) return s;
+  return /leca|semi-?hydro/.test(s) ? "leca / semi-hydro" : /\bpon\b|mineral/.test(s) ? "pon / mineral mix" : /bark/.test(s) ? "orchid bark" : /cact|succulent|gritty|pumice/.test(s) ? "cactus & succulent mix"
+    : /chunky|aroid|perlite/.test(s) ? "aroid mix (chunky)" : /sphagnum|moss/.test(s) ? "sphagnum moss" : /coco|coir/.test(s) ? "coco coir" : /potting|peat|compost|soil/.test(s) ? "potting mix" : s;
+}
+const groupOf = (p) => WATER_GROUPS[p.care?.waterGroup] ? p.care.waterGroup : guessGroup(p);
+function potInches(p) {
+  const m = String(envOf(p).potSize || p.pot || "").match(/(\d+(?:\.\d+)?)\s*(cm|mm)?/i);
+  if (!m) return null;
+  const v = parseFloat(m[1]) / (/cm/i.test(m[2] || "") ? 2.54 : /mm/i.test(m[2] || "") ? 25.4 : 1);
+  return v > 0 && v < 40 ? v : null;
+}
+function lightGrade(p) {
+  const r = lightReading(envOf(p));
+  if (r.v !== "" && r.v > 0) { const fc = r.u === "lux" ? r.v / 10.76 : r.u === "ppfd" ? r.v * 5.5 : r.v; return fc < 75 ? "low" : fc < 200 ? "medium" : fc < 1000 ? "bright indirect" : "direct"; }
+  const g = lightGets(p); return GRADES.includes(g) ? g : "";
+}
+const sizeBand = (d) => d == null ? "" : d <= 4.5 ? "s" : d <= 7 ? "m" : d <= 10 ? "l" : "xl";
+const clampDays = (x) => Math.max(2, Math.min(42, Math.round(x)));
+const clampTune = (x) => Math.round(Math.max(0.5, Math.min(2, x)) * 100) / 100;
+// The sum before calibration: baseline for the kind of plant times one factor per part of its setup, on a given date.
+function waterParts(p, on) {
+  const e = envOf(p), group = groupOf(p), G = WATER_GROUPS[group], parts = [], missing = [];
+  const soil = mediumKey(p), guessed = !WATER_GROUPS[p.care?.waterGroup];
+  if (RESERVOIR_MEDIA.includes(soil) || e.potType === "self-watering")
+    return { reservoir: true, group, guessed, base: 10, raw: 10, missing, parts: [{ label: e.potType === "self-watering" ? "Self-watering pot" : cap(p.soil), why: "top up the reservoir, no dry-down to wait for" }] };
+  const add = (label, f, why) => parts.push({ label, f: Math.round(f * 100) / 100, why });
+  if (!soil) {
+    // Not set: assume the mix most of this home's plants are in, so one blank field does not skew the estimate.
+    missing.push("growing medium");
+    const n = {}; for (const q of S.plants) { const k = mediumKey(q); if (MEDIUM_F[k]) n[k] = (n[k] || 0) + 1; }
+    const usual = Object.keys(n).sort((a, b) => n[b] - n[a])[0];
+    if (usual) add("Growing medium not set", MEDIUM_F[usual] / MEDIUM_F[G.ref], `assuming ${usual}, like most of your plants`);
+  }
+  else if (MEDIUM_F[soil]) { const f = MEDIUM_F[soil] / MEDIUM_F[G.ref]; add(cap(p.soil), f, f < 0.99 ? "drains and dries faster" : f > 1.01 ? "holds water longer" : "the usual mix for this kind"); }
+  if (!e.potType) missing.push("pot type");
+  else add(cap(e.potType), e.potType === "terracotta" ? 0.8 : e.potType === "hanging basket" ? 0.9 : 1, e.potType === "terracotta" ? "breathes, so it dries faster" : e.potType === "hanging basket" ? "more air moving around it" : "holds moisture in");
+  const d = potInches(p);
+  if (d == null) missing.push("pot size");
+  else { const f = Math.max(0.65, Math.min(1.4, Math.sqrt(d / 6))); add(`${Math.round(d * 10) / 10} in pot`, f, f < 0.95 ? "small pots dry quickly" : f > 1.05 ? "big pots stay wet longer" : "standard size"); }
+  const lg = lightGrade(p);
+  if (!lg) missing.push("light");
+  else add(cap(lg) + " light", LIGHT_F[lg], lg === "low" || lg === "medium" ? "less light, drinks slower" : lg === "direct" ? "strong light, drinks faster" : "the reference level");
+  const mo = parse(on).getMonth() + 1, winter = mo >= 11 || mo <= 2, shoulder = mo === 3 || mo === 10;
+  if ((winter || shoulder) && e.setting !== "outdoors") {
+    const dormant = group === "succulent" || /alocasia|caladium|oxalis/i.test(`${p.species || ""} ${p.common || ""}`) || /dormant|dormancy|dies back/i.test(p.care?.dormancy || "");
+    const grow = e.source === "grow" || e.source === "both" || e.growHours > 0;
+    let f = winter ? (dormant ? 1.5 : 1.3) : 1.15; if (grow) f = 1 + (f - 1) / 2;
+    add(winter ? "Winter" : "Shoulder season", f, (winter ? (dormant ? "short days and this kind rests" : "short, dim days") : "days getting shorter or just lengthening") + (grow ? ", softened by the grow light" : ""));
+  }
+  if (e.heat === "yes") add("Near a heater or vent", 0.85, "warm moving air dries the pot");
+  if (e.drainage === "no") add("No drainage holes", 1.15, "water can pool, so lean dry and check first");
+  return { group, guessed, base: G.days, parts, missing, raw: parts.reduce((a, x) => a * x.f, G.days) };
+}
+const isSmart = (p) => p.sched === "smart";
+// Smart plan for one plant. Trusted intervals are the answer key: the sum is scaled to agree with them,
+// using look-alikes (same kind, medium and pot size band) when there are any, otherwise all of them.
+function smartPlan(p) {
+  const now = waterParts(p, today()), tune = p.waterTune || 1;
+  if (now.reservoir) return { ...now, cal: 1, tune, days: clampDays(now.raw * tune) };
+  const A = S.plants.filter((a) => a.id !== p.id && a.sched === "trusted" && a.waterEvery).map((a) => ({ a, w: waterParts(a, a.schedSince || today()) }))
+    .filter((x) => !x.w.reservoir).map((x) => ({ a: x.a, r: x.a.waterEvery / x.w.raw }));
+  const med = (xs) => { const s = xs.slice().sort((x, y) => x - y), n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };
+  const band = sizeBand(potInches(p)), soil = mediumKey(p);
+  const like = band && soil ? A.filter(({ a }) => groupOf(a) === now.group && mediumKey(a) === soil && sizeBand(potInches(a)) === band) : [];
+  const kin = A.filter(({ a }) => groupOf(a) === now.group), use = like.length ? like : kin.length > 1 ? kin : A;
+  const cal = use.length ? Math.round(Math.max(0.4, Math.min(3, med(use.map((x) => x.r)))) * 100) / 100 : 1;
+  return { ...now, cal, tune, like: like.map((x) => nm(x.a)), kin: !like.length && kin.length > 1 ? kin.length : 0, anchors: A.length, days: clampDays(now.raw * cal * tune) };
+}
+const everyOf = (p) => isSmart(p) ? smartPlan(p).days : p.waterEvery || 7;
+// What a check-in teaches a smart plant. Lengthens on one damp check, shortens only on a dry sign (lean dry).
+function learn(p, kind, cues) {
+  if (!isSmart(p)) return {};
+  const plan = smartPlan(p), t = plan.tune; let n = t;
+  if (kind === "damp") n = t * 1.1;
+  else if (kind === "repot") n = (1 + t) / 2;
+  else if (cues.some((c) => TOO_DRY.includes(c))) n = t * 0.85;
+  else if (p.lastWatered && cues.some((c) => c === "dry" || c === "light pot")) { const gap = daysBetween(p.lastWatered, today()); if (gap <= plan.days - 2) n = t * Math.max(0.7, gap / plan.days); }
+  n = clampTune(n);
+  return n === t ? {} : { waterTune: n, _every: clampDays(plan.raw * plan.cal * n) };
+}
+const smartHintOff = () => { try { return localStorage.getItem("ws-smart-hint") === "off"; } catch { return false; } };
+const fx = (f) => "× " + (Math.round(f * 100) / 100).toFixed(2).replace(/0$/, "");
+function whySection(p) {
+  const plan = smartPlan(p), row = (a, b, sub) => `<div class="kv"><span>${esc(a)}${sub ? `<small>${esc(sub)}</small>` : ""}</span><span>${esc(b)}</span></div>`;
+  const sharpen = plan.missing.length ? `<p class="small">Add ${esc(plan.missing.join(", ").replace(/, ([^,]*)$/, " and $1"))} to sharpen this. <button class="btn small" data-act="edit-plant" data-id="${p.id}">Edit</button></p>` : "";
+  if (!isSmart(p)) return `<details class="more-d why"><summary>Why this date</summary>
+    <p class="small">Your interval: every ${p.waterEvery || 7} days. The smart schedule never changes it${p.sched === "trusted" ? ", and uses it as an answer key for your other plants" : ""}.</p>
+    <p class="small">From this plant's setup, the smart schedule would say about every ${plan.days} days.</p>${sharpen}
+    <div class="actions"><button class="btn small" data-act="sched-smart" data-id="${p.id}">Use the smart schedule</button></div></details>`;
+  const G = WATER_GROUPS[plan.group];
+  const rows = plan.reservoir ? row(plan.parts[0].label, "10 days", plan.parts[0].why)
+    : row(G.label, `${plan.base} days`, plan.guessed ? "guessed from the species" : "starting point") + plan.parts.map((x) => row(x.label, fx(x.f), x.why)).join("")
+      + (plan.anchors ? row(plan.like.length ? `Matched to ${plan.like.slice(0, 3).join(", ")}` : plan.kin ? `Fitted to ${plan.kin} trusted plant${plan.kin === 1 ? "" : "s"} of this kind` : `Fitted to your ${plan.anchors} trusted interval${plan.anchors === 1 ? "" : "s"}`, fx(plan.cal), plan.like.length ? "same kind, medium and pot size" : "how your home compares with the textbook") : "");
+  return `<details class="more-d why"><summary>Why this date</summary><div class="group">${rows}${row("Your check-ins", fx(plan.tune), plan.tune > 1 ? "found damp, so waiting longer" : plan.tune < 1 ? "found dry, so coming sooner" : "no changes yet")}
+    <div class="kv"><strong>${plan.reservoir ? "Top up every" : "Check every"}</strong><strong>${plan.days} days</strong></div></div>${sharpen}
+    <div class="actions"><button class="btn small" data-act="sched-lock" data-id="${p.id}">Keep it at ${plan.days} days</button></div></details>`;
+}
+function smartSheet() {
+  const list = S.plants.filter((p) => !p.sched).map((p) => [p, smartPlan(p)]);
+  if (!list.length) return sheetTop("Smart schedule") + `<p class="banner">Every plant is either on the smart schedule or kept at your own interval.</p>`;
+  return sheetTop("Smart schedule", "Worked out from each plant's kind, pot, medium, light and the season") + `<p class="small muted" style="margin:0 4px 10px">These plants are on a plain interval. Nothing changes unless you tap Use. Intervals you marked as trusted stay as they are.</p>
+    <div class="group">${list.map(([p, pl]) => `<div class="kv why-row"><span>${esc(nm(p))}<small>now every ${p.waterEvery || 7} days, smart says ${pl.days}${pl.missing.length ? ` · missing ${esc(pl.missing.join(", "))}` : ""}</small></span><button class="btn small" data-act="sched-smart" data-id="${p.id}">Use</button></div>`).join("")}</div>
+    <div class="actions" style="margin-top:14px"><button class="btn primary" data-act="smart-all">Use for all ${list.length}</button><button class="btn" data-act="smart-later">Not now</button></div>`;
+}
+function refreshSmart() { if ($("#sheet").hidden || !S.smartOpen) return; const top = $("#sheetBody").scrollTop; $("#sheetBody").innerHTML = smartSheet(); $("#sheetBody").scrollTop = top; }
 function waterDue(p) {
-  let due = p.lastWatered ? addDays(p.lastWatered, p.waterEvery || 7) : today();
+  let due = p.lastWatered ? addDays(p.lastWatered, everyOf(p)) : today();
   if (p.snoozeUntil && p.snoozeUntil > due) due = p.snoozeUntil;
   // Weekday-only rooms (the office): a weekend due date slides to Monday, erring dry.
   if (roomOf(p)?.weekdaysOnly) { const wd = parse(due).getDay(); if (wd === 6) due = addDays(due, 2); else if (wd === 0) due = addDays(due, 1); }
@@ -327,6 +460,7 @@ async function boot() {
       if (name === "plants" && S.openNext && getPlant(S.openNext)) { const id = S.openNext; S.openNext = null; S.sheetPlant = id; openSheet(plantSheet(getPlant(id))); }
       if (name === "checkins" && S.shotOpen) openShot(S.shotOpen);
       if (name === "plants" && S.actOpen) refreshActivity();
+      if (name === "plants" && S.smartOpen) refreshSmart();
     }, () => { S.noDb = true; render(); });
   }
 }
@@ -342,7 +476,7 @@ const getPlant = (id) => S.plants.find((p) => p.id === id) || (S.gifted || []).f
 function withLog(p, entry) { return [...(p.log || []), { d: today(), ...entry }].slice(-150); }
 // Undoable actions: each log entry remembers the fields it changed (prev), so it can be taken back
 // from the toast, from Done today, or from Recent activity.
-const UNDO_KEYS = ["lastWatered", "snoozeUntil", "lastFed", "lastInspected", "repotted", "noFeedUntil", "health"];
+const UNDO_KEYS = ["waterTune", "lastWatered", "snoozeUntil", "lastFed", "lastInspected", "repotted", "noFeedUntil", "health"];
 async function logAct(p, entry, upd, msg) {
   const at = new Date().toISOString(), prev = {};
   for (const k of Object.keys(upd)) if (UNDO_KEYS.includes(k)) prev[k] = p[k] ?? null;
@@ -359,8 +493,9 @@ async function undoEntry(id, at) {
   if (await write(() => plantRef(id).update(upd))) toast(`Undone: ${actLabel(e).toLowerCase()}, ${nm(p)}`);
 }
 function actLabel(e) {
-  if (e.t === "water") return e.fed ? "Watered and fed" : "Watered";
-  if (e.t === "check") return "Still damp, checking later";
+  const ev = e.every ? ` · now every ${e.every} days` : "";
+  if (e.t === "water") return (e.fed ? "Watered and fed" : "Watered") + ev;
+  if (e.t === "check") return "Still damp, checking later" + ev;
   if (e.t === "inspect") return "Pest check";
   if (e.t === "issue") return "Problem flagged";
   if (e.t === "repot") return "Repotted";
@@ -623,6 +758,8 @@ function viewToday() {
   if (checks) line += ` Plus ${checks === 1 ? "a quick pest check" : checks + " quick pest checks"}.`;
   const m = new Date().getMonth() + 1;
   let h = `<section class="hero"><h2>${title}</h2>${line ? `<p>${line.trim()}</p>` : ""}</section>`;
+  const plain = S.plants.filter((p) => !p.sched).length;
+  if (plain && !smartHintOff()) h += `<section class="banner" style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><span style="flex:1">${plain} plant${plain === 1 ? " is" : "s are"} on a plain interval. See what the smart schedule suggests.</span><button class="btn small" data-act="smart-review">Review</button></section>`;
 
   const queued = (thirsty.length || soon.length ? [...thirsty, ...now.filter((x) => !thirsty.includes(x)), ...soon].map(([p]) => p)
     : S.plants.slice().sort((a, b) => waterDue(a).localeCompare(waterDue(b))));
@@ -854,7 +991,7 @@ async function openSettings() {
   if (S.settingsOpen && !$("#sheet").hidden) $("#sheetBody").innerHTML = settingsSheet(st);
 }
 function openSheet(html) { $("#sheetBody").innerHTML = html; $("#sheet").hidden = false; $("#sheetBody").scrollTop = 0; }
-function closeSheet() { $("#sheet").hidden = true; $("#sheetBody").innerHTML = ""; S.sheetPlant = null; S.shotOpen = null; S.settingsOpen = false; S.actOpen = false; S.wq = null; }
+function closeSheet() { $("#sheet").hidden = true; $("#sheetBody").innerHTML = ""; S.sheetPlant = null; S.shotOpen = null; S.settingsOpen = false; S.actOpen = false; S.smartOpen = false; S.wq = null; }
 const sheetTop = (title, sub) => `<div class="sheet-top"><div><h2>${esc(title)}</h2>${sub ? `<p class="sp">${esc(sub)}</p>` : ""}</div><button class="x" data-act="close" aria-label="Close">${IC.x}</button></div>`;
 
 const visits = (p) => (p.log || []).filter((e) => e.t === "visit");
@@ -1028,20 +1165,21 @@ function plantSheet(p) {
       <h2>${esc(nm(p))}${catTag(p)}</h2>${p.name && p.common ? `<p class="common">${esc(p.common)}</p>` : ""}${p.species ? `<p class="sp">${esc(p.species)}</p>` : ""}<p class="where">${esc(where(p))}</p>${p.name ? "" : `<button class="btn small" data-act="edit-plant" data-id="${p.id}" style="margin-top:6px">Give it a nickname</button>`}</div>
     ${notes.join("")}
     <section class="status">
-      <div><p class="k">Next drink</p><p class="big${n < 0 ? " late-t" : ""}">${esc(big)}</p><p class="small">Last watered ${esc(rel(p.lastWatered))} · every ${p.waterEvery || 7} days${feedNow ? " · feed with this one" : ""}</p></div>
-      ${n <= 0 ? `<div class="cuepick" role="group" aria-label="What you noticed">${CUE_WORDS.map((cw) => `<button class="toggle" data-act="cue" data-id="${p.id}" data-cue="${cw}" aria-pressed="${picked.includes(cw)}">${cw}</button>`).join("")}</div>` : ""}
+      <div><p class="k">Next drink</p><p class="big${n < 0 ? " late-t" : ""}">${esc(big)}</p><p class="small">Last watered ${esc(rel(p.lastWatered))} · every ${everyOf(p)} days${isSmart(p) ? " (smart)" : ""}${feedNow ? " · feed with this one" : ""}</p></div>
+      ${n <= 0 || isSmart(p) ? `<div class="cuepick" role="group" aria-label="What you noticed">${CUE_WORDS.map((cw) => `<button class="toggle" data-act="cue" data-id="${p.id}" data-cue="${cw}" aria-pressed="${picked.includes(cw)}">${cw}</button>`).join("")}</div>` : ""}
       <div class="actions">
         ${feedNow ? `<button class="btn primary wide" data-act="water" data-fed="1" data-id="${p.id}">Watered + fed</button><button class="btn wide" data-act="water" data-id="${p.id}">Water only</button>`
                   : `<button class="btn primary wide" data-act="water" data-id="${p.id}">${n > 0 ? "Watered today" : "Watered"}</button>`}
         ${n <= 0 ? `<button class="btn wide" data-act="damp" data-id="${p.id}">Still damp</button>` : ""}
       </div>
       <details class="more-d"><summary>How to tell if it needs water</summary><ul><li>${esc(how)}</li>${(c.cues?.length ? c.cues : GENERIC_CUES).map((x) => `<li>${esc(x)}</li>`).join("")}</ul></details>
+      ${whySection(p)}
     </section>
     ${inspNow ? `<section class="status"><div><p class="k">Pest check</p><p class="small">Look under the leaves and at the soil for pests, webbing or sticky spots.</p></div>
       <div class="actions"><button class="btn wide" data-act="inspect-ok" data-id="${p.id}">All clear</button><button class="btn wide" data-act="inspect-issue" data-id="${p.id}">Found a problem</button></div></section>` : ""}
     ${progressSection(p)}
     <section><h3 class="group-h">Schedule</h3><div class="group">
-      <div class="kv"><span>Check water</span><span class="stepper"><button class="btn small" data-act="int" data-d="-1" data-id="${p.id}" aria-label="Check more often">−</button><span>every ${p.waterEvery || 7} days</span><button class="btn small" data-act="int" data-d="1" data-id="${p.id}" aria-label="Check less often">+</button></span></div>
+      <div class="kv"><span>Check water</span><span class="stepper"><button class="btn small" data-act="int" data-d="-1" data-id="${p.id}" aria-label="Check more often">−</button><span>every ${everyOf(p)} days</span><button class="btn small" data-act="int" data-d="1" data-id="${p.id}" aria-label="Check less often">+</button></span></div>
       <div class="kv"><span>Last fed</span><span>${esc(short(p.lastFed))} · ${esc(feedLine(p, d.f))}</span></div>
       <div class="kv"><span>Pest check</span><span>${esc(rel(d.i))}</span></div>
       ${p.repotted ? `<div class="kv"><span>Repotted</span><span>${esc(short(p.repotted))}</span></div>` : ""}
@@ -1096,8 +1234,11 @@ function plantForm(p) {
       <div class="row2"><div class="field"><label for="pf-drain">Drainage holes</label><select id="pf-drain" name="e.drainage">${opt("", e.drainage, "Not sure")}${opt("yes", e.drainage, "Yes")}${opt("no", e.drainage, "No")}</select></div>
       ${(() => { const known = SOILS.find((x) => x.toLowerCase() === String(p.soil || "").toLowerCase()), pick = !p.soil ? "" : known || "__other"; return `<div class="field"><label for="pf-soil">Growing medium</label><select id="pf-soil" name="soilPick">${opt("", pick, "Not set")}${SOILS.map((x) => opt(x, pick, cap(x))).join("")}${opt("__other", pick, "Something else…")}</select></div></div>
       <div class="field" id="pf-soil-wrap"${pick === "__other" ? "" : " hidden"}><label for="pf-soil2">Describe the mix</label><input type="text" id="pf-soil2" name="soilOther" value="${esc(pick === "__other" ? p.soil : "")}" placeholder="Cactus mix + perlite"></div>`; })()}
+      <div class="field"><label for="pf-heat">Near a heater or vent</label><select id="pf-heat" name="e.heat">${opt("", e.heat, "Not set")}${opt("yes", e.heat, "Yes")}${opt("no", e.heat, "No")}</select></div>
     </fieldset></details>
     <details><summary class="muted" style="cursor:pointer;font-weight:700">Schedule: water, feed, pest checks</summary><fieldset style="margin-top:10px"><legend>Schedule</legend>
+  <div class="field"><label for="pf-sched">Watering schedule</label><select id="pf-sched" name="sched">${(() => { const cur = p.id ? p.sched || "" : "smart"; return opt("smart", cur, "Smart: worked out from the setup, learns from check-ins") + opt("trusted", cur, "My interval, trusted: also teaches the smart schedule") + opt("", cur, "My interval"); })()}</select></div>
+      <div class="field"><label for="pf-wgroup">Kind of drinker</label><select id="pf-wgroup" name="c.waterGroup">${opt("", c.waterGroup, `Guess from the species (${WATER_GROUPS[guessGroup(p)].label.toLowerCase()})`)}${Object.entries(WATER_GROUPS).map(([k, g]) => opt(k, c.waterGroup, g.label)).join("")}</select></div>
   <div class="row2"><div class="field"><label for="pf-every">Check water every</label><input type="number" id="pf-every" name="waterEvery" min="1" max="60" value="${esc(p.waterEvery || 7)}"><small>days</small></div>
       <div class="field"><label for="pf-last">Last watered</label><input type="date" id="pf-last" name="lastWatered" value="${esc(p.lastWatered || "")}"></div></div>
       <div class="row2"><div class="field"><label for="pf-fedlast">Last fed</label><input type="date" id="pf-fedlast" name="lastFed" value="${esc(p.lastFed || "")}"></div>
@@ -1146,6 +1287,9 @@ async function savePlant(form) {
   }
   if (!rec.name && !rec.species) { toast("Give it a nickname or a species."); return; }
   rec.waterEvery = Math.max(1, Math.min(60, parseInt(rec.waterEvery, 10) || 7));
+  rec.sched = ["smart", "trusted"].includes(rec.sched) ? rec.sched : "";
+  if (rec.sched === "trusted" && (old?.sched !== "trusted" || old.waterEvery !== rec.waterEvery)) rec.schedSince = today();
+  if (rec.sched === "smart" && old?.sched !== "smart") rec.waterTune = 1;
   rec.lastWatered = rec.lastWatered || null;
   for (const k of ["lastFed", "noFeedUntil", "lastInspected", "repotted"]) rec[k] = rec[k] || null;
   for (const k of ["feedEvery", "inspectEvery"]) rec[k] = rec[k] ? Math.max(1, Math.min(365, parseInt(rec[k], 10) || 0)) || null : null;
@@ -1294,7 +1438,8 @@ document.addEventListener("click", async (ev) => {
       if (!p) return; const fed = !!t.dataset.fed; t.disabled = true;
       const upd = { lastWatered: today(), snoozeUntil: null };
       if (fed) upd.lastFed = today();
-      if (await logAct(p, { t: "water", fed, cues: S.cues[id] || [] }, upd, `Watered ${nm(p)}${fed ? " and fed" : ""}`)) delete S.cues[id];
+      const { _every, ...lt } = learn(p, "water", S.cues[id] || []); Object.assign(upd, lt);
+      if (await logAct(p, { t: "water", fed, cues: S.cues[id] || [], ...(_every ? { every: _every } : {}) }, upd, `Watered ${nm(p)}${fed ? " and fed" : ""}${_every ? `. Now every ${_every} days` : ""}`)) delete S.cues[id];
       t.disabled = false; return;
     }
     case "water-ask": if (p) { S.sheetPlant = null; S.actOpen = false; openSheet(waterSheet(p)); } return;
@@ -1302,13 +1447,14 @@ document.addEventListener("click", async (ev) => {
     case "undo": t.disabled = true; await undoEntry(id, t.dataset.at); return;
     case "activity": S.sheetPlant = null; S.actOpen = true; openSheet(activitySheet()); return;
     case "damp": {
-      if (!p) return; const wait = (p.waterEvery || 7) >= 10 ? 3 : 2;
+      if (!p) return; const wait = everyOf(p) >= 10 ? 3 : 2;
       const fromStep = !!$("#waterForm");
-      if (await logAct(p, { t: "check", cues: ["damp", ...(S.cues[id] || [])] }, { snoozeUntil: addDays(today(), wait) }, `OK, checking ${nm(p)} again in ${wait} days`)) { delete S.cues[id]; if (fromStep) closeSheet(); }
+      const { _every, ...lt } = learn(p, "damp", []);
+      if (await logAct(p, { t: "check", cues: ["damp", ...(S.cues[id] || [])], ...(_every ? { every: _every } : {}) }, { snoozeUntil: addDays(today(), wait), ...lt }, `OK, checking ${nm(p)} again in ${wait} days${_every ? `. Next gap ${_every} days` : ""}`)) { delete S.cues[id]; if (fromStep) closeSheet(); }
       return;
     }
     case "fed": return p && logAct(p, { t: "note", note: "fed" }, { lastFed: today() }, `Fed ${nm(p)}`);
-    case "repot": return p && logAct(p, { t: "repot" }, { repotted: today(), noFeedUntil: addDays(today(), 42) }, "Repot logged. Feeding pauses for six weeks.");
+    case "repot": { if (!p) return; const { _every, ...lt } = learn(p, "repot", []); return logAct(p, { t: "repot" }, { repotted: today(), noFeedUntil: addDays(today(), 42), ...lt }, "Repot logged. Feeding pauses for six weeks."); }
     case "inspect-ok": return p && logAct(p, { t: "inspect", note: "all clear" }, { lastInspected: today() }, "Pest check logged");
     case "inspect-issue": {
       if (!p) return;
@@ -1317,10 +1463,20 @@ document.addEventListener("click", async (ev) => {
     }
     case "clear-health": return p && logAct(p, { t: "note", note: "cleared: " + p.health }, { health: null }, "Flag cleared");
     case "int": {
-      if (!p) return; const n = Math.max(1, Math.min(60, (p.waterEvery || 7) + Number(t.dataset.d)));
+      if (!p) return;
+      if (isSmart(p)) { const pl = smartPlan(p), want = clampDays(pl.days + Number(t.dataset.d)); return write(() => plantRef(id).update({ waterTune: clampTune(want / (pl.raw * pl.cal)) })); }
+      const n = Math.max(1, Math.min(60, (p.waterEvery || 7) + Number(t.dataset.d)));
       return write(() => plantRef(id).update({ waterEvery: n }));
     }
-    case "open-plant": if (p) { S.shotOpen = null; S.ci = null; S.sheetPlant = id; openSheet(plantSheet(p)); } return;
+    case "sched-smart": return p && write(() => plantRef(id).update({ sched: "smart", waterTune: 1 }), `${nm(p)} is on the smart schedule`);
+    case "sched-lock": { if (!p) return; const n = everyOf(p); return write(() => plantRef(id).update({ sched: "trusted", schedSince: today(), waterEvery: n }), `${nm(p)} stays at every ${n} days`); }
+    case "smart-review": S.sheetPlant = null; S.actOpen = false; openSheet(smartSheet()); S.smartOpen = true; return;
+    case "smart-later": try { localStorage.setItem("ws-smart-hint", "off"); } catch {} closeSheet(); render(); return;
+    case "smart-all": {
+      const list = S.plants.filter((x) => !x.sched); t.disabled = true;
+      return write(async () => { for (const x of list) await plantRef(x.id).update({ sched: "smart", waterTune: 1 }); }, `${list.length} plants are on the smart schedule`);
+    }
+    case "open-plant": if (p) { S.smartOpen = false; S.shotOpen = null; S.ci = null; S.sheetPlant = id; openSheet(plantSheet(p)); } return;
     case "new-plant": S.sheetPlant = null; openSheet(plantForm()); wireRoomSelect(); return;
     case "gift": {
       if (!p) return; S.sheetPlant = null; const g = p.gifted || {};
@@ -1438,8 +1594,9 @@ document.addEventListener("submit", async (ev) => {
       const p = getPlant(f.dataset.id), note = String(new FormData(f).get("note") || "").trim(), fed = !!S.wq?.fed;
       if (!p) return;
       const upd = { lastWatered: today(), snoozeUntil: null }; if (fed) upd.lastFed = today();
-      const entry = { t: "water", fed, cues: S.cues[p.id] || [] }; if (note) entry.note = note;
-      if (await logAct(p, entry, upd, `Watered ${nm(p)}${fed ? " and fed" : ""}`)) { delete S.cues[p.id]; closeSheet(); }
+      const { _every, ...lt } = learn(p, "water", S.cues[p.id] || []); Object.assign(upd, lt);
+      const entry = { t: "water", fed, cues: S.cues[p.id] || [] }; if (note) entry.note = note; if (_every) entry.every = _every;
+      if (await logAct(p, entry, upd, `Watered ${nm(p)}${fed ? " and fed" : ""}${_every ? `. Now every ${_every} days` : ""}`)) { delete S.cues[p.id]; closeSheet(); }
     }
   } finally { if (btn && btn.isConnected) btn.disabled = false; }
 });

@@ -61,3 +61,22 @@ create policy "own subscriptions" on public.push_subscriptions
   for all to authenticated
   using (user_id = auth.uid())
   with check (user_id = auth.uid());
+
+-- Each person's next watering dates, saved by the app whenever their plants change.
+-- The daily reminder job reads this (with the project's secret key) so it never has to
+-- re-run the app's scheduling logic. last_sent stops a second reminder on the same day.
+create table if not exists public.due_summary (
+  user_id    uuid primary key default auth.uid() references auth.users (id) on delete cascade,
+  due        jsonb not null default '[]'::jsonb,  -- [{ "id", "name", "d": "YYYY-MM-DD" }]
+  tz         text not null default 'UTC',
+  last_sent  date,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.due_summary enable row level security;
+
+drop policy if exists "own due summary" on public.due_summary;
+create policy "own due summary" on public.due_summary
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());

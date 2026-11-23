@@ -118,6 +118,7 @@
           if (error) { onError?.(error); return; }
           if (coll === "checkins") await signAll(data.map((r) => r.data?.assetId));
           next({ docs: data.map((r) => ({ id: r.id, data: () => r.data })) });
+          if (coll === "plants" || coll === "rooms") syncDue();
         };
         load();
         const ch = sb.channel(`docs-${coll}-${Math.random().toString(36).slice(2)}`)
@@ -137,6 +138,26 @@
       throw new Error(`Unknown capability: ${name}`);
     },
   };
+  /* ---------- due dates for the reminder job ---------- */
+  // The page's own scheduling functions (waterDue, nm, S) are globals of src/app.html.
+  // After plants or rooms change, save each plant's next watering date so the daily
+  // reminder job can tell who has plants due without re-implementing the schedule.
+  let dueTimer = null, lastDue = "";
+  function syncDue() {
+    clearTimeout(dueTimer);
+    dueTimer = setTimeout(async () => {
+      try {
+        if (typeof waterDue !== "function" || typeof S === "undefined" || !S.loaded?.plants || !S.loaded?.rooms) return;
+        const due = S.plants.map((p) => ({ id: p.id, name: nm(p), d: waterDue(p) })).sort((a, b) => a.d.localeCompare(b.d));
+        const key = JSON.stringify(due);
+        if (key === lastDue) return;
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+        const { error } = await sb.from("due_summary").upsert({ user_id: user.id, due, tz, updated_at: new Date().toISOString() });
+        if (!error) lastDue = key;
+      } catch (e) { console.warn("Windowsill: couldn't save due dates", e); }
+    }, 2000);
+  }
+
   /* ---------- push reminders ---------- */
   const b64 = (s) => { const p = "=".repeat((4 - (s.length % 4)) % 4), r = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(r, (c) => c.charCodeAt(0)); };
   async function pushStatus() {

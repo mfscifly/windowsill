@@ -116,6 +116,7 @@ into Supabase. Swap the adapter and the same page could sit on another backend.
 | [`supabase/schema.sql`](supabase/schema.sql) | Tables, privacy rules and the photo bucket. Run once per project. |
 | [`manifest.webmanifest`](manifest.webmanifest), [`sw.js`](sw.js), [`icons/`](icons) | Home-screen install, offline shell, notifications. |
 | [`scripts/build.sh`](scripts/build.sh) | Builds `dist/` and writes `js/config.js` from env vars. |
+| [`scripts/send-reminders.mjs`](scripts/send-reminders.mjs) | Daily push reminders for due and overdue plants (runs in GitHub Actions). |
 | [`scripts/screenshots.js`](scripts/screenshots.js) | Regenerates the README screenshots from demo data (Playwright). |
 | [`docs/`](docs) | [Setup guide](docs/setup.md) and [data schema](docs/schema.md). |
 

@@ -31,3 +31,22 @@ To try it locally: `SUPABASE_URL=... SUPABASE_KEY=... bash scripts/build.sh`, th
 ## 3. On your phone
 
 Open the app's address in Safari, sign in with your email code, then Share → **Add to Home Screen**.
+
+## 4. Daily reminders (optional)
+
+The app saves each person's next watering dates. A GitHub Actions job
+(`.github/workflows/reminders.yml`) runs hourly and sends one push a day, at 8am in each
+person's own time zone, listing plants that are due or overdue. Overdue plants show up
+again every day until they're watered.
+
+1. Make a key pair for web push: `npx web-push generate-vapid-keys`.
+2. In the repo's **Settings → Secrets and variables → Actions**:
+   - Variables: `VAPID_PUBLIC_KEY`, `VAPID_SUBJECT` (a contact such as `mailto:you@example.com`),
+     optionally `REMIND_HOUR` (0 to 23, default 8).
+   - Secrets: `VAPID_PRIVATE_KEY`, and `SUPABASE_SECRET_KEY` (Supabase → Project Settings → API Keys →
+     secret key). Secrets are never shown in logs or to the app.
+3. Re-run the Pages workflow so the app picks up `VAPID_PUBLIC_KEY`.
+4. On iPhone, open the app from the Home Screen, tap the gear, and turn on reminders.
+   (iOS only allows web push for apps added to the Home Screen.)
+
+To test, run the Reminders workflow by hand with "Send now" ticked.

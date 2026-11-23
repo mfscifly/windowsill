@@ -1,0 +1,38 @@
+# Sends daily watering reminders. Runs every hour; each person gets one push a day at
+# REMIND_HOUR (default 8) in their own time zone. Does nothing until these are set in
+# Settings → Secrets and variables → Actions:
+#   Variables: SUPABASE_URL, VAPID_PUBLIC_KEY, VAPID_SUBJECT (e.g. mailto:you@example.com)
+#   Secrets:   SUPABASE_SECRET_KEY, VAPID_PRIVATE_KEY
+name: Reminders
+
+on:
+  schedule:
+    - cron: "5 * * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Send now, ignoring the hour (still once a day per person)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-save --no-package-lock web-push@3.6.7
+      - run: node scripts/send-reminders.mjs
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ vars.VAPID_SUBJECT }}
+          REMIND_HOUR: ${{ vars.REMIND_HOUR }}
+          FORCE: ${{ inputs.force && '1' || '' }}

@@ -960,7 +960,7 @@ function viewProps() {
   if (!S.props.length) return `<div class="empty"><h3>No cuttings yet</h3><p>Log a cutting here and watch it root.</p><div class="actions"><button class="btn primary" data-act="new-prop">Log a cutting</button></div></div>`;
   let h = "";
   for (const st of STATUSES) {
-    const list = S.props.filter((x) => (x.status || "rooting") === st);
+    const list = S.props.filter((x) => (x.status || "rooting") === st && !x.plantId); // potted up into a plant: it lives on as that plant
     if (!list.length) continue;
     h += `<section><h2 class="group-h">${esc(st)}</h2><div class="group">${list.map((x) => {
       const parent = getPlant(x.parentId), age = x.taken ? daysBetween(x.taken, today()) : null;
@@ -969,7 +969,7 @@ function viewProps() {
       return `<div class="row"><button class="main" data-act="edit-prop" data-id="${x.id}"><span class="lines"><span class="name">${esc(x.species || parent?.species || "Cutting")}</span>${sub ? `<span class="sub">${sub}</span>` : ""}</span></button>${trail ? `<span class="trail">${trail}</span>` : ""}${IC.chev}</div>`;
     }).join("")}</div></section>`;
   }
-  return h;
+  return h || `<div class="empty"><h3>Nothing rooting</h3><p>Cuttings you've potted up now live with your plants.</p><div class="actions"><button class="btn primary" data-act="new-prop">Log a cutting</button></div></div>`;
 }
 
 /* ---------- sheets ---------- */

@@ -2,7 +2,7 @@
  * Provides the same window.claude.use("db") / use("assets") interface as js/backend.js,
  * so src/app.html runs unchanged. No sign-in, no server, nothing leaves the device. */
 (function () {
-  const KEY = "windowsill-demo-v2", PHOTO_KEY = "windowsill-demo-photos-v1";
+  const KEY = "windowsill-demo-v3", PHOTO_KEY = "windowsill-demo-photos-v1";
   const t0 = new Date();
   const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   const ago = (n) => { const d = new Date(t0); d.setDate(d.getDate() - n); return iso(d); };
@@ -28,11 +28,11 @@
       { id: "bathroom", name: "Bathroom", facing: "west", light: "bright indirect", cats: "closed", notes: "Steamy, with a small grow light on a timer." },
     ];
     const plants = [
-      { id: "big-leaf", env: { setting: "indoors", source: "window", exposure: "bright indirect", sunHours: 6, potType: "terracotta", potSize: "12 in", drainage: "yes", reading: "300 foot-candles at noon" }, name: "Big Leaf", common: "Monstera", species: "Monstera deliciosa", roomId: "living", spot: "Floor by the window", scatReach: "yes", soil: "Chunky aroid mix", acquired: mon(420), source: "Farmers market",
+      { id: "big-leaf", env: { setting: "indoors", source: "window", exposure: "bright indirect", sunHours: 6, potType: "terracotta", potSize: "12 in", drainage: "yes", lightValue: 300, lightUnit: "fc" }, name: "Big Leaf", common: "Thai Constellation monstera", species: "Monstera deliciosa 'Thai Constellation'", roomId: "living", spot: "Floor by the window", scatReach: "yes", soil: "aroid mix (chunky)", acquired: mon(420), source: "Farmers market",
         waterEvery: 8, lastWatered: ago(10), lastFed: ago(40), lastInspected: ago(12), repotted: ago(200), created: ago(420),
         care: { light: "Bright indirect. Tolerates some morning sun.", lightNeed: "bright indirect", water: "When the top 2 in are dry", humidity: "Average is fine, loves more", toxic: TOXIC, dormancy: "Slows down Nov to Feb", feed: "standard", propagate: "Stem cutting with a node, in water", cues: ["Top 2 in of soil dry", "Pot feels light", "Leaves curl slightly"] },
         log: [...hist(10, 8, 5, 2), { d: ago(30), t: "note", note: "New leaf unfurling, first one with holes!" }] },
-      { id: "goldie", env: { setting: "indoors", source: "window", exposure: "medium", sunHours: 4, potType: "glazed ceramic", potSize: "6 in", drainage: "yes" }, name: "Goldie", common: "Golden pothos", species: "Epipremnum aureum", roomId: "kitchen", spot: "Top shelf", scatReach: "no", acquired: mon(700), source: "Cutting from a friend",
+      { id: "goldie", env: { setting: "indoors", source: "window", exposure: "medium", sunHours: 4, potType: "glazed ceramic", potSize: "6 in", drainage: "yes" }, name: "Goldie", common: "Marble Queen pothos", species: "Epipremnum aureum 'Marble Queen'", roomId: "kitchen", spot: "Top shelf", scatReach: "no", acquired: mon(700), source: "Cutting from a friend",
         waterEvery: 7, lastWatered: ago(7), lastFed: ago(25), lastInspected: ago(8), created: ago(700),
         care: { light: "Anything from low to bright indirect", lightNeed: "low", water: "When the top half is dry", humidity: "Average", toxic: TOXIC, feed: "standard", propagate: "Easiest plant to root in water", cues: ["Leaves look a little soft", "Top half of soil dry"] },
         log: hist(7, 7, 5, 2) },
@@ -60,7 +60,7 @@
         waterEvery: 6, lastWatered: ago(6), lastFed: ago(30), lastInspected: ago(9), created: ago(500),
         care: { light: "Medium to bright indirect", lightNeed: "medium", water: "Keep lightly moist", humidity: "Average", toxic: false, feed: "standard", tapWater: "avoid", propagate: "Root the babies in water or soil", cues: ["Leaves lose their shine", "Top inch dry"] },
         log: hist(6, 6, 5, 3) },
-      { id: "jade", env: { setting: "indoors", source: "window", exposure: "direct", sunHours: 4, potType: "terracotta", potSize: "6 in", drainage: "yes" }, common: "Jade plant", species: "Crassula ovata", roomId: "living", spot: "Window sill", scatReach: "yes", soil: "Cactus mix", acquired: mon(900),
+      { id: "jade", env: { setting: "indoors", source: "window", exposure: "direct", sunHours: 4, potType: "terracotta", potSize: "6 in", drainage: "yes" }, common: "Jade plant", species: "Crassula ovata", roomId: "living", spot: "Window sill", scatReach: "yes", soil: "cactus & succulent mix", acquired: mon(900),
         waterEvery: 18, lastWatered: ago(12), lastFed: ago(100), lastInspected: ago(11), created: ago(900),
         care: { light: "Direct sun or very bright", lightNeed: "bright indirect", water: "Soak, then let it dry out fully", humidity: "Dry air is fine", toxic: TOXIC, dormancy: "Water very little Nov to Feb", feed: "succulent", propagate: "Leaf or stem cuttings, let them callus first", cues: ["Leaves slightly wrinkled", "Soil dry all the way down"] },
         log: hist(12, 18, 3) },
@@ -72,7 +72,7 @@
         waterEvery: 4, lastWatered: ago(6), lastInspected: ago(2), created: ago(150), health: "Leaves curling, a few yellow spots near the soil",
         care: { light: "Medium, no direct sun", lightNeed: "medium", water: "Keep evenly moist", humidity: "High. The bathroom suits it.", toxic: false, feed: "standard", method: "bottom", cues: ["Dramatic flop", "Top of soil dry"] },
         log: [...hist(6, 4, 5), { d: ago(2), t: "issue", note: "Leaves curling, a few yellow spots near the soil" }] },
-      { id: "dragon", env: { setting: "indoors", source: "grow", exposure: "bright indirect", growHours: 12, potType: "self-watering", potSize: "6 in", drainage: "yes", reading: "400 foot-candles under the light" }, name: "Dragon", common: "Elephant ear", species: "Alocasia × amazonica 'Polly'", roomId: "bathroom", spot: "Under the grow light", scatReach: "no", acquired: mon(90), source: "Garden centre",
+      { id: "dragon", env: { setting: "indoors", source: "grow", exposure: "bright indirect", growHours: 12, potType: "self-watering", potSize: "6 in", drainage: "yes", lightValue: 400, lightUnit: "fc" }, name: "Dragon", common: "Elephant ear", species: "Alocasia × amazonica 'Polly'", roomId: "bathroom", spot: "Under the grow light", scatReach: "no", acquired: mon(90), source: "Garden centre",
         waterEvery: 8, lastWatered: ago(6), lastFed: ago(28), lastInspected: ago(30), created: ago(90),
         care: { light: "Bright indirect", lightNeed: "bright indirect", water: "When the top inch is dry, never soggy", humidity: "High", toxic: TOXIC, dormancy: "May drop leaves in winter. Don't panic.", feed: "standard", tapWater: "avoid", cues: ["Top inch dry", "Leaves droop a little"] },
         log: [...hist(6, 8, 4), { d: ago(20), t: "issue", note: "Lower leaf yellowing. Normal as a new one opens." }] },
@@ -84,7 +84,7 @@
         waterEvery: 14, lastWatered: ago(10), lastInspected: ago(20), created: ago(1400),
         care: { light: "Low. Lives up to its name.", lightNeed: "low", water: "When the top half is dry", toxic: false, feed: "standard" },
         log: hist(10, 14, 3) },
-      { id: "echeveria", env: { setting: "indoors", source: "window", exposure: "direct", sunHours: 3, potType: "terracotta", potSize: "3 in", drainage: "yes" }, common: "Echeveria", species: "Echeveria 'Perle von Nürnberg'", roomId: "kitchen", spot: "Window sill", scatReach: "yes", soil: "Gritty succulent mix", acquired: mon(120),
+      { id: "echeveria", env: { setting: "indoors", source: "window", exposure: "direct", sunHours: 3, potType: "terracotta", potSize: "3 in", drainage: "yes" }, common: "Echeveria", species: "Echeveria 'Perle von Nürnberg'", roomId: "kitchen", spot: "Window sill", scatReach: "yes", soil: "pon / mineral mix", acquired: mon(120),
         waterEvery: 14, lastWatered: ago(15), lastInspected: ago(16), created: ago(120),
         care: { light: "Direct morning sun", lightNeed: "direct", water: "Soak and dry", toxic: false, feed: "succulent", dormancy: "Water sparingly in winter", propagate: "Leaf cuttings" },
         log: hist(15, 14, 3) },
@@ -92,7 +92,7 @@
         waterEvery: 10, lastWatered: ago(10), lastFed: ago(35), lastInspected: ago(8), created: ago(600),
         care: { light: "Medium to bright indirect", lightNeed: "medium", water: "When the top half is dry", toxic: TOXIC, feed: "standard", tapWater: "avoid" },
         log: hist(10, 10, 4, 2) },
-      { id: "lil-goldie", name: "Lil Goldie", common: "Golden pothos", species: "Epipremnum aureum", roomId: "kitchen", parentId: "goldie", origin: { t: "cutting", d: ago(160) }, acquired: mon(160),
+      { id: "lil-goldie", name: "Lil Goldie", common: "Marble Queen pothos", species: "Epipremnum aureum 'Marble Queen'", roomId: "kitchen", parentId: "goldie", origin: { t: "cutting", d: ago(160) }, acquired: mon(160),
         waterEvery: 7, lastWatered: ago(30), created: ago(160), gifted: { to: "Neighbour across the hall", date: ago(30) },
         care: { light: "Anything from low to bright indirect", lightNeed: "low", toxic: TOXIC }, log: hist(30, 7, 3) },
     ];
@@ -104,16 +104,17 @@
     ];
     const shot = (plantId, n, file, health, tags, note) => ({ id: "ci-" + file, plantId, d: ago(n), assetId: "seed:" + file, health, tags, note, at: ago(n) + "T17:00:00.000Z" });
     const checkins = [
-      shot("big-leaf", 215, "monstera-1.jpg", "good", ["New leaf"], "New leaf coming"),
-      shot("big-leaf", 193, "monstera-2.jpg", "excellent", ["New leaf", "Big leaves"], "Massive new leaf with the most holes yet"),
-      shot("big-leaf", 157, "monstera-3.jpg", "excellent", ["Big leaves"], ""),
-      shot("big-leaf", 14, "monstera-4.jpg", "good", [], "Lower leaves a bit pale, still pushing out new growth"),
-      shot("dragon", 70, "alocasia-1.jpg", "good", ["New leaf"], "New leaves"),
-      shot("dragon", 48, "alocasia-2.jpg", "good", [], "Newest leaf is a bit smaller and has a small hole"),
-      shot("dragon", 12, "alocasia-3.jpg", "good", ["New leaf"], "Brown spot on one small leaf. New leaf coming in."),
-      shot("pancake", 60, "pilea-1.jpg", "excellent", [], ""),
-      shot("pancake", 12, "pilea-2.jpg", "excellent", ["New leaf"], "Filling out nicely"),
+      shot("big-leaf", 120, "monstera-1.jpg", "good", ["New leaf"], "New leaf coming! Looks like it has fenestrations"),
+      shot("big-leaf", 62, "monstera-2.jpg", "excellent", ["New leaf", "Big leaves"], "Giant new leaf with its first real holes"),
+      shot("big-leaf", 14, "monstera-3.jpg", "good", ["New leaf"], "Another leaf coming in. Lower leaves a bit pale."),
+      shot("goldie", 40, "pothos-1.jpg", "excellent", [], "Thriving under the new grow light"),
+      shot("pancake", 30, "pilea-1.jpg", "good", ["New leaf"], "Removed one bad leaf after a trip. Three new shoots now."),
     ];
+    // Watering schedule modes: a few intervals the owner trusts (the smart schedule is fitted to these),
+    // a few plants already on the smart schedule, and the rest on a plain interval awaiting review.
+    const sched = { "big-leaf": "trusted", goldie: "trusted", "mother-snake": "trusted", pancake: "trusted", silver: "trusted", twitchy: "trusted",
+      hiss: "smart", noodle: "smart", "pancake-jr": "smart", hearts: "smart", dragon: "smart" };
+    for (const pl of plants) if (sched[pl.id]) { pl.sched = sched[pl.id]; if (pl.sched === "trusted") pl.schedSince = ago(60); else pl.waterTune = 1; }
     return { plants, rooms, props, checkins };
   }
 

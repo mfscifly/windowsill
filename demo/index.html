@@ -11,13 +11,16 @@
 <link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
 <title>Windowsill demo</title>
 <style>html,body{background:#FAF8F3;margin:0}</style>
-<script src="demo.js"></script>
 </head>
 <body>
 <script>
 /* Loads the real app (src/app.html) so the demo always matches it, then adds the demo touches. */
+// Every file is fetched fresh (?v=now), so a new version shows on the next reload, not after the 10-minute cache.
 (async () => {
-  const res = await fetch("../src/app.html", { cache: "no-cache" });
+  const fresh = (f) => f + "?v=" + Date.now();
+  const load = (f) => new Promise((ok, fail) => { const s = document.createElement("script"); s.src = fresh(f); s.onload = ok; s.onerror = fail; document.head.appendChild(s); });
+  await load("demo.js");
+  const res = await fetch(fresh("../src/app.html"), { cache: "no-store" });
   let src = await res.text();
   src = src.replace('const blobUrl = (aid) => "/_blob/" + encodeURIComponent(aid);', "const blobUrl = (aid) => window.__windowsillBlob(aid);");
   const tpl = document.createElement("template");
@@ -29,7 +32,7 @@
       document.body.appendChild(s);
     } else document.body.appendChild(node);
   }
-  const ui = document.createElement("script"); ui.src = "ui.js"; document.body.appendChild(ui);
+  load("ui.js");
 })();
 </script>
 </body>

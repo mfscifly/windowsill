@@ -157,6 +157,9 @@ button.kv { all: unset; box-sizing: border-box; width: 100%; display: flex; just
 .stepper .btn { min-height: 32px; width: 36px; padding: 0; font-size: 18px; }
 details.more-d > summary { cursor: pointer; color: var(--tint); font-size: 16px; padding: 4px; list-style: none; }
 details.more-d > summary::-webkit-details-marker { display: none; }
+.why .kv > span:first-child, .why-row > span:first-child { flex: 1; min-width: 0; color: var(--ink, inherit); }
+.why .kv small, .why-row small { display: block; font-size: 13px; color: var(--muted); }
+.why .group { margin-top: 8px; } .why .small { margin: 8px 4px; } .why .actions { margin-top: 8px; }
 details.more-d ul { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: var(--muted); }
 .log { list-style: none; margin: 0; padding: 4px 0; }
 .log li { display: grid; grid-template-columns: 4.6rem 1fr; gap: 10px; padding: 8px 14px; font-size: 15px; }
@@ -171,6 +174,9 @@ form.f { display: flex; flex-direction: column; gap: 14px; }
 .row2 > * { min-width: 0; }
 input[type="text"], input[type="number"], input[type="date"], select, textarea {
   width: 100%; border: 0; border-radius: 12px; padding: 11px 14px; background: var(--surface); min-width: 0; font-size: 16px; min-height: 44px; }
+select { -webkit-appearance: none; appearance: none; padding-right: 38px; text-overflow: ellipsis;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%238A8478' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 12px 8px; }
 textarea { resize: vertical; min-height: 80px; }
 fieldset { border: 0; background: var(--fill); border-radius: var(--r); padding: 14px; margin: 0; display: flex; flex-direction: column; gap: 12px; }
 legend { display: none; }
@@ -182,19 +188,22 @@ legend { display: none; }
 .cat { display: inline-flex; vertical-align: -2px; margin-left: 6px; color: var(--late); }
 .cat.maybe { color: var(--muted); }
 h2 .cat svg { width: 20px; height: 20px; }
+.tip { position: fixed; z-index: 100; pointer-events: none; background: var(--ink); color: #fff; font-size: 13px; font-weight: 600; line-height: 1.2; padding: 6px 9px; border-radius: 8px; white-space: nowrap; opacity: 0; transform: translateY(2px); transition: opacity .08s, transform .08s; }
+.tip.on { opacity: 1; transform: none; }
 .sheet { bottom: auto; top: var(--vv-top, 0px); height: var(--vv-h, 100%); }
 .sheet form.f > .actions { position: sticky; bottom: calc(-28px - env(safe-area-inset-bottom, 0px)); background: var(--bg); padding: 10px 0 calc(28px + env(safe-area-inset-bottom, 0px)); margin-bottom: calc(-28px - env(safe-area-inset-bottom, 0px)); z-index: 2; }
 .p-photo { width: 132px; height: 132px; border-radius: 50%; object-fit: cover; background: var(--fill); display: block; box-shadow: 0 6px 18px var(--sill-shadow); }
 .strip { display: flex; gap: 10px; overflow-x: auto; padding: 14px; scrollbar-width: none; }
 .strip::-webkit-scrollbar { display: none; }
-.shot { all: unset; flex: none; width: 96px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; }
-.shot img, .shot .ph { width: 96px; height: 120px; border-radius: 12px; object-fit: cover; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--faint); font-size: 13px; }
+.shot { all: unset; flex: none; max-width: 180px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; }
+.shot img { height: 120px; width: auto; min-width: 72px; max-width: 180px; border-radius: 12px; object-fit: cover; background: var(--fill); display: block; }
+.shot .ph { width: 96px; height: 120px; border-radius: 12px; object-fit: cover; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--faint); font-size: 13px; }
 .shot .d { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
 .hd { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--faint); }
 .hd.excellent { background: var(--ok); } .hd.good { background: var(--tint); } .hd.bad { background: var(--late); }
-.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; align-items: start; }
 .compare figure { margin: 0; display: flex; flex-direction: column; gap: 4px; }
-.compare img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 12px; background: var(--fill); display: block; }
+.compare img { width: 100%; height: auto; max-height: 300px; object-fit: contain; border-radius: 12px; background: var(--fill); display: block; }
 .compare figcaption { font-size: 13px; color: var(--muted); }
 .big-photo { width: 100%; max-height: 62vh; object-fit: contain; border-radius: var(--r); background: var(--fill); display: block; }
 .pick { display: flex; align-items: center; justify-content: center; min-height: 150px; border-radius: var(--r); background: var(--surface); color: var(--tint); font-weight: 600; cursor: pointer; overflow: hidden; position: relative; }
@@ -267,7 +276,7 @@ const GENERIC_CUES = [
   "Lift the pot: noticeably light means water, heavy means wait.",
   "Leaves soft or drooping can mean thirsty; yellow and mushy means too much water.",
 ];
-const CUE_WORDS = ["dry", "light pot", "drooping", "crispy"];
+const CUE_WORDS = ["dry", "light pot", "bone dry", "drooping", "crispy"];
 const HEALTH = { excellent: "Thriving", good: "Doing fine", bad: "Needs help" };
 const CI_TAGS = ["New leaf", "Big leaves", "Flowering", "Yellowing", "Crispy tips", "Pests", "Repotted", "Pruned"];
 
@@ -281,8 +290,138 @@ function catChip(p) {
 }
 const catRisk = (p) => !!p.care?.toxic && p.catReach !== "no";
 function inSeason(p) { if (p.feedYearRound) return true; const m = new Date().getMonth() + 1; return m >= 3 && m <= 9; }
+// ---- Smart watering: days-until-dry worked out from the kind of plant and its setup, then tuned by check-ins. ----
+// Starting values are estimates (only the light factor rests on a measured study), which is why
+// trusted intervals calibrate the result and check-ins keep correcting it.
+const WATER_GROUPS = {
+  succulent: { label: "Succulent or cactus", days: 18, ref: "cactus & succulent mix" },
+  semi: { label: "Semi-succulent (snake plant, ZZ, jade, hoya)", days: 12, ref: "potting mix" },
+  foliage: { label: "Aroid or general foliage", days: 7, ref: "potting mix" },
+  thirsty: { label: "Moisture lover (fern, calathea, fittonia)", days: 5, ref: "potting mix" },
+  orchid: { label: "Orchid or epiphyte", days: 8, ref: "orchid bark" },
+};
+const MEDIUM_F = { "potting mix": 1, "peat-free mix": 1, "coco coir": 1.05, "sphagnum moss": 1.25, "aroid mix (chunky)": 0.8, "cactus & succulent mix": 0.7, "orchid bark": 0.6 };
+const RESERVOIR_MEDIA = ["leca / semi-hydro", "pon / mineral mix", "water"];
+const LIGHT_F = { low: 1.5, medium: 1.2, "bright indirect": 1, direct: 0.8 };
+const TOO_DRY = ["bone dry", "drooping", "crispy"];
+function guessGroup(p) {
+  const s = `${p.species || ""} ${p.common || ""}`.toLowerCase();
+  if (/orchid|phalaenopsis|dendrobium|tillandsia|air plant|bromeliad|staghorn/.test(s)) return "orchid";
+  if (/cact|echeveria|haworth|aloe|sedum|lithops|agave|euphorbia|gasteria|sempervivum|kalanchoe|succulent|string of (pearls|dolphins|bananas)/.test(s)) return "succulent";
+  if (/sansevieria|trifasciata|snake plant|zamioculcas|\bzz\b|jade|crassula|hoya|ceropegia|string of hearts|peperomia|ponytail|beaucarnea|yucca/.test(s)) return "semi";
+  if (/fern|calathea|goeppertia|maranta|prayer plant|fittonia|nerve plant|alocasia|peace lily|spathiphyllum|stromanthe|ctenanthe|selaginella|nepenthes/.test(s)) return "thirsty";
+  return "foliage";
+}
+// The dropdown value, or the closest match for a mix described in the owner's own words.
+function mediumKey(p) {
+  const s = String(p.soil || "").toLowerCase().trim();
+  if (!s || MEDIUM_F[s] || RESERVOIR_MEDIA.includes(s)) return s;
+  return /leca|semi-?hydro/.test(s) ? "leca / semi-hydro" : /\bpon\b|mineral/.test(s) ? "pon / mineral mix" : /bark/.test(s) ? "orchid bark" : /cact|succulent|gritty|pumice/.test(s) ? "cactus & succulent mix"
+    : /chunky|aroid|perlite/.test(s) ? "aroid mix (chunky)" : /sphagnum|moss/.test(s) ? "sphagnum moss" : /coco|coir/.test(s) ? "coco coir" : /potting|peat|compost|soil/.test(s) ? "potting mix" : s;
+}
+const groupOf = (p) => WATER_GROUPS[p.care?.waterGroup] ? p.care.waterGroup : guessGroup(p);
+function potInches(p) {
+  const m = String(envOf(p).potSize || p.pot || "").match(/(\d+(?:\.\d+)?)\s*(cm|mm)?/i);
+  if (!m) return null;
+  const v = parseFloat(m[1]) / (/cm/i.test(m[2] || "") ? 2.54 : /mm/i.test(m[2] || "") ? 25.4 : 1);
+  return v > 0 && v < 40 ? v : null;
+}
+function lightGrade(p) {
+  const r = lightReading(envOf(p));
+  if (r.v !== "" && r.v > 0) { const fc = r.u === "lux" ? r.v / 10.76 : r.u === "ppfd" ? r.v * 5.5 : r.v; return fc < 75 ? "low" : fc < 200 ? "medium" : fc < 1000 ? "bright indirect" : "direct"; }
+  const g = lightGets(p); return GRADES.includes(g) ? g : "";
+}
+const sizeBand = (d) => d == null ? "" : d <= 4.5 ? "s" : d <= 7 ? "m" : d <= 10 ? "l" : "xl";
+const clampDays = (x) => Math.max(2, Math.min(42, Math.round(x)));
+const clampTune = (x) => Math.round(Math.max(0.5, Math.min(2, x)) * 100) / 100;
+// The sum before calibration: baseline for the kind of plant times one factor per part of its setup, on a given date.
+function waterParts(p, on) {
+  const e = envOf(p), group = groupOf(p), G = WATER_GROUPS[group], parts = [], missing = [];
+  const soil = mediumKey(p), guessed = !WATER_GROUPS[p.care?.waterGroup];
+  if (RESERVOIR_MEDIA.includes(soil) || e.potType === "self-watering")
+    return { reservoir: true, group, guessed, base: 10, raw: 10, missing, parts: [{ label: e.potType === "self-watering" ? "Self-watering pot" : cap(p.soil), why: "top up the reservoir, no dry-down to wait for" }] };
+  const add = (label, f, why) => parts.push({ label, f: Math.round(f * 100) / 100, why });
+  if (!soil) {
+    // Not set: assume the mix most of this home's plants are in, so one blank field does not skew the estimate.
+    missing.push("growing medium");
+    const n = {}; for (const q of S.plants) { const k = mediumKey(q); if (MEDIUM_F[k]) n[k] = (n[k] || 0) + 1; }
+    const usual = Object.keys(n).sort((a, b) => n[b] - n[a])[0];
+    if (usual) add("Growing medium not set", MEDIUM_F[usual] / MEDIUM_F[G.ref], `assuming ${usual}, like most of your plants`);
+  }
+  else if (MEDIUM_F[soil]) { const f = MEDIUM_F[soil] / MEDIUM_F[G.ref]; add(cap(p.soil), f, f < 0.99 ? "drains and dries faster" : f > 1.01 ? "holds water longer" : "the usual mix for this kind"); }
+  if (!e.potType) missing.push("pot type");
+  else add(cap(e.potType), e.potType === "terracotta" ? 0.8 : e.potType === "hanging basket" ? 0.9 : 1, e.potType === "terracotta" ? "breathes, so it dries faster" : e.potType === "hanging basket" ? "more air moving around it" : "holds moisture in");
+  const d = potInches(p);
+  if (d == null) missing.push("pot size");
+  else { const f = Math.max(0.65, Math.min(1.4, Math.sqrt(d / 6))); add(`${Math.round(d * 10) / 10} in pot`, f, f < 0.95 ? "small pots dry quickly" : f > 1.05 ? "big pots stay wet longer" : "standard size"); }
+  const lg = lightGrade(p);
+  if (!lg) missing.push("light");
+  else add(cap(lg) + " light", LIGHT_F[lg], lg === "low" || lg === "medium" ? "less light, drinks slower" : lg === "direct" ? "strong light, drinks faster" : "the reference level");
+  const mo = parse(on).getMonth() + 1, winter = mo >= 11 || mo <= 2, shoulder = mo === 3 || mo === 10;
+  if ((winter || shoulder) && e.setting !== "outdoors") {
+    const dormant = group === "succulent" || /alocasia|caladium|oxalis/i.test(`${p.species || ""} ${p.common || ""}`) || /dormant|dormancy|dies back/i.test(p.care?.dormancy || "");
+    const grow = e.source === "grow" || e.source === "both" || e.growHours > 0;
+    let f = winter ? (dormant ? 1.5 : 1.3) : 1.15; if (grow) f = 1 + (f - 1) / 2;
+    add(winter ? "Winter" : "Shoulder season", f, (winter ? (dormant ? "short days and this kind rests" : "short, dim days") : "days getting shorter or just lengthening") + (grow ? ", softened by the grow light" : ""));
+  }
+  if (e.heat === "yes") add("Near a heater or vent", 0.85, "warm moving air dries the pot");
+  if (e.drainage === "no") add("No drainage holes", 1.15, "water can pool, so lean dry and check first");
+  return { group, guessed, base: G.days, parts, missing, raw: parts.reduce((a, x) => a * x.f, G.days) };
+}
+const isSmart = (p) => p.sched === "smart";
+// Smart plan for one plant. Trusted intervals are the answer key: the sum is scaled to agree with them,
+// using look-alikes (same kind, medium and pot size band) when there are any, otherwise all of them.
+function smartPlan(p) {
+  const now = waterParts(p, today()), tune = p.waterTune || 1;
+  if (now.reservoir) return { ...now, cal: 1, tune, days: clampDays(now.raw * tune) };
+  const A = S.plants.filter((a) => a.id !== p.id && a.sched === "trusted" && a.waterEvery).map((a) => ({ a, w: waterParts(a, a.schedSince || today()) }))
+    .filter((x) => !x.w.reservoir).map((x) => ({ a: x.a, r: x.a.waterEvery / x.w.raw }));
+  const med = (xs) => { const s = xs.slice().sort((x, y) => x - y), n = s.length; return n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2; };
+  const band = sizeBand(potInches(p)), soil = mediumKey(p);
+  const like = band && soil ? A.filter(({ a }) => groupOf(a) === now.group && mediumKey(a) === soil && sizeBand(potInches(a)) === band) : [];
+  const kin = A.filter(({ a }) => groupOf(a) === now.group), use = like.length ? like : kin.length > 1 ? kin : A;
+  const cal = use.length ? Math.round(Math.max(0.4, Math.min(3, med(use.map((x) => x.r)))) * 100) / 100 : 1;
+  return { ...now, cal, tune, like: like.map((x) => nm(x.a)), kin: !like.length && kin.length > 1 ? kin.length : 0, anchors: A.length, days: clampDays(now.raw * cal * tune) };
+}
+const everyOf = (p) => isSmart(p) ? smartPlan(p).days : p.waterEvery || 7;
+// What a check-in teaches a smart plant. Lengthens on one damp check (10%, min one day), shortens only on a dry sign (lean dry).
+function learn(p, kind, cues) {
+  if (!isSmart(p)) return {};
+  const plan = smartPlan(p), t = plan.tune; let n = t;
+  if (kind === "damp") n = Math.max(t * 1.1, (plan.days + 1) / (plan.raw * plan.cal)); // +10% or at least one full day
+  else if (kind === "repot") n = (1 + t) / 2;
+  else if (cues.some((c) => TOO_DRY.includes(c))) n = t * 0.85;
+  else if (p.lastWatered && cues.some((c) => c === "dry" || c === "light pot")) { const gap = daysBetween(p.lastWatered, today()); if (gap <= plan.days - 2) n = t * Math.max(0.7, gap / plan.days); }
+  n = clampTune(n);
+  return n === t ? {} : { waterTune: n, _every: clampDays(plan.raw * plan.cal * n) };
+}
+const smartHintOff = () => { try { return localStorage.getItem("ws-smart-hint") === "off"; } catch { return false; } };
+const fx = (f) => "× " + (Math.round(f * 100) / 100).toFixed(2).replace(/0$/, "");
+function whySection(p) {
+  const plan = smartPlan(p), row = (a, b, sub) => `<div class="kv"><span>${esc(a)}${sub ? `<small>${esc(sub)}</small>` : ""}</span><span>${esc(b)}</span></div>`;
+  const sharpen = plan.missing.length ? `<p class="small">Add ${esc(plan.missing.join(", ").replace(/, ([^,]*)$/, " and $1"))} to sharpen this. <button class="btn small" data-act="edit-plant" data-id="${p.id}">Edit</button></p>` : "";
+  if (!isSmart(p)) return `<details class="more-d why"><summary>Why this date</summary>
+    <p class="small">Your interval: every ${p.waterEvery || 7} days. The smart schedule never changes it${p.sched === "trusted" ? ", and uses it as an answer key for your other plants" : ""}.</p>
+    <p class="small">From this plant's setup, the smart schedule would say about every ${plan.days} days.</p>${sharpen}
+    <div class="actions"><button class="btn small" data-act="sched-smart" data-id="${p.id}">Use the smart schedule</button></div></details>`;
+  const G = WATER_GROUPS[plan.group];
+  const rows = plan.reservoir ? row(plan.parts[0].label, "10 days", plan.parts[0].why)
+    : row(G.label, `${plan.base} days`, plan.guessed ? "guessed from the species" : "starting point") + plan.parts.map((x) => row(x.label, fx(x.f), x.why)).join("")
+      + (plan.anchors ? row(plan.like.length ? `Matched to ${plan.like.slice(0, 3).join(", ")}` : plan.kin ? `Fitted to ${plan.kin} trusted plant${plan.kin === 1 ? "" : "s"} of this kind` : `Fitted to your ${plan.anchors} trusted interval${plan.anchors === 1 ? "" : "s"}`, fx(plan.cal), plan.like.length ? "same kind, medium and pot size" : "how your home compares with the textbook") : "");
+  return `<details class="more-d why"><summary>Why this date</summary><div class="group">${rows}${row("Your check-ins", fx(plan.tune), plan.tune > 1 ? "found damp, so waiting longer" : plan.tune < 1 ? "found dry, so coming sooner" : "no changes yet")}
+    <div class="kv"><strong>${plan.reservoir ? "Top up every" : "Check every"}</strong><strong>${plan.days} days</strong></div></div>${sharpen}
+    <div class="actions"><button class="btn small" data-act="sched-lock" data-id="${p.id}">Keep it at ${plan.days} days</button></div></details>`;
+}
+function smartSheet() {
+  const list = S.plants.filter((p) => !p.sched).map((p) => [p, smartPlan(p)]);
+  if (!list.length) return sheetTop("Smart schedule") + `<p class="banner">Every plant is either on the smart schedule or kept at your own interval.</p>`;
+  return sheetTop("Smart schedule", "Worked out from each plant's kind, pot, medium, light and the season") + `<p class="small muted" style="margin:0 4px 10px">These plants are on a plain interval. Nothing changes unless you tap Use. Intervals you marked as trusted stay as they are.</p>
+    <div class="group">${list.map(([p, pl]) => `<div class="kv why-row"><span>${esc(nm(p))}<small>now every ${p.waterEvery || 7} days, smart says ${pl.days}${pl.missing.length ? ` · missing ${esc(pl.missing.join(", "))}` : ""}</small></span><button class="btn small" data-act="sched-smart" data-id="${p.id}">Use</button></div>`).join("")}</div>
+    <div class="actions" style="margin-top:14px"><button class="btn primary" data-act="smart-all">Use for all ${list.length}</button><button class="btn" data-act="smart-later">Not now</button></div>`;
+}
+function refreshSmart() { if ($("#sheet").hidden || !S.smartOpen) return; const top = $("#sheetBody").scrollTop; $("#sheetBody").innerHTML = smartSheet(); $("#sheetBody").scrollTop = top; }
 function waterDue(p) {
-  let due = p.lastWatered ? addDays(p.lastWatered, p.waterEvery || 7) : today();
+  let due = p.lastWatered ? addDays(p.lastWatered, everyOf(p)) : today();
   if (p.snoozeUntil && p.snoozeUntil > due) due = p.snoozeUntil;
   // Weekday-only rooms (the office): a weekend due date slides to Monday, erring dry.
   if (roomOf(p)?.weekdaysOnly) { const wd = parse(due).getDay(); if (wd === 6) due = addDays(due, 2); else if (wd === 0) due = addDays(due, 1); }
@@ -321,6 +460,7 @@ async function boot() {
       if (name === "plants" && S.openNext && getPlant(S.openNext)) { const id = S.openNext; S.openNext = null; S.sheetPlant = id; openSheet(plantSheet(getPlant(id))); }
       if (name === "checkins" && S.shotOpen) openShot(S.shotOpen);
       if (name === "plants" && S.actOpen) refreshActivity();
+      if (name === "plants" && S.smartOpen) refreshSmart();
     }, () => { S.noDb = true; render(); });
   }
 }
@@ -336,7 +476,7 @@ const getPlant = (id) => S.plants.find((p) => p.id === id) || (S.gifted || []).f
 function withLog(p, entry) { return [...(p.log || []), { d: today(), ...entry }].slice(-150); }
 // Undoable actions: each log entry remembers the fields it changed (prev), so it can be taken back
 // from the toast, from Done today, or from Recent activity.
-const UNDO_KEYS = ["lastWatered", "snoozeUntil", "lastFed", "lastInspected", "repotted", "noFeedUntil", "health"];
+const UNDO_KEYS = ["waterTune", "lastWatered", "snoozeUntil", "lastFed", "lastInspected", "repotted", "noFeedUntil", "health"];
 async function logAct(p, entry, upd, msg) {
   const at = new Date().toISOString(), prev = {};
   for (const k of Object.keys(upd)) if (UNDO_KEYS.includes(k)) prev[k] = p[k] ?? null;
@@ -353,8 +493,9 @@ async function undoEntry(id, at) {
   if (await write(() => plantRef(id).update(upd))) toast(`Undone: ${actLabel(e).toLowerCase()}, ${nm(p)}`);
 }
 function actLabel(e) {
-  if (e.t === "water") return e.fed ? "Watered and fed" : "Watered";
-  if (e.t === "check") return "Still damp, checking later";
+  const ev = e.every ? ` · now every ${e.every} days` : "";
+  if (e.t === "water") return (e.fed ? "Watered and fed" : "Watered") + ev;
+  if (e.t === "check") return "Still damp, checking later" + ev;
   if (e.t === "inspect") return "Pest check";
   if (e.t === "issue") return "Problem flagged";
   if (e.t === "repot") return "Repotted";
@@ -617,6 +758,8 @@ function viewToday() {
   if (checks) line += ` Plus ${checks === 1 ? "a quick pest check" : checks + " quick pest checks"}.`;
   const m = new Date().getMonth() + 1;
   let h = `<section class="hero"><h2>${title}</h2>${line ? `<p>${line.trim()}</p>` : ""}</section>`;
+  const plain = S.plants.filter((p) => !p.sched).length;
+  if (plain && !smartHintOff()) h += `<section class="banner" style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><span style="flex:1">${plain} plant${plain === 1 ? " is" : "s are"} on a plain interval. See what the smart schedule suggests.</span><button class="btn small" data-act="smart-review">Review</button></section>`;
 
   const queued = (thirsty.length || soon.length ? [...thirsty, ...now.filter((x) => !thirsty.includes(x)), ...soon].map(([p]) => p)
     : S.plants.slice().sort((a, b) => waterDue(a).localeCompare(waterDue(b))));
@@ -715,7 +858,7 @@ function renderPlantList() {
     : `<p class="lede">No plants match "${esc(S.q)}".</p>`;
 }
 // toxic-to-cats as a small cat icon after the name: orange when cats can reach it, grey when not known
-const catTag = (p) => catRisk(p) ? `<span class="cat${p.catReach === "yes" ? "" : " maybe"}" title="Toxic to cats" aria-label="Toxic to cats${p.catReach === "yes" ? ", cats can reach it" : ""}">${IC.cat}</span>` : "";
+const catTag = (p) => catRisk(p) ? `<span class="cat${p.catReach === "yes" ? "" : " maybe"}" data-tip="Toxic to cats${p.catReach === "yes" ? " · they can reach it" : ""}" aria-label="Toxic to cats${p.catReach === "yes" ? ", cats can reach it" : ""}">${IC.cat}</span>` : "";
 // crop a drawing's viewBox to what is actually drawn, so thumbnails have no empty band above the plant
 const TIGHT = new Map();
 function tight(svg) {
@@ -749,7 +892,18 @@ const POT_TYPES = ["terracotta", "glazed ceramic", "plastic", "nursery pot", "se
 const LIGHT_SRC = { window: "Window", grow: "Grow light", both: "Window + grow light", none: "No window or light" };
 const EXPOSURE_IN = ["direct", "bright indirect", "medium", "low"];
 const EXPOSURE_OUT = { "full sun": "direct", "partial shade": "bright indirect", "shade": "medium" };
+const LIGHT_UNITS = { fc: "foot-candles", lux: "lux", ppfd: "PPFD (µmol/m²/s)" };
+const SOILS = ["potting mix", "aroid mix (chunky)", "cactus & succulent mix", "orchid bark", "peat-free mix", "coco coir", "sphagnum moss", "LECA / semi-hydro", "pon / mineral mix", "water"];
 const envOf = (p) => p.env || {};
+// Older records kept the reading as a sentence ("300 foot-candles at noon"); pull the number and unit out of it.
+function lightReading(e) {
+  if (e.lightValue != null && e.lightValue !== "") return { v: e.lightValue, u: e.lightUnit || "fc" };
+  const m = String(e.reading || "").match(/([\d.,]+)\s*(fc|foot[- ]?candles?|lux|lx|ppfd)?/i);
+  if (!m) return { v: "", u: "fc" };
+  const u = /lux|lx/i.test(m[2] || "") ? "lux" : /ppfd/i.test(m[2] || "") ? "ppfd" : "fc";
+  return { v: parseFloat(m[1].replace(/,/g, "")) || "", u };
+}
+const readingText = (e) => { const r = lightReading(e); return r.v === "" ? (e.reading || "") : `${r.v.toLocaleString()} ${r.u === "fc" ? "fc" : r.u === "lux" ? "lux" : "PPFD"}`; };
 function lightGets(p) {
   const e = envOf(p);
   if (e.exposure) return EXPOSURE_OUT[e.exposure] || e.exposure;
@@ -806,7 +960,7 @@ function viewProps() {
   if (!S.props.length) return `<div class="empty"><h3>No cuttings yet</h3><p>Log a cutting here and watch it root.</p><div class="actions"><button class="btn primary" data-act="new-prop">Log a cutting</button></div></div>`;
   let h = "";
   for (const st of STATUSES) {
-    const list = S.props.filter((x) => (x.status || "rooting") === st);
+    const list = S.props.filter((x) => (x.status || "rooting") === st && !x.plantId); // potted up into a plant: it lives on as that plant
     if (!list.length) continue;
     h += `<section><h2 class="group-h">${esc(st)}</h2><div class="group">${list.map((x) => {
       const parent = getPlant(x.parentId), age = x.taken ? daysBetween(x.taken, today()) : null;
@@ -815,7 +969,7 @@ function viewProps() {
       return `<div class="row"><button class="main" data-act="edit-prop" data-id="${x.id}"><span class="lines"><span class="name">${esc(x.species || parent?.species || "Cutting")}</span>${sub ? `<span class="sub">${sub}</span>` : ""}</span></button>${trail ? `<span class="trail">${trail}</span>` : ""}${IC.chev}</div>`;
     }).join("")}</div></section>`;
   }
-  return h;
+  return h || `<div class="empty"><h3>Nothing rooting</h3><p>Cuttings you've potted up now live with your plants.</p><div class="actions"><button class="btn primary" data-act="new-prop">Log a cutting</button></div></div>`;
 }
 
 /* ---------- sheets ---------- */
@@ -837,7 +991,7 @@ async function openSettings() {
   if (S.settingsOpen && !$("#sheet").hidden) $("#sheetBody").innerHTML = settingsSheet(st);
 }
 function openSheet(html) { $("#sheetBody").innerHTML = html; $("#sheet").hidden = false; $("#sheetBody").scrollTop = 0; }
-function closeSheet() { $("#sheet").hidden = true; $("#sheetBody").innerHTML = ""; S.sheetPlant = null; S.shotOpen = null; S.settingsOpen = false; S.actOpen = false; S.wq = null; }
+function closeSheet() { $("#sheet").hidden = true; $("#sheetBody").innerHTML = ""; S.sheetPlant = null; S.shotOpen = null; S.settingsOpen = false; S.actOpen = false; S.smartOpen = false; S.wq = null; }
 const sheetTop = (title, sub) => `<div class="sheet-top"><div><h2>${esc(title)}</h2>${sub ? `<p class="sp">${esc(sub)}</p>` : ""}</div><button class="x" data-act="close" aria-label="Close">${IC.x}</button></div>`;
 
 const visits = (p) => (p.log || []).filter((e) => e.t === "visit");
@@ -1003,28 +1157,29 @@ function plantSheet(p) {
     kv("Pets", c.toxic ? (typeof c.toxic === "string" ? c.toxic : "Toxic to cats and dogs") : (c.toxic === false ? "Pet-safe" : "")),
     kv("Rest season", c.dormancy), kv("Feed", FEED[c.feed || "standard"]), kv("Propagate", c.propagate)].join("");
   const e = envOf(p);
-  const envH = [kv("Where", where(p)), kv("Setting", e.setting ? cap(e.setting) : ""), kv("Light it gets", envLight(p)), kv("Light reading", e.reading),
-    kv("Pot", envPot(p)), kv("Soil", p.soil), kv("Got it", [gotIt(p.acquired), p.source].filter(Boolean).join(" · "))].join("");
+  const envH = [kv("Where", where(p)), kv("Setting", e.setting ? cap(e.setting) : ""), kv("Light it gets", envLight(p)), kv("Light reading", readingText(e)),
+    kv("Pot", envPot(p)), kv("Growing medium", p.soil ? cap(p.soil) : ""), kv("Got it", [gotIt(p.acquired), p.source].filter(Boolean).join(" · "))].join("");
   const log = (p.log || []).slice(-15).reverse();
   const label = { water: "Watered", check: "Checked", inspect: "Pest check", issue: "Problem", repot: "Repotted", move: "Moved", note: "Note" };
   return `<div class="p-head"><button class="x" data-act="close" aria-label="Close">${IC.x}</button>${headArt(p)}
       <h2>${esc(nm(p))}${catTag(p)}</h2>${p.name && p.common ? `<p class="common">${esc(p.common)}</p>` : ""}${p.species ? `<p class="sp">${esc(p.species)}</p>` : ""}<p class="where">${esc(where(p))}</p>${p.name ? "" : `<button class="btn small" data-act="edit-plant" data-id="${p.id}" style="margin-top:6px">Give it a nickname</button>`}</div>
     ${notes.join("")}
     <section class="status">
-      <div><p class="k">Next drink</p><p class="big${n < 0 ? " late-t" : ""}">${esc(big)}</p><p class="small">Last watered ${esc(rel(p.lastWatered))} · every ${p.waterEvery || 7} days${feedNow ? " · feed with this one" : ""}</p></div>
-      ${n <= 0 ? `<div class="cuepick" role="group" aria-label="What you noticed">${CUE_WORDS.map((cw) => `<button class="toggle" data-act="cue" data-id="${p.id}" data-cue="${cw}" aria-pressed="${picked.includes(cw)}">${cw}</button>`).join("")}</div>` : ""}
+      <div><p class="k">Next drink</p><p class="big${n < 0 ? " late-t" : ""}">${esc(big)}</p><p class="small">Last watered ${esc(rel(p.lastWatered))} · every ${everyOf(p)} days${isSmart(p) ? " (smart)" : ""}${feedNow ? " · feed with this one" : ""}</p></div>
+      ${n <= 0 || isSmart(p) ? `<div class="cuepick" role="group" aria-label="What you noticed">${CUE_WORDS.map((cw) => `<button class="toggle" data-act="cue" data-id="${p.id}" data-cue="${cw}" aria-pressed="${picked.includes(cw)}">${cw}</button>`).join("")}</div>` : ""}
       <div class="actions">
         ${feedNow ? `<button class="btn primary wide" data-act="water" data-fed="1" data-id="${p.id}">Watered + fed</button><button class="btn wide" data-act="water" data-id="${p.id}">Water only</button>`
                   : `<button class="btn primary wide" data-act="water" data-id="${p.id}">${n > 0 ? "Watered today" : "Watered"}</button>`}
         ${n <= 0 ? `<button class="btn wide" data-act="damp" data-id="${p.id}">Still damp</button>` : ""}
       </div>
       <details class="more-d"><summary>How to tell if it needs water</summary><ul><li>${esc(how)}</li>${(c.cues?.length ? c.cues : GENERIC_CUES).map((x) => `<li>${esc(x)}</li>`).join("")}</ul></details>
+      ${whySection(p)}
     </section>
     ${inspNow ? `<section class="status"><div><p class="k">Pest check</p><p class="small">Look under the leaves and at the soil for pests, webbing or sticky spots.</p></div>
       <div class="actions"><button class="btn wide" data-act="inspect-ok" data-id="${p.id}">All clear</button><button class="btn wide" data-act="inspect-issue" data-id="${p.id}">Found a problem</button></div></section>` : ""}
     ${progressSection(p)}
     <section><h3 class="group-h">Schedule</h3><div class="group">
-      <div class="kv"><span>Check water</span><span class="stepper"><button class="btn small" data-act="int" data-d="-1" data-id="${p.id}" aria-label="Check more often">−</button><span>every ${p.waterEvery || 7} days</span><button class="btn small" data-act="int" data-d="1" data-id="${p.id}" aria-label="Check less often">+</button></span></div>
+      <div class="kv"><span>Check water</span><span class="stepper"><button class="btn small" data-act="int" data-d="-1" data-id="${p.id}" aria-label="Check more often">−</button><span>every ${everyOf(p)} days</span><button class="btn small" data-act="int" data-d="1" data-id="${p.id}" aria-label="Check less often">+</button></span></div>
       <div class="kv"><span>Last fed</span><span>${esc(short(p.lastFed))} · ${esc(feedLine(p, d.f))}</span></div>
       <div class="kv"><span>Pest check</span><span>${esc(rel(d.i))}</span></div>
       ${p.repotted ? `<div class="kv"><span>Repotted</span><span>${esc(short(p.repotted))}</span></div>` : ""}
@@ -1072,13 +1227,18 @@ function plantForm(p) {
       <div class="field"><label for="pf-exp">Light it gets</label><select id="pf-exp" name="e.exposure">${opt("", e.exposure, "Same as the room")}<optgroup label="Indoors">${EXPOSURE_IN.map((g) => opt(g, e.exposure, cap(g))).join("")}</optgroup><optgroup label="Outdoors">${Object.keys(EXPOSURE_OUT).map((g) => opt(g, e.exposure, cap(g))).join("")}</optgroup></select></div>
       <div class="row2"><div class="field"><label for="pf-sunh">Hours of light a day</label><input type="number" id="pf-sunh" name="e.sunHours" min="0" max="24" step="0.5" value="${esc(e.sunHours ?? "")}" placeholder="6"></div>
       <div class="field"><label for="pf-growh">Grow light hours a day</label><input type="number" id="pf-growh" name="e.growHours" min="0" max="24" step="0.5" value="${esc(e.growHours ?? "")}" placeholder="12"></div></div>
-      <div class="field"><label for="pf-read">Light meter reading</label><input type="text" id="pf-read" name="e.reading" value="${esc(e.reading)}" placeholder="250 foot-candles at noon, Nov"></div>
+      ${(() => { const r = lightReading(e); return `<div class="row2"><div class="field"><label for="pf-read">Light meter reading</label><input type="number" id="pf-read" name="e.lightValue" min="0" step="any" inputmode="decimal" value="${esc(r.v)}" placeholder="300"></div>
+      <div class="field"><label for="pf-unit">Unit</label><select id="pf-unit" name="e.lightUnit">${Object.entries(LIGHT_UNITS).map(([k, v]) => opt(k, r.u, k === "fc" ? "Foot-candles" : k === "lux" ? "Lux" : "PPFD")).join("")}</select></div></div>`; })()}
       <div class="row2"><div class="field"><label for="pf-ptype">Pot type</label><select id="pf-ptype" name="e.potType">${opt("", e.potType, "Not set")}${POT_TYPES.map((t) => opt(t, e.potType, cap(t))).join("")}</select></div>
       <div class="field"><label for="pf-psize">Pot size</label><input type="text" id="pf-psize" name="e.potSize" value="${esc(e.potSize ?? (e.potType ? "" : p.pot || ""))}" placeholder="6 in"></div></div>
       <div class="row2"><div class="field"><label for="pf-drain">Drainage holes</label><select id="pf-drain" name="e.drainage">${opt("", e.drainage, "Not sure")}${opt("yes", e.drainage, "Yes")}${opt("no", e.drainage, "No")}</select></div>
-      <div class="field"><label for="pf-soil">Soil</label><input type="text" id="pf-soil" name="soil" value="${esc(p.soil)}" placeholder="Aroid mix"></div></div>
+      ${(() => { const known = SOILS.find((x) => x.toLowerCase() === String(p.soil || "").toLowerCase()), pick = !p.soil ? "" : known || "__other"; return `<div class="field"><label for="pf-soil">Growing medium</label><select id="pf-soil" name="soilPick">${opt("", pick, "Not set")}${SOILS.map((x) => opt(x, pick, cap(x))).join("")}${opt("__other", pick, "Something else…")}</select></div></div>
+      <div class="field" id="pf-soil-wrap"${pick === "__other" ? "" : " hidden"}><label for="pf-soil2">Describe the mix</label><input type="text" id="pf-soil2" name="soilOther" value="${esc(pick === "__other" ? p.soil : "")}" placeholder="Cactus mix + perlite"></div>`; })()}
+      <div class="field"><label for="pf-heat">Near a heater or vent</label><select id="pf-heat" name="e.heat">${opt("", e.heat, "Not set")}${opt("yes", e.heat, "Yes")}${opt("no", e.heat, "No")}</select></div>
     </fieldset></details>
     <details><summary class="muted" style="cursor:pointer;font-weight:700">Schedule: water, feed, pest checks</summary><fieldset style="margin-top:10px"><legend>Schedule</legend>
+  <div class="field"><label for="pf-sched">Watering schedule</label><select id="pf-sched" name="sched">${(() => { const cur = p.id ? p.sched || "" : "smart"; return opt("smart", cur, "Smart: worked out from the setup, learns from check-ins") + opt("trusted", cur, "My interval, trusted: also teaches the smart schedule") + opt("", cur, "My interval"); })()}</select></div>
+      <div class="field"><label for="pf-wgroup">Kind of drinker</label><select id="pf-wgroup" name="c.waterGroup">${opt("", c.waterGroup, `Guess from the species (${WATER_GROUPS[guessGroup(p)].label.toLowerCase()})`)}${Object.entries(WATER_GROUPS).map(([k, g]) => opt(k, c.waterGroup, g.label)).join("")}</select></div>
   <div class="row2"><div class="field"><label for="pf-every">Check water every</label><input type="number" id="pf-every" name="waterEvery" min="1" max="60" value="${esc(p.waterEvery || 7)}"><small>days</small></div>
       <div class="field"><label for="pf-last">Last watered</label><input type="date" id="pf-last" name="lastWatered" value="${esc(p.lastWatered || "")}"></div></div>
       <div class="row2"><div class="field"><label for="pf-fedlast">Last fed</label><input type="date" id="pf-fedlast" name="lastFed" value="${esc(p.lastFed || "")}"></div>
@@ -1118,12 +1278,18 @@ async function savePlant(form) {
       else care[f] = val;
     } else if (k.startsWith("e.")) {
       const f = k.slice(2);
-      if (f === "sunHours" || f === "growHours") { if (val === "") delete env[f]; else env[f] = Math.max(0, Math.min(24, parseFloat(val) || 0)); }
+      if (f === "lightValue") { if (val === "") { delete env.lightValue; delete env.lightUnit; } else { env.lightValue = Math.max(0, parseFloat(val) || 0); delete env.reading; } }
+      else if (f === "lightUnit") { if (fd.get("e.lightValue")) env.lightUnit = val; }
+      else if (f === "sunHours" || f === "growHours") { if (val === "") delete env[f]; else env[f] = Math.max(0, Math.min(24, parseFloat(val) || 0)); }
       else if (val === "") delete env[f]; else env[f] = val;
-    } else if (k !== "newRoom" && k !== "fromProp") rec[k] = val;
+    } else if (k === "soilPick") rec.soil = val === "__other" ? String(fd.get("soilOther") || "").trim() : val;
+    else if (k !== "newRoom" && k !== "fromProp" && k !== "soilOther") rec[k] = val;
   }
   if (!rec.name && !rec.species) { toast("Give it a nickname or a species."); return; }
   rec.waterEvery = Math.max(1, Math.min(60, parseInt(rec.waterEvery, 10) || 7));
+  rec.sched = ["smart", "trusted"].includes(rec.sched) ? rec.sched : "";
+  if (rec.sched === "trusted" && (old?.sched !== "trusted" || old.waterEvery !== rec.waterEvery)) rec.schedSince = today();
+  if (rec.sched === "smart" && old?.sched !== "smart") rec.waterTune = 1;
   rec.lastWatered = rec.lastWatered || null;
   for (const k of ["lastFed", "noFeedUntil", "lastInspected", "repotted"]) rec[k] = rec[k] || null;
   for (const k of ["feedEvery", "inspectEvery"]) rec[k] = rec[k] ? Math.max(1, Math.min(365, parseInt(rec[k], 10) || 0)) || null : null;
@@ -1177,8 +1343,8 @@ function propForm(x) {
     <div class="field"><label for="xf-sp">Species</label><input type="text" id="xf-sp" name="species" value="${esc(x.species)}" placeholder="Same as parent if blank"></div></div>
     <div class="row2"><div class="field"><label for="xf-taken">Taken on</label><input type="date" id="xf-taken" name="taken" value="${esc(x.taken || "")}"></div>
     <div class="field"><label for="xf-qty">How many</label><input type="number" id="xf-qty" name="qty" min="1" max="99" value="${esc(x.qty || 1)}"></div></div>
-    <div class="row2"><div class="field"><label for="xf-meth">Method</label><select id="xf-meth" name="method">${["water", "soil", "sphagnum", "leca", "division", "air layer", "leaf cutting"].map((m) => opt(m, x.method || "water")).join("")}</select></div>
-    <div class="field"><label for="xf-st">Status</label><select id="xf-st" name="status">${STATUSES.map((s) => opt(s, x.status)).join("")}</select></div></div>
+    <div class="row2"><div class="field"><label for="xf-meth">Method</label><select id="xf-meth" name="method">${["water", "soil", "sphagnum", "leca", "division", "air layer", "leaf cutting"].map((m) => opt(m, x.method || "water", m === "leca" ? "LECA" : cap(m))).join("")}</select></div>
+    <div class="field"><label for="xf-st">Status</label><select id="xf-st" name="status">${STATUSES.map((s) => opt(s, x.status, cap(s))).join("")}</select></div></div>
     <div class="row2"><div class="field"><label for="xf-spot">Where it sits</label><input type="text" id="xf-spot" name="spot" value="${esc(x.spot)}" placeholder="Kitchen sill"></div>
     <div class="field"><label for="xf-price">Asking price ($)</label><input type="number" id="xf-price" name="price" min="0" step="1" value="${esc(x.price || "")}"></div></div>
     <div class="field"><label for="xf-notes">Notes</label><input type="text" id="xf-notes" name="notes" value="${esc(x.notes)}" placeholder="Roots showing"></div>
@@ -1210,6 +1376,22 @@ function arm(btn, key, label) {
   return false;
 }
 
+// Instant tooltip for the cat icon (the browser's own title tooltip waits about a second).
+const tipEl = document.createElement("div"); tipEl.className = "tip"; tipEl.setAttribute("aria-hidden", "true"); document.body.appendChild(tipEl);
+let tipTimer = 0;
+function showTip(el, ms) {
+  tipEl.textContent = el.dataset.tip; tipEl.classList.add("on");
+  const r = el.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+  const x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)), y = r.top - h - 6 < 8 ? r.bottom + 6 : r.top - h - 6;
+  tipEl.style.left = x + "px"; tipEl.style.top = y + "px";
+  clearTimeout(tipTimer); if (ms) tipTimer = setTimeout(hideTip, ms);
+}
+function hideTip() { clearTimeout(tipTimer); tipEl.classList.remove("on"); }
+document.addEventListener("pointerover", (ev) => { const t = ev.target.closest?.("[data-tip]"); if (t) showTip(t, ev.pointerType === "mouse" ? 0 : 1800); });
+document.addEventListener("pointerout", (ev) => { if (ev.pointerType === "mouse" && ev.target.closest?.("[data-tip]") && !ev.target.closest("[data-tip]").contains(ev.relatedTarget)) hideTip(); });
+document.addEventListener("scroll", hideTip, true);
+// On a phone, tapping the cat in a plant's header shows the tip for a moment.
+document.addEventListener("click", (ev) => { const t = ev.target.closest?.("h2 [data-tip]"); if (t) showTip(t, 1800); });
 document.addEventListener("click", async (ev) => {
   const t = ev.target.closest("[data-act], [data-tab]"); if (!t) return;
   if (t.dataset.tab) { S.tab = t.dataset.tab; $("#view").innerHTML = ""; render(); window.scrollTo(0, 0); return; }
@@ -1256,7 +1438,8 @@ document.addEventListener("click", async (ev) => {
       if (!p) return; const fed = !!t.dataset.fed; t.disabled = true;
       const upd = { lastWatered: today(), snoozeUntil: null };
       if (fed) upd.lastFed = today();
-      if (await logAct(p, { t: "water", fed, cues: S.cues[id] || [] }, upd, `Watered ${nm(p)}${fed ? " and fed" : ""}`)) delete S.cues[id];
+      const { _every, ...lt } = learn(p, "water", S.cues[id] || []); Object.assign(upd, lt);
+      if (await logAct(p, { t: "water", fed, cues: S.cues[id] || [], ...(_every ? { every: _every } : {}) }, upd, `Watered ${nm(p)}${fed ? " and fed" : ""}${_every ? `. Now every ${_every} days` : ""}`)) delete S.cues[id];
       t.disabled = false; return;
     }
     case "water-ask": if (p) { S.sheetPlant = null; S.actOpen = false; openSheet(waterSheet(p)); } return;
@@ -1264,13 +1447,14 @@ document.addEventListener("click", async (ev) => {
     case "undo": t.disabled = true; await undoEntry(id, t.dataset.at); return;
     case "activity": S.sheetPlant = null; S.actOpen = true; openSheet(activitySheet()); return;
     case "damp": {
-      if (!p) return; const wait = (p.waterEvery || 7) >= 10 ? 3 : 2;
+      if (!p) return; const wait = everyOf(p) >= 10 ? 3 : 2;
       const fromStep = !!$("#waterForm");
-      if (await logAct(p, { t: "check", cues: ["damp", ...(S.cues[id] || [])] }, { snoozeUntil: addDays(today(), wait) }, `OK, checking ${nm(p)} again in ${wait} days`)) { delete S.cues[id]; if (fromStep) closeSheet(); }
+      const { _every, ...lt } = learn(p, "damp", []);
+      if (await logAct(p, { t: "check", cues: ["damp", ...(S.cues[id] || [])], ...(_every ? { every: _every } : {}) }, { snoozeUntil: addDays(today(), wait), ...lt }, `OK, checking ${nm(p)} again in ${wait} days${_every ? `. Next gap ${_every} days` : ""}`)) { delete S.cues[id]; if (fromStep) closeSheet(); }
       return;
     }
     case "fed": return p && logAct(p, { t: "note", note: "fed" }, { lastFed: today() }, `Fed ${nm(p)}`);
-    case "repot": return p && logAct(p, { t: "repot" }, { repotted: today(), noFeedUntil: addDays(today(), 42) }, "Repot logged. Feeding pauses for six weeks.");
+    case "repot": { if (!p) return; const { _every, ...lt } = learn(p, "repot", []); return logAct(p, { t: "repot" }, { repotted: today(), noFeedUntil: addDays(today(), 42), ...lt }, "Repot logged. Feeding pauses for six weeks."); }
     case "inspect-ok": return p && logAct(p, { t: "inspect", note: "all clear" }, { lastInspected: today() }, "Pest check logged");
     case "inspect-issue": {
       if (!p) return;
@@ -1279,10 +1463,20 @@ document.addEventListener("click", async (ev) => {
     }
     case "clear-health": return p && logAct(p, { t: "note", note: "cleared: " + p.health }, { health: null }, "Flag cleared");
     case "int": {
-      if (!p) return; const n = Math.max(1, Math.min(60, (p.waterEvery || 7) + Number(t.dataset.d)));
+      if (!p) return;
+      if (isSmart(p)) { const pl = smartPlan(p), want = clampDays(pl.days + Number(t.dataset.d)); return write(() => plantRef(id).update({ waterTune: clampTune(want / (pl.raw * pl.cal)) })); }
+      const n = Math.max(1, Math.min(60, (p.waterEvery || 7) + Number(t.dataset.d)));
       return write(() => plantRef(id).update({ waterEvery: n }));
     }
-    case "open-plant": if (p) { S.shotOpen = null; S.ci = null; S.sheetPlant = id; openSheet(plantSheet(p)); } return;
+    case "sched-smart": return p && write(() => plantRef(id).update({ sched: "smart", waterTune: 1 }), `${nm(p)} is on the smart schedule`);
+    case "sched-lock": { if (!p) return; const n = everyOf(p); return write(() => plantRef(id).update({ sched: "trusted", schedSince: today(), waterEvery: n }), `${nm(p)} stays at every ${n} days`); }
+    case "smart-review": S.sheetPlant = null; S.actOpen = false; openSheet(smartSheet()); S.smartOpen = true; return;
+    case "smart-later": try { localStorage.setItem("ws-smart-hint", "off"); } catch {} closeSheet(); render(); return;
+    case "smart-all": {
+      const list = S.plants.filter((x) => !x.sched); t.disabled = true;
+      return write(async () => { for (const x of list) await plantRef(x.id).update({ sched: "smart", waterTune: 1 }); }, `${list.length} plants are on the smart schedule`);
+    }
+    case "open-plant": if (p) { S.smartOpen = false; S.shotOpen = null; S.ci = null; S.sheetPlant = id; openSheet(plantSheet(p)); } return;
     case "new-plant": S.sheetPlant = null; openSheet(plantForm()); wireRoomSelect(); return;
     case "gift": {
       if (!p) return; S.sheetPlant = null; const g = p.gifted || {};
@@ -1345,6 +1539,8 @@ document.addEventListener("change", (ev) => {
 function wireRoomSelect() {
   const sel = $("#pf-room"), wrap = $("#pf-newroom-wrap");
   if (sel) sel.addEventListener("change", () => { wrap.hidden = sel.value !== "__new"; if (!wrap.hidden) $("#pf-newroom").focus(); });
+  const soil = $("#pf-soil"), sw = $("#pf-soil-wrap");
+  if (soil) soil.addEventListener("change", () => { sw.hidden = soil.value !== "__other"; if (!sw.hidden) $("#pf-soil2").focus(); });
 }
 document.addEventListener("submit", async (ev) => {
   ev.preventDefault(); if (!S.db) return;
@@ -1398,8 +1594,9 @@ document.addEventListener("submit", async (ev) => {
       const p = getPlant(f.dataset.id), note = String(new FormData(f).get("note") || "").trim(), fed = !!S.wq?.fed;
       if (!p) return;
       const upd = { lastWatered: today(), snoozeUntil: null }; if (fed) upd.lastFed = today();
-      const entry = { t: "water", fed, cues: S.cues[p.id] || [] }; if (note) entry.note = note;
-      if (await logAct(p, entry, upd, `Watered ${nm(p)}${fed ? " and fed" : ""}`)) { delete S.cues[p.id]; closeSheet(); }
+      const { _every, ...lt } = learn(p, "water", S.cues[p.id] || []); Object.assign(upd, lt);
+      const entry = { t: "water", fed, cues: S.cues[p.id] || [] }; if (note) entry.note = note; if (_every) entry.every = _every;
+      if (await logAct(p, entry, upd, `Watered ${nm(p)}${fed ? " and fed" : ""}${_every ? `. Now every ${_every} days` : ""}`)) { delete S.cues[p.id]; closeSheet(); }
     }
   } finally { if (btn && btn.isConnected) btn.disabled = false; }
 });

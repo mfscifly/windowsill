@@ -384,11 +384,11 @@ function smartPlan(p) {
   return { ...now, cal, tune, like: like.map((x) => nm(x.a)), kin: !like.length && kin.length > 1 ? kin.length : 0, anchors: A.length, days: clampDays(now.raw * cal * tune) };
 }
 const everyOf = (p) => isSmart(p) ? smartPlan(p).days : p.waterEvery || 7;
-// What a check-in teaches a smart plant. Lengthens on one damp check, shortens only on a dry sign (lean dry).
+// What a check-in teaches a smart plant. Lengthens on one damp check (10%, min one day), shortens only on a dry sign (lean dry).
 function learn(p, kind, cues) {
   if (!isSmart(p)) return {};
   const plan = smartPlan(p), t = plan.tune; let n = t;
-  if (kind === "damp") n = t * 1.1;
+  if (kind === "damp") n = Math.max(t * 1.1, (plan.days + 1) / (plan.raw * plan.cal)); // +10% or at least one full day
   else if (kind === "repot") n = (1 + t) / 2;
   else if (cues.some((c) => TOO_DRY.includes(c))) n = t * 0.85;
   else if (p.lastWatered && cues.some((c) => c === "dry" || c === "light pot")) { const gap = daysBetween(p.lastWatered, today()); if (gap <= plan.days - 2) n = t * Math.max(0.7, gap / plan.days); }

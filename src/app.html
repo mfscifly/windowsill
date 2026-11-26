@@ -143,6 +143,10 @@ details.soon[open] > summary { margin-bottom: 10px; }
 .status .big { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; }
 .status .small { font-size: 15px; color: var(--muted); }
 .cuepick { display: flex; flex-wrap: wrap; gap: 8px; }
+.damp-pick { flex-basis: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.damp-pick > p { grid-column: 1 / -1; margin: 2px 2px 0; font-size: 13px; color: var(--muted); }
+.damp-pick .btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 10px 6px; line-height: 1.2; }
+.damp-pick .btn small { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
 .note { display: flex; gap: 10px; align-items: flex-start; background: var(--late-soft); color: var(--ink); border-radius: 12px; padding: 12px 14px; font-size: 15px; }
 .note svg { color: var(--late); flex: none; margin-top: 1px; }
 .note .btn { margin-left: auto; }
@@ -225,11 +229,13 @@ h2 .cat svg { width: 20px; height: 20px; }
 .fam-acts { display: flex; gap: 10px; padding: 4px 14px 14px; }
 .fam-acts .btn { flex: 1; }
 .toast:not([hidden]) { display: flex; align-items: center; gap: 14px; }
-.toast-act { border: 0; background: none; color: var(--water-soft); font: inherit; font-weight: 700; padding: 6px 2px; margin: -6px 0; cursor: pointer; }
+.toast-act { border: 0; background: none; color: var(--water-deep); font: inherit; font-weight: 700; padding: 6px 2px; margin: -6px 0; cursor: pointer; }
 .done-t { color: var(--ok); }
 .row .btn.small { flex: none; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(92px + env(safe-area-inset-bottom, 0px)); z-index: 30;
-  background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 999px; font-size: 15px; font-weight: 500; max-width: calc(100% - 32px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); }
+  background: rgba(255, 255, 255, 0.92); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); color: var(--ink);
+  border: 1px solid var(--line); padding: 12px 18px; border-radius: var(--r); font-size: 15px; font-weight: 500; line-height: 1.35;
+  width: max-content; max-width: calc(100% - 32px); box-shadow: 0 10px 30px var(--sill-shadow), 0 1px 3px rgba(0, 0, 0, 0.06); }
 @media (prefers-reduced-motion: no-preference) {
   .sheet-card { animation: up 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); } @keyframes up { from { transform: translateY(40px); opacity: 0.6; } }
   .toast { animation: pop 0.2s ease-out; } @keyframes pop { from { transform: translate(-50%, 8px); opacity: 0; } }
@@ -385,10 +391,11 @@ function smartPlan(p) {
 }
 const everyOf = (p) => isSmart(p) ? smartPlan(p).days : p.waterEvery || 7;
 // What a check-in teaches a smart plant. Lengthens on one damp check (10%, min one day), shortens only on a dry sign (lean dry).
-function learn(p, kind, cues) {
+function learn(p, kind, cues, lvl = 2) {
   if (!isSmart(p)) return {};
   const plan = smartPlan(p), t = plan.tune; let n = t;
-  if (kind === "damp") n = Math.max(t * 1.1, (plan.days + 1) / (plan.raw * plan.cal)); // +10% or at least one full day
+  // Damp levels: 1 nearly dry (about on time, no change), 2 damp (+10% or a day), 3 still wet (+20% or two days).
+  if (kind === "damp") n = lvl <= 1 ? t : lvl >= 3 ? Math.max(t * 1.2, (plan.days + 2) / (plan.raw * plan.cal)) : Math.max(t * 1.1, (plan.days + 1) / (plan.raw * plan.cal));
   else if (kind === "repot") n = (1 + t) / 2;
   else if (cues.some((c) => TOO_DRY.includes(c))) n = t * 0.85;
   else if (p.lastWatered && cues.some((c) => c === "dry" || c === "light pot")) { const gap = daysBetween(p.lastWatered, today()); if (gap <= plan.days - 2) n = t * Math.max(0.7, gap / plan.days); }
@@ -1447,10 +1454,20 @@ document.addEventListener("click", async (ev) => {
     case "undo": t.disabled = true; await undoEntry(id, t.dataset.at); return;
     case "activity": S.sheetPlant = null; S.actOpen = true; openSheet(activitySheet()); return;
     case "damp": {
-      if (!p) return; const wait = everyOf(p) >= 10 ? 3 : 2;
+      if (!p) return;
+      const long = everyOf(p) >= 10, waits = [1, long ? 3 : 2, long ? 5 : 4];
+      if (!t.dataset.lvl) { // first tap: ask how damp, so a nearly dry pot isn't pushed out days
+        const box = t.closest(".actions"); if (!box || box.querySelector(".damp-pick")) return;
+        t.hidden = true;
+        const opts = [["Nearly dry", "check tomorrow"], ["Damp", `check in ${waits[1]} days`], ["Still wet", `check in ${waits[2]} days`]];
+        box.insertAdjacentHTML("beforeend", `<div class="damp-pick" role="group" aria-label="How damp is it?"><p>How damp is it?</p>${opts.map(([a, b], i) => `<button class="btn" type="button" data-act="damp" data-lvl="${i + 1}" data-id="${p.id}">${a}<small>${b}</small></button>`).join("")}</div>`);
+        return;
+      }
+      const lvl = Number(t.dataset.lvl), wait = waits[lvl - 1];
       const fromStep = !!$("#waterForm");
-      const { _every, ...lt } = learn(p, "damp", []);
-      if (await logAct(p, { t: "check", cues: ["damp", ...(S.cues[id] || [])], ...(_every ? { every: _every } : {}) }, { snoozeUntil: addDays(today(), wait), ...lt }, `OK, checking ${nm(p)} again in ${wait} days${_every ? `. Next gap ${_every} days` : ""}`)) { delete S.cues[id]; if (fromStep) closeSheet(); }
+      const { _every, ...lt } = learn(p, "damp", [], lvl);
+      const cue = ["nearly dry", "damp", "wet"][lvl - 1];
+      if (await logAct(p, { t: "check", cues: ["damp", ...(cue !== "damp" ? [cue] : []), ...(S.cues[id] || [])], ...(_every ? { every: _every } : {}) }, { snoozeUntil: addDays(today(), wait), ...lt }, `Checking ${nm(p)} again ${wait === 1 ? "tomorrow" : `in ${wait} days`}${_every ? `. Next gap ${_every} days` : ""}`)) { delete S.cues[id]; if (fromStep) closeSheet(); }
       return;
     }
     case "fed": return p && logAct(p, { t: "note", note: "fed" }, { lastFed: today() }, `Fed ${nm(p)}`);

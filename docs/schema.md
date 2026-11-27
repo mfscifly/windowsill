@@ -10,7 +10,7 @@ Three collections. Dates are `YYYY-MM-DD` strings.
 - `waterEvery` (days), `lastWatered`, `snoozeUntil`
 - Smart watering: `sched` ("" = plain interval, `trusted` = owner's interval that also calibrates the model, `smart` = computed), `schedSince` (date a trusted interval was set, used for its season), `waterTune` (0.5 to 2, learned from check-ins), `care.waterGroup` (succulent | semi | foliage | thirsty | orchid, blank = guessed from the species), `env.heat` (yes | no). A smart plant's interval is baseline for the group x medium x pot type x pot size x light x season x heat, scaled to agree with trusted plants (look-alikes first, then same group, then all), times `waterTune`. See `smartPlan()` in `src/app.html`.
 - `lastFed`, `feedEvery` (days, optional), `noFeedUntil`, `feedYearRound`
-- `lastInspected`, `inspectEvery`, `repotted`, `created`
+- `lastInspected`, `inspectEvery`, `inspectNext` (optional pinned date for the next monthly progress check-in; logging one clears it), `repotted`, `created`
 - `gifted`: `{ to, date }` (gifted plants leave the schedule)
 - `care`: `{ light, lightNeed: low|medium|bright indirect|direct, water, humidity, toxic, dormancy, feed: standard|succulent|orchid|none, method: top|bottom, tapWater: ""|avoid, cues[], propagate }`
 - `log[]` (last 150): `{ d, at (ISO time), t: water|check|inspect|issue|repot|move|note, fed, cues[], note, prev }`; `prev` holds the fields the action changed, so it can be undone

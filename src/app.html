@@ -251,7 +251,7 @@ h2 .cat svg { width: 20px; height: 20px; }
   <button data-tab="rooms"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M12 3v18M4 12h16"/></svg>Rooms<span class="n" id="n-rooms"></span></button>
   <button data-tab="props"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3h8l-1 5v10a3 3 0 0 1-6 0V8z"/><path d="M12 14c0-3 2-5 4-6"/></svg>Props<span class="n" id="n-props"></span></button>
 </div></nav>
-<div class="sheet" id="sheet" hidden><div class="sheet-back" data-act="close"></div><div class="sheet-card" role="dialog" aria-modal="true" id="sheetBody"></div></div>
+<div class="sheet" id="sheet" hidden><div class="sheet-back" data-act="close-all"></div><div class="sheet-card" role="dialog" aria-modal="true" id="sheetBody"></div></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -465,6 +465,7 @@ async function boot() {
       S.loaded[name] = true;
       render();
       if (S.sheetPlant) refreshPlantSheet();
+      if (S.roomOpen && (name === "plants" || name === "rooms")) openRoom(S.roomBack);
       if (name === "plants" && S.openNext && getPlant(S.openNext)) { const id = S.openNext; S.openNext = null; S.sheetPlant = id; openSheet(plantSheet(getPlant(id))); }
       if (name === "checkins" && S.shotOpen) openShot(S.shotOpen);
       if (name === "plants" && S.actOpen) refreshActivity();
@@ -959,7 +960,7 @@ function viewRooms() {
     const n = S.plants.filter((p) => p.roomId === r.id).length, issues = roomIssues(r).length;
     const sub = [r.facing && cap(r.facing) + "-facing", r.light && cap(r.light)].filter(Boolean).map(esc);
     if (issues) sub.push(`<span class="late-t">${issues} to check</span>`);
-    return `<div class="row"><button class="main" data-act="edit-room" data-id="${r.id}"><span class="lines"><span class="name">${esc(r.name)}</span><span class="sub">${sub.join(" · ") || "No window details yet"}</span></span></button><span class="trail">${n} plant${n === 1 ? "" : "s"}</span>${IC.chev}</div>`;
+    return `<div class="row"><button class="main" data-act="open-room" data-id="${r.id}"><span class="lines"><span class="name">${esc(r.name)}</span><span class="sub">${sub.join(" · ") || "No window details yet"}</span></span></button><span class="trail">${n} plant${n === 1 ? "" : "s"}</span>${IC.chev}</div>`;
   }).join("");
   return `<section class="group">${rows}</section><p class="lede">Which way each window faces and how bright it is help match each plant to a spot where it will be happiest.</p>`;
 }
@@ -999,8 +1000,12 @@ async function openSettings() {
   let st = "unsupported"; try { st = await window.windowsill.pushStatus(); } catch {}
   if (S.settingsOpen && !$("#sheet").hidden) $("#sheetBody").innerHTML = settingsSheet(st);
 }
-function openSheet(html) { $("#sheetBody").innerHTML = html; $("#sheet").hidden = false; $("#sheetBody").scrollTop = 0; }
-function closeSheet() { $("#sheet").hidden = true; $("#sheetBody").innerHTML = ""; S.sheetPlant = null; S.shotOpen = null; S.settingsOpen = false; S.actOpen = false; S.smartOpen = false; S.wq = null; }
+function openSheet(html) { S.roomOpen = false; $("#sheetBody").innerHTML = html; $("#sheet").hidden = false; $("#sheetBody").scrollTop = 0; }
+function closeSheet(all) {
+  const back = !all && !S.roomOpen && S.roomBack;
+  $("#sheet").hidden = true; $("#sheetBody").innerHTML = ""; S.sheetPlant = null; S.shotOpen = null; S.settingsOpen = false; S.actOpen = false; S.smartOpen = false; S.wq = null; S.roomOpen = false; S.roomBack = null;
+  if (back) openRoom(back); // closing a plant or form opened from a room goes back to that room
+}
 const sheetTop = (title, sub) => `<div class="sheet-top"><div><h2>${esc(title)}</h2>${sub ? `<p class="sp">${esc(sub)}</p>` : ""}</div><button class="x" data-act="close" aria-label="Close">${IC.x}</button></div>`;
 
 const visits = (p) => (p.log || []).filter((e) => e.t === "visit");
@@ -1324,6 +1329,21 @@ async function savePlant(form) {
   if (ok) { if (id) { S.sheetPlant = id; refreshPlantSheet(); } else if (ref?.id && (prop || rec.parentId)) openSoon(ref.id); else closeSheet(); }
 }
 
+// A room's own sheet: its plants (tap through to each), then Edit. Sheets opened from here come back to it on close.
+function roomSheet(r) {
+  const ps = S.plants.filter((p) => p.roomId === r.id).sort((a, b) => waterDue(a).localeCompare(waterDue(b)) || nm(a).localeCompare(nm(b)));
+  const sub = [r.facing && cap(r.facing) + "-facing", r.light && cap(r.light), ps.length + " plant" + (ps.length === 1 ? "" : "s")].filter(Boolean).join(" · ");
+  const issues = roomIssues(r).map((x) => `<div class="note">${IC.alert}<span>${esc(x)}</span></div>`).join("");
+  const list = ps.length ? `<section class="group">${ps.map(plantRow).join("")}</section>` : `<p class="banner">No plants here yet.</p>`;
+  return sheetTop(r.name || "Room", sub) + issues + list + `<div class="actions"><button class="btn primary wide" data-act="room-add-plant" data-id="${r.id}">Add a plant here</button><button class="btn wide" data-act="edit-room" data-id="${r.id}">Edit room</button></div>`;
+}
+function openRoom(id) {
+  const r = S.rooms.find((x) => x.id === id);
+  if (!r) { S.roomBack = null; return closeSheet(true); }
+  const same = S.roomOpen && !$("#sheet").hidden, top = $("#sheetBody").scrollTop;
+  openSheet(roomSheet(r)); S.roomBack = id; S.roomOpen = true;
+  if (same) $("#sheetBody").scrollTop = top;
+}
 function roomForm(r) {
   r = r || {};
   const n = r.id ? S.plants.filter((p) => p.roomId === r.id).length : 0;
@@ -1407,6 +1427,7 @@ document.addEventListener("click", async (ev) => {
   if (t.dataset.tab) { S.tab = t.dataset.tab; $("#view").innerHTML = ""; render(); window.scrollTo(0, 0); return; }
   const act = t.dataset.act, id = t.dataset.id, p = id ? getPlant(id) : null;
   if (act === "close") return closeSheet();
+  if (act === "close-all") return closeSheet(true);
   if (act === "settings" && window.windowsill) return openSettings();
   if ((act === "push-on" || act === "push-off") && window.windowsill) {
     t.disabled = true; let st;
@@ -1523,11 +1544,13 @@ document.addEventListener("click", async (ev) => {
       if (await write(() => plantRef(id).delete(), "Plant deleted")) closeSheet(); return;
     }
     case "new-room": return openSheet(roomForm());
+    case "open-room": return openRoom(id);
+    case "room-add-plant": S.sheetPlant = null; openSheet(plantForm({ roomId: id })); wireRoomSelect(); return;
     case "edit-room": return openSheet(roomForm(S.rooms.find((r) => r.id === id)));
     case "del-room": {
       t.dataset.orig = "Delete room";
       if (!arm(t, "room" + id, "Tap again to delete")) return;
-      if (await write(() => S.db.collection("rooms").doc(id).delete(), "Room deleted")) closeSheet(); return;
+      if (await write(() => S.db.collection("rooms").doc(id).delete(), "Room deleted")) closeSheet(true); return;
     }
     case "new-prop": return openSheet(propForm());
     case "new-cutting": if (p) { S.sheetPlant = null; openSheet(propForm({ parentId: p.id, species: p.species || "", status: "rooting", taken: today(), qty: 1, method: "water", spot: p.spot || "" })); } return;

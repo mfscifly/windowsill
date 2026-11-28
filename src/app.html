@@ -128,6 +128,8 @@ details.soon[open] > summary { margin-bottom: 10px; }
   display: flex; flex-direction: column; gap: 18px; }
 .sheet-card::before { content: ""; align-self: center; width: 38px; height: 5px; border-radius: 3px; background: var(--line); flex: none; }
 .sheet-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.sheet-top.pinned { position: sticky; top: -10px; z-index: 3; background: var(--bg); margin-top: -10px; padding: 10px 0 8px; align-items: center; }
+.top-acts { display: flex; align-items: center; gap: 10px; flex: none; }
 .sheet-top h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
 .x { border: 0; background: var(--fill); color: var(--muted); border-radius: 50%; width: 32px; height: 32px; flex: none; display: inline-flex; align-items: center; justify-content: center; }
 
@@ -1176,7 +1178,7 @@ function plantSheet(p) {
   const log = (p.log || []).slice(-15).reverse();
   const label = { water: "Watered", check: "Checked", inspect: "Check-in", issue: "Problem", repot: "Repotted", move: "Moved", note: "Note" };
   return `<div class="p-head"><button class="x" data-act="close" aria-label="Close">${IC.x}</button>${headArt(p)}
-      <h2>${esc(nm(p))}${catTag(p)}</h2>${p.name && p.common ? `<p class="common">${esc(p.common)}</p>` : ""}${p.species ? `<p class="sp">${esc(p.species)}</p>` : ""}<p class="where">${esc(where(p))}</p>${p.name ? "" : `<button class="btn small" data-act="edit-plant" data-id="${p.id}" style="margin-top:6px">Give it a nickname</button>`}</div>
+      <h2>${esc(nm(p))}${catTag(p)}</h2>${p.name && p.common ? `<p class="common">${esc(p.common)}</p>` : ""}${p.species ? `<p class="sp">${esc(p.species)}</p>` : ""}<p class="where">${esc(where(p))}</p>${p.name ? "" : `<button class="btn small" data-act="edit-plant" data-id="${p.id}" data-focus="pf-name" style="margin-top:6px">Give it a nickname</button>`}</div>
     ${notes.join("")}
     <section class="status">
       <div><p class="k">Next drink</p><p class="big${n < 0 ? " late-t" : ""}">${esc(big)}</p><p class="small">Last watered ${esc(rel(p.lastWatered))} · every ${everyOf(p)} days${isSmart(p) ? " (smart)" : ""}${feedNow ? " · feed with this one" : ""}</p></div>
@@ -1222,9 +1224,9 @@ function refreshPlantSheet() {
 const opt = (v, cur, label) => `<option value="${esc(v)}"${String(v) === String(cur ?? "") ? " selected" : ""}>${esc(label ?? v)}</option>`;
 function plantForm(p) {
   p = p || {}; const c = p.care || {}, e = p.env || {};
-  return sheetTop(p.id ? "Edit plant" : "Add a plant") + `<form class="f" id="plantForm" data-id="${esc(p.id || "")}">
-    <div class="row2"><div class="field"><label for="pf-name">Nickname</label><input type="text" id="pf-name" name="name" value="${esc(p.name)}" placeholder="Big Monty"></div>
-    <div class="field"><label for="pf-common">Common name</label><input type="text" id="pf-common" name="common" value="${esc(p.common)}" placeholder="Swiss cheese plant"></div></div>
+  return `<div class="sheet-top pinned"><div><h2>${p.id ? "Edit plant" : "Add a plant"}</h2></div><div class="top-acts"><button class="btn primary small" type="submit" form="plantForm">${p.id ? "Save" : "Add"}</button><button class="x" type="button" data-act="close" aria-label="Close">${IC.x}</button></div></div>` + `<form class="f" id="plantForm" data-id="${esc(p.id || "")}">
+    <div class="row2"><div class="field"><label for="pf-name">Nickname</label><input type="text" id="pf-name" name="name" enterkeyhint="done" autocomplete="off" value="${esc(p.name)}" placeholder="Big Monty"></div>
+    <div class="field"><label for="pf-common">Common name</label><input type="text" id="pf-common" name="common" enterkeyhint="done" value="${esc(p.common)}" placeholder="Swiss cheese plant"></div></div>
     <div><div class="field"><label for="pf-species">Species</label><input type="text" id="pf-species" name="species" value="${esc(p.species)}" placeholder="Monstera deliciosa"></div></div>
     <div class="row2"><div class="field"><label for="pf-room">Room</label><select id="pf-room" name="roomId">${opt("", p.roomId, "No room yet")}${S.rooms.map((r) => opt(r.id, p.roomId, r.name)).join("")}${opt("__new", "", "New room…")}</select></div>
     <div class="field"><label for="pf-spot">Spot</label><input type="text" id="pf-spot" name="spot" value="${esc(p.spot)}" placeholder="East window sill"></div></div>
@@ -1537,7 +1539,7 @@ document.addEventListener("click", async (ev) => {
         <div class="actions"><button class="btn primary" type="submit">Save visit</button><button class="btn" type="button" data-act="close">Cancel</button></div></form>`);
     }
     case "ungift": return p && write(() => plantRef(id).update({ gifted: null, lastWatered: today(), log: withLog(p, { t: "note", note: "back home" }) }), `${nm(p)} is back on your schedule`);
-    case "edit-plant": if (p) { S.sheetPlant = null; openSheet(plantForm(p)); wireRoomSelect(); } return;
+    case "edit-plant": if (p) { S.sheetPlant = null; openSheet(plantForm(p)); wireRoomSelect(); if (t.dataset.focus) $("#" + t.dataset.focus)?.focus(); } return;
     case "del-plant": {
       t.dataset.orig = "Delete plant";
       if (!arm(t, "plant" + id, "Tap again to delete")) return;
@@ -1588,7 +1590,7 @@ function wireRoomSelect() {
 }
 document.addEventListener("submit", async (ev) => {
   ev.preventDefault(); if (!S.db) return;
-  const f = ev.target, btn = f.querySelector('[type="submit"]'); if (btn) btn.disabled = true;
+  const f = ev.target, btn = f.querySelector('[type="submit"]'), btns = [...f.elements].filter((b) => b.type === "submit"); btns.forEach((b) => (b.disabled = true));
   try {
     if (f.id === "plantForm") await savePlant(f);
     else if (f.id === "roomForm") await saveRoom(f);
@@ -1643,13 +1645,15 @@ document.addEventListener("submit", async (ev) => {
       const entry = { t: "water", fed, cues: S.cues[p.id] || [] }; if (note) entry.note = note; if (_every) entry.every = _every;
       if (await logAct(p, entry, upd, `Watered ${nm(p)}${fed ? " and fed" : ""}${_every ? `. Now every ${_every} days` : ""}`)) { delete S.cues[p.id]; closeSheet(); }
     }
-  } finally { if (btn && btn.isConnected) btn.disabled = false; }
+  } finally { btns.forEach((b) => { if (b.isConnected) b.disabled = false; }); }
 });
 document.addEventListener("toggle", (e) => { if (e.target.matches?.("details.soon")) S.soonOpen = e.target.open; }, true);
 (() => { const vv = window.visualViewport; if (!vv) return;
   const fit = () => { const r = document.documentElement.style; r.setProperty("--vv-h", vv.height + "px"); r.setProperty("--vv-top", vv.offsetTop + "px"); };
   vv.addEventListener("resize", fit); vv.addEventListener("scroll", fit); fit(); })();
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#sheet").hidden) closeSheet(); });
+// Return/Done on a short text field saves the form, so the keyboard never hides the way to save
+document.addEventListener("keydown", (e) => { const i = e.target; if (e.key !== "Enter" || e.isComposing || !i.matches?.('input[enterkeyhint="done"]') || !i.form) return; e.preventDefault(); i.blur(); i.form.requestSubmit(); });
 
 let toastTimer;
 function toast(msg, action) {

@@ -232,6 +232,18 @@ h2 .cat svg { width: 20px; height: 20px; }
 .toast-act { border: 0; background: none; color: var(--water-deep); font: inherit; font-weight: 700; padding: 6px 2px; margin: -6px 0; cursor: pointer; }
 .done-t { color: var(--ok); }
 .row .btn.small { flex: none; }
+/* species picker */
+.sp-pick { position: relative; }
+.sp-q { width: 100%; border: 0; border-radius: 12px; padding: 11px 14px; background: var(--surface); font-size: 16px; min-height: 44px; -webkit-appearance: none; appearance: none; }
+.sp-q::placeholder { color: var(--faint); }
+.sp-res { position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 4px); max-height: min(320px, 46vh); overflow-y: auto; background: var(--surface); border-radius: 14px; box-shadow: 0 12px 32px var(--sill-shadow), 0 1px 3px rgba(0, 0, 0, 0.08); padding: 4px 0; overscroll-behavior: contain; }
+.sp-h { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); padding: 10px 14px 4px; }
+.sp-opt { all: unset; box-sizing: border-box; width: 100%; display: flex; flex-direction: column; gap: 1px; padding: 8px 14px; cursor: pointer; font-size: 16px; }
+.sp-opt small { color: var(--muted); font-size: 14px; }
+.sp-opt i { font-size: 13px; color: var(--faint); }
+.sp-opt:hover, .sp-opt:focus-visible { background: var(--tint-soft); outline: none; }
+.sp-own { color: var(--tint); font-weight: 600; border-top: 1px solid var(--line); margin-top: 4px; }
+.sp-sci { font-size: 14px; font-style: italic; color: var(--muted); margin: -6px 4px 0; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(92px + env(safe-area-inset-bottom, 0px)); z-index: 30;
   background: rgba(255, 255, 255, 0.92); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); color: var(--ink);
   border: 1px solid var(--line); padding: 12px 18px; border-radius: var(--r); font-size: 15px; font-weight: 500; line-height: 1.35;
@@ -1142,7 +1154,7 @@ async function saveDivide(f) {
   const watered = !!fd.get("watered"), fed = !!fd.get("fed");
   const pot = String(fd.get("pot") || "").trim(), spot = String(fd.get("spot") || "").trim();
   const entry = { d, t: "water", fed };
-  const base = { species: p.species || "", common: p.common || "", care: p.care || {}, roomId: p.roomId || "", spot, catReach: p.catReach || "", soil: p.soil || "", pot,
+  const base = { species: p.species || "", taxon: p.taxon || "", common: p.common || "", care: p.care || {}, roomId: p.roomId || "", spot, catReach: p.catReach || "", soil: p.soil || "", pot,
     waterEvery: p.waterEvery || 7, lastWatered: watered ? d : p.lastWatered || null, lastFed: fed ? d : p.lastFed || null, repotted: d, noFeedUntil: addDays(d, 42),
     acquired: d, source: `Divided from ${nm(p)}`, parentId: p.id, origin: { t: "division", d }, created: today() };
   const ok = await write(async () => {
@@ -1220,12 +1232,212 @@ function refreshPlantSheet() {
 }
 
 const opt = (v, cur, label) => `<option value="${esc(v)}"${String(v) === String(cur ?? "") ? " selected" : ""}>${esc(label ?? v)}</option>`;
+/* ---------- plant list: pick the kind of plant (type, then variety) instead of typing a species ---------- */
+// Each type: id, n (name shown), s (botanical name when the variety is unknown), b (base for cultivar names, default s),
+// c (common name, default n), sec (section), tox (toxic to cats: true/false/null), aka (extra search words), v (varieties).
+// A variety is "Name", "Name|Botanical name" or "Name|Botanical name|Common name"; with no botanical name it is b + " 'Name'".
+const SPECIES_SECTIONS = ["Aroids", "Snake plants & succulents", "Trailing & hanging", "Leafy & moisture lovers", "Trees & palms", "Flowers, orchids & air plants"];
+const SPECIES_LIST = [
+  // Aroids
+  { id: "monstera", n: "Monstera", s: "Monstera", sec: 0, tox: true, aka: "swiss cheese split leaf", v: ["Deliciosa|Monstera deliciosa|Monstera", "Thai Constellation|Monstera deliciosa 'Thai Constellation'|Thai Constellation monstera", "Albo|Monstera deliciosa 'Albo Variegata'|Albo monstera", "Aurea|Monstera deliciosa 'Aurea'|Aurea monstera", "Adansonii|Monstera adansonii|Swiss cheese vine", "Laniata|Monstera adansonii 'Laniata'|Monstera Laniata", "Peru|Monstera karstenianum 'Peru'|Peru monstera", "Burle Marx Flame|Monstera 'Burle Marx Flame'|Flame monstera", "Siltepecana|Monstera siltepecana", "Standleyana|Monstera standleyana", "Dubia|Monstera dubia", "Obliqua|Monstera obliqua", "Esqueleto|Monstera 'Esqueleto'", "Pinnatipartita|Monstera pinnatipartita"] },
+  { id: "philodendron", n: "Philodendron", s: "Philodendron", sec: 0, tox: true, v: ["Heartleaf|Philodendron hederaceum|Heartleaf philodendron", "Brasil|Philodendron hederaceum 'Brasil'|Philodendron Brasil", "Micans|Philodendron hederaceum 'Micans'|Velvet philodendron", "Lemon Lime|Philodendron hederaceum 'Lemon Lime'", "Rio|Philodendron hederaceum 'Rio'", "Pink Princess|Philodendron erubescens 'Pink Princess'", "Birkin|Philodendron 'Birkin'", "Prince of Orange|Philodendron 'Prince of Orange'", "Moonlight|Philodendron 'Moonlight'", "White Princess|Philodendron erubescens 'White Princess'", "Painted Lady|Philodendron 'Painted Lady'", "Florida Ghost|Philodendron 'Florida Ghost'", "Gloriosum|Philodendron gloriosum", "Melanochrysum|Philodendron melanochrysum", "Squamiferum|Philodendron squamiferum", "Verrucosum|Philodendron verrucosum", "Xanadu|Thaumatophyllum xanadu|Xanadu", "Selloum (split-leaf)|Thaumatophyllum bipinnatifidum|Tree philodendron"] },
+  { id: "pothos", n: "Pothos", s: "Epipremnum aureum", sec: 0, tox: true, aka: "devil's ivy epipremnum", v: ["Golden|Epipremnum aureum|Golden pothos", "Marble Queen||Marble Queen pothos", "Snow Queen||Snow Queen pothos", "Neon||Neon pothos", "Jade||Jade pothos", "Manjula||Manjula pothos", "N'Joy|Epipremnum aureum 'N'Joy'|N'Joy pothos", "Pearls and Jade||Pearls and Jade pothos", "Glacier||Glacier pothos", "Global Green||Global Green pothos", "Cebu Blue|Epipremnum pinnatum 'Cebu Blue'|Cebu Blue pothos", "Baltic Blue|Epipremnum pinnatum 'Baltic Blue'|Baltic Blue pothos", "Skeleton Key|Epipremnum pinnatum 'Skeleton Key'"] },
+  { id: "satin-pothos", n: "Satin pothos", s: "Scindapsus pictus", sec: 0, tox: true, aka: "scindapsus silver", v: ["Exotica", "Argyraeus", "Silvery Ann", "Jade Satin", "Treubii Moonlight|Scindapsus treubii 'Moonlight'", "Treubii Dark Form|Scindapsus treubii 'Dark Form'"] },
+  { id: "alocasia", n: "Alocasia", s: "Alocasia", sec: 0, tox: true, aka: "elephant ear", c: "Elephant ear", v: ["Polly|Alocasia × amazonica 'Polly'", "Bambino|Alocasia × amazonica 'Bambino'", "Frydek|Alocasia micholitziana 'Frydek'|Green velvet alocasia", "Dragon Scale|Alocasia baginda 'Dragon Scale'", "Silver Dragon|Alocasia baginda 'Silver Dragon'", "Zebrina|Alocasia zebrina", "Black Velvet|Alocasia reginula 'Black Velvet'", "Stingray|Alocasia macrorrhizos 'Stingray'", "Cuprea (Red Secret)|Alocasia cuprea", "Regal Shield|Alocasia 'Regal Shield'", "Portora|Alocasia 'Portora'", "Wentii|Alocasia wentii", "Lauterbachiana|Alocasia lauterbachiana", "Sarian|Alocasia 'Sarian'", "Tiny Dancer|Alocasia 'Tiny Dancer'", "Melo|Alocasia melo", "Odora|Alocasia odora", "Jacklyn|Alocasia 'Jacklyn'"] },
+  { id: "anthurium", n: "Anthurium", s: "Anthurium", sec: 0, tox: true, v: ["Flamingo flower|Anthurium andraeanum|Flamingo flower", "Clarinervium|Anthurium clarinervium", "Crystallinum|Anthurium crystallinum", "Magnificum|Anthurium magnificum", "Warocqueanum (Queen)|Anthurium warocqueanum", "Veitchii (King)|Anthurium veitchii", "Vittarifolium|Anthurium vittarifolium"] },
+  { id: "arrowhead", n: "Arrowhead plant", s: "Syngonium podophyllum", sec: 0, tox: true, aka: "syngonium", v: ["Albo|Syngonium podophyllum 'Albo Variegatum'", "Neon Robusta", "Pink Allusion", "Mojito", "Pixie", "White Butterfly", "Strawberry Ice", "Confetti"] },
+  { id: "aglaonema", n: "Chinese evergreen", s: "Aglaonema", sec: 0, tox: true, aka: "aglaonema", v: ["Silver Bay|Aglaonema 'Silver Bay'", "Silver Queen|Aglaonema 'Silver Queen'", "Maria|Aglaonema 'Maria'", "Siam Aurora|Aglaonema 'Siam Aurora'", "Pink Valentine|Aglaonema 'Pink Valentine'", "Pictum Tricolor|Aglaonema pictum 'Tricolor'"] },
+  { id: "peace-lily", n: "Peace lily", s: "Spathiphyllum", sec: 0, tox: true, aka: "spathiphyllum", v: ["Domino", "Sensation", "Little Angel"] },
+  { id: "dieffenbachia", n: "Dumb cane", s: "Dieffenbachia seguine", sec: 0, tox: true, aka: "dieffenbachia", v: ["Camille", "Tropic Snow", "Compacta"] },
+  { id: "rhaphidophora", n: "Rhaphidophora", s: "Rhaphidophora", sec: 0, tox: true, aka: "mini monstera ginny", v: ["Mini monstera|Rhaphidophora tetrasperma|Mini monstera", "Decursiva|Rhaphidophora decursiva", "Hayi (shingle)|Rhaphidophora hayi|Shingle plant"] },
+  { id: "colocasia", n: "Colocasia", s: "Colocasia esculenta", sec: 0, tox: true, aka: "elephant ear taro", c: "Elephant ear", v: ["Black Magic", "Mojito", "Illustris"] },
+  { id: "caladium", n: "Caladium", s: "Caladium bicolor", sec: 0, tox: true, aka: "angel wings", v: ["White Christmas", "Red Flash"] },
+  // Snake plants & succulents
+  { id: "snake-plant", n: "Snake plant", s: "Dracaena trifasciata", sec: 1, tox: true, aka: "sansevieria mother-in-law's tongue", v: ["Black Gold", "Moonbeam", "Moonshine", "Laurentii", "Futura Superba", "Golden Hahnii||Golden bird's nest snake plant", "Hahnii||Bird's nest snake plant", "Twisted Sister", "Black Coral", "Zeylanica", "Bantel's Sensation", "Whitney", "Cleopatra", "Cylindrica|Dracaena angolensis|Cylindrical snake plant", "Starfish (Boncel)|Dracaena angolensis 'Boncel'|Starfish snake plant", "Whale fin|Dracaena masoniana|Whale fin snake plant", "Francisii|Dracaena francisii|Francisii snake plant", "Fernwood|Dracaena 'Fernwood'|Fernwood snake plant", "Patens|Dracaena patens"] },
+  { id: "zz-plant", n: "ZZ plant", s: "Zamioculcas zamiifolia", sec: 1, tox: true, aka: "zamioculcas zanzibar gem", v: ["Raven", "Zenzi", "Chameleon", "Variegata", "Zamicro"] },
+  { id: "jade", n: "Jade plant", s: "Crassula ovata", sec: 1, tox: true, aka: "crassula money tree", v: ["Gollum", "Hobbit", "Variegata", "Hummel's Sunset"] },
+  { id: "echeveria", n: "Echeveria", s: "Echeveria", sec: 1, tox: false, v: ["Lola|Echeveria 'Lola'", "Perle von Nürnberg|Echeveria 'Perle von Nürnberg'", "Elegans|Echeveria elegans|Mexican snowball", "Black Prince|Echeveria 'Black Prince'"] },
+  { id: "haworthia", n: "Haworthia", s: "Haworthia", sec: 1, tox: false, aka: "zebra", v: ["Zebra|Haworthiopsis attenuata|Zebra haworthia", "Cooperi|Haworthia cooperi", "Retusa|Haworthia retusa"] },
+  { id: "aloe", n: "Aloe", s: "Aloe", sec: 1, tox: true, v: ["Aloe vera|Aloe vera|Aloe vera", "Christmas Carol|Aloe 'Christmas Carol'", "Lace aloe|Aristaloe aristata|Lace aloe"] },
+  { id: "kalanchoe", n: "Kalanchoe", s: "Kalanchoe", sec: 1, tox: true, v: ["Flaming Katy|Kalanchoe blossfeldiana|Flaming Katy", "Panda plant|Kalanchoe tomentosa|Panda plant", "Mother of thousands|Kalanchoe daigremontiana|Mother of thousands", "Paddle plant|Kalanchoe luciae|Paddle plant"] },
+  { id: "sedum", n: "Sedum", s: "Sedum", sec: 1, tox: false, aka: "stonecrop", v: ["Burro's tail|Sedum morganianum|Burro's tail", "Jelly bean|Sedum rubrotinctum|Jelly bean plant"] },
+  { id: "cactus", n: "Cactus", s: "Cactaceae", sec: 1, tox: false, v: ["Bunny ears|Opuntia microdasys|Bunny ears cactus", "Golden barrel|Echinocactus grusonii|Golden barrel cactus", "Fairy castle|Acanthocereus tetragonus 'Fairy Castle'|Fairy castle cactus", "Moon cactus|Gymnocalycium mihanovichii|Moon cactus", "Pincushion|Mammillaria|Pincushion cactus"] },
+  { id: "euphorbia", n: "Euphorbia", s: "Euphorbia", sec: 1, tox: true, v: ["African milk tree|Euphorbia trigona|African milk tree", "Crown of thorns|Euphorbia milii|Crown of thorns", "Pencil cactus|Euphorbia tirucalli|Pencil cactus"] },
+  { id: "ponytail-palm", n: "Ponytail palm", s: "Beaucarnea recurvata", sec: 1, tox: false, v: [] },
+  { id: "lithops", n: "Living stones", s: "Lithops", sec: 1, tox: false, aka: "lithops", v: [] },
+  { id: "gasteria", n: "Gasteria", s: "Gasteria", sec: 1, tox: false, aka: "ox tongue", v: [] },
+  // Trailing & hanging
+  { id: "hoya", n: "Hoya", s: "Hoya", sec: 2, tox: false, aka: "wax plant", v: ["Carnosa|Hoya carnosa|Wax plant", "Krimson Queen|Hoya carnosa 'Krimson Queen'", "Krimson Princess|Hoya carnosa 'Krimson Princess'", "Compacta (Hindu rope)|Hoya carnosa 'Compacta'|Hindu rope", "Kerrii (sweetheart)|Hoya kerrii|Sweetheart hoya", "Pubicalyx|Hoya pubicalyx", "Linearis|Hoya linearis", "Australis|Hoya australis", "Obovata|Hoya obovata", "Bella|Hoya bella", "Mathilde|Hoya 'Mathilde'", "Sunrise|Hoya 'Sunrise'"] },
+  { id: "string-of-hearts", n: "String of hearts", s: "Ceropegia woodii", sec: 2, tox: false, aka: "ceropegia rosary vine", v: ["Variegata||Variegated string of hearts", "Silver Glory"] },
+  { id: "curio", n: "String of pearls and kin", s: "Curio", sec: 2, tox: true, aka: "senecio curio", v: ["String of pearls|Curio rowleyanus|String of pearls", "String of dolphins|Curio × peregrinus|String of dolphins", "String of bananas|Curio radicans|String of bananas"] },
+  { id: "dischidia", n: "Dischidia", s: "Dischidia", sec: 2, tox: null, aka: "string of nickels", v: ["String of nickels|Dischidia nummularia|String of nickels", "Variegated string of nickels|Dischidia nummularia 'Variegata'|Variegated string of nickels", "Million hearts|Dischidia ruscifolia|Million hearts"] },
+  { id: "spider-plant", n: "Spider plant", s: "Chlorophytum comosum", sec: 2, tox: false, aka: "chlorophytum", v: ["Vittatum", "Variegatum", "Bonnie", "Ocean"] },
+  { id: "tradescantia", n: "Tradescantia", s: "Tradescantia", sec: 2, tox: true, aka: "wandering dude inch plant", v: ["Zebrina|Tradescantia zebrina|Wandering dude", "Nanouk|Tradescantia fluminensis 'Nanouk'", "Tricolor|Tradescantia fluminensis 'Tricolor'", "Purple Heart|Tradescantia pallida 'Purple Heart'|Purple heart", "Oyster plant|Tradescantia spathacea|Oyster plant"] },
+  { id: "ivy", n: "English ivy", s: "Hedera helix", sec: 2, tox: true, aka: "hedera", v: ["Glacier", "Needlepoint"] },
+  { id: "lipstick-plant", n: "Lipstick plant", s: "Aeschynanthus radicans", sec: 2, tox: false, v: [] },
+  // Leafy & moisture lovers
+  { id: "calathea", n: "Calathea", s: "Goeppertia", sec: 3, tox: false, aka: "goeppertia prayer", v: ["Orbifolia|Goeppertia orbifolia", "Medallion|Goeppertia roseopicta 'Medallion'", "Dottie|Goeppertia roseopicta 'Dottie'", "White Fusion|Goeppertia 'White Fusion'", "Rattlesnake|Goeppertia insignis|Rattlesnake plant", "Peacock|Goeppertia makoyana|Peacock plant", "Zebra|Goeppertia zebrina|Zebra plant"] },
+  { id: "prayer-plant", n: "Prayer plant", s: "Maranta leuconeura", sec: 3, tox: false, aka: "maranta", v: ["Red (Erythroneura)|Maranta leuconeura var. erythroneura|Red prayer plant", "Lemon Lime", "Kerchoveana"] },
+  { id: "stromanthe", n: "Stromanthe", s: "Stromanthe sanguinea", sec: 3, tox: false, v: ["Triostar"] },
+  { id: "fittonia", n: "Nerve plant", s: "Fittonia albivenis", sec: 3, tox: false, aka: "fittonia mosaic", v: ["White-veined|Fittonia albivenis (Argyroneura Group)", "Red-veined|Fittonia albivenis (Verschaffeltii Group)", "Pink Star", "Frankie"] },
+  { id: "fern", n: "Fern", s: "Fern", sec: 3, tox: false, v: ["Boston fern|Nephrolepis exaltata|Boston fern", "Fluffy Ruffles|Nephrolepis exaltata 'Fluffy Ruffles'|Boston fern", "Bird's nest fern|Asplenium nidus|Bird's nest fern", "Crispy Wave|Asplenium nidus 'Crispy Wave'|Bird's nest fern", "Maidenhair fern|Adiantum raddianum|Maidenhair fern", "Staghorn fern|Platycerium bifurcatum|Staghorn fern", "Rabbit's foot fern|Davallia fejeensis|Rabbit's foot fern", "Blue star fern|Phlebodium aureum|Blue star fern"] },
+  { id: "chinese-money-plant", n: "Chinese money plant", s: "Pilea peperomioides", sec: 3, tox: false, aka: "pilea pancake ufo", v: ["Mojito", "Sugar", "White Splash"] },
+  { id: "pilea", n: "Pilea (other)", s: "Pilea", sec: 3, tox: false, v: ["Glauca|Pilea glauca|Silver sparkle pilea", "Aluminum plant|Pilea cadierei|Aluminum plant", "Moon Valley|Pilea involucrata 'Moon Valley'|Friendship plant"] },
+  { id: "peperomia", n: "Peperomia", s: "Peperomia", sec: 3, tox: false, aka: "radiator", v: ["Baby rubber plant|Peperomia obtusifolia|Baby rubber plant", "Watermelon|Peperomia argyreia|Watermelon peperomia", "Hope|Peperomia 'Hope'", "String of turtles|Peperomia prostrata|String of turtles", "Ripple|Peperomia caperata|Ripple peperomia", "Rosso|Peperomia caperata 'Rosso'", "Frost|Peperomia caperata 'Frost'", "Raindrop|Peperomia polybotrya|Raindrop peperomia", "Ginny|Peperomia clusiifolia 'Ginny'"] },
+  { id: "begonia", n: "Begonia", s: "Begonia", sec: 3, tox: true, v: ["Maculata (polka dot)|Begonia maculata|Polka dot begonia", "Rex|Begonia rex-cultorum|Rex begonia", "Angel wing|Begonia (cane, angel wing)|Angel wing begonia"] },
+  { id: "cast-iron", n: "Cast iron plant", s: "Aspidistra elatior", sec: 3, tox: false, aka: "aspidistra", v: ["Milky Way", "Variegata", "Asahi"] },
+  { id: "polka-dot", n: "Polka dot plant", s: "Hypoestes phyllostachya", sec: 3, tox: false, aka: "hypoestes", v: [] },
+  { id: "oxalis", n: "Purple shamrock", s: "Oxalis triangularis", sec: 3, tox: true, aka: "oxalis", v: [] },
+  { id: "croton", n: "Croton", s: "Codiaeum variegatum", sec: 3, tox: true, v: ["Petra", "Mammy", "Gold Dust"] },
+  // Trees & palms
+  { id: "rubber-plant", n: "Rubber plant", s: "Ficus elastica", sec: 4, tox: true, aka: "ficus", v: ["Tineke", "Ruby", "Burgundy", "Robusta", "Shivereana"] },
+  { id: "fiddle-leaf-fig", n: "Fiddle-leaf fig", s: "Ficus lyrata", sec: 4, tox: true, aka: "ficus", v: ["Bambino"] },
+  { id: "ficus", n: "Ficus (other)", s: "Ficus", sec: 4, tox: true, aka: "fig", v: ["Weeping fig|Ficus benjamina|Weeping fig", "Audrey|Ficus benghalensis 'Audrey'|Audrey ficus", "Altissima|Ficus altissima", "Triangularis|Ficus triangularis", "Ginseng|Ficus microcarpa 'Ginseng'|Ginseng ficus", "Creeping fig|Ficus pumila|Creeping fig"] },
+  { id: "dracaena", n: "Dracaena", s: "Dracaena", sec: 4, tox: true, aka: "corn plant", v: ["Dragon tree|Dracaena marginata|Dragon tree", "Tricolor|Dracaena marginata 'Tricolor'|Dragon tree", "Corn plant|Dracaena fragrans 'Massangeana'|Corn plant", "Janet Craig|Dracaena fragrans 'Janet Craig'", "Lemon Lime|Dracaena fragrans 'Lemon Lime'", "Lisa|Dracaena fragrans 'Lisa'", "Song of India|Dracaena reflexa 'Song of India'", "Lucky bamboo|Dracaena sanderiana|Lucky bamboo"] },
+  { id: "palm", n: "Palm", s: "Arecaceae", sec: 4, tox: false, v: ["Parlor palm|Chamaedorea elegans|Parlor palm", "Cat palm|Chamaedorea cataractarum|Cat palm", "Areca palm|Dypsis lutescens|Areca palm", "Kentia palm|Howea forsteriana|Kentia palm", "Majesty palm|Ravenea rivularis|Majesty palm", "Lady palm|Rhapis excelsa|Lady palm"] },
+  { id: "schefflera", n: "Umbrella plant", s: "Schefflera arboricola", sec: 4, tox: true, aka: "schefflera", v: ["Gold Capella", "Variegata"] },
+  { id: "money-tree", n: "Money tree", s: "Pachira aquatica", sec: 4, tox: false, aka: "pachira", v: [] },
+  { id: "bird-of-paradise", n: "Bird of paradise", s: "Strelitzia", sec: 4, tox: true, aka: "strelitzia", v: ["Orange|Strelitzia reginae|Bird of paradise", "White|Strelitzia nicolai|White bird of paradise"] },
+  { id: "yucca", n: "Yucca", s: "Yucca gigantea", sec: 4, tox: true, v: [] },
+  { id: "norfolk-pine", n: "Norfolk Island pine", s: "Araucaria heterophylla", sec: 4, tox: true, v: [] },
+  { id: "olive", n: "Olive tree", s: "Olea europaea", sec: 4, tox: false, v: [] },
+  // Flowers, orchids & air plants
+  { id: "orchid", n: "Orchid", s: "Orchidaceae", sec: 5, tox: false, v: ["Moth orchid|Phalaenopsis|Moth orchid", "Dendrobium|Dendrobium", "Oncidium|Oncidium", "Cattleya|Cattleya", "Slipper orchid|Paphiopedilum|Slipper orchid", "Jewel orchid|Ludisia discolor|Jewel orchid"] },
+  { id: "african-violet", n: "African violet", s: "Saintpaulia ionantha", sec: 5, tox: false, aka: "saintpaulia", v: [] },
+  { id: "bromeliad", n: "Bromeliad", s: "Bromeliaceae", sec: 5, tox: false, v: ["Guzmania|Guzmania", "Urn plant|Aechmea fasciata|Urn plant", "Vriesea|Vriesea", "Neoregelia|Neoregelia"] },
+  { id: "air-plant", n: "Air plant", s: "Tillandsia", sec: 5, tox: false, aka: "tillandsia", v: ["Ionantha|Tillandsia ionantha", "Xerographica|Tillandsia xerographica", "Medusa|Tillandsia caput-medusae"] },
+  { id: "holiday-cactus", n: "Holiday cactus", s: "Schlumbergera", sec: 5, tox: false, aka: "christmas thanksgiving easter cactus", v: ["Thanksgiving cactus|Schlumbergera truncata|Thanksgiving cactus", "Christmas cactus|Schlumbergera × buckleyi|Christmas cactus"] },
+  { id: "venus-flytrap", n: "Venus flytrap", s: "Dionaea muscipula", sec: 5, tox: false, aka: "carnivorous", v: [] },
+  { id: "pitcher-plant", n: "Pitcher plant", s: "Nepenthes", sec: 5, tox: false, aka: "carnivorous", v: [] },
+];
+const spSlug = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+for (const t of SPECIES_LIST) t.v = t.v.map((x) => { const [n, s, c] = x.split("|"); return { id: spSlug(n), n, s: s || `${t.b || t.s} '${n}'`, c: c || "" }; });
+const taxonOf = (key) => {
+  const [tid, vid] = String(key || "").split("/"), t = SPECIES_LIST.find((x) => x.id === tid);
+  return t ? { t, v: t.v.find((x) => x.id === vid) || null, other: vid === "~" } : null;
+};
+// Older records (and the demo seed) only carry a species string: match it to the list where it is exact.
+function taxonFor(rec) {
+  const hit = taxonOf(rec?.taxon); if (hit) return hit;
+  const s = String(rec?.species || "").trim().toLowerCase().replace(/^sansevieria /, "dracaena "); if (!s) return null; // old genus name
+  for (const t of SPECIES_LIST) { const v = t.v.find((x) => x.s.toLowerCase() === s); if (v) return { t, v, other: false }; }
+  const t = SPECIES_LIST.find((x) => x.s.toLowerCase() === s); return t ? { t, v: null, other: false } : null;
+}
+const spCommon = (t, v) => v?.c || t.c || t.n;
+const spAutoCommon = (rec) => { const h = taxonFor(rec); return h ? spResolve(h.t, h.v ? h.v.id : h.other ? "__other" : "", "x").common : ""; };
+const spNorm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[‘’'"×]/g, "").replace(/\s+/g, " ").trim();
+function spSearch(q) {
+  q = spNorm(q); if (!q) return [];
+  const words = q.split(" "), hits = [];
+  const score = (hay, name) => { if (!words.every((w) => hay.includes(w))) return 0; return spNorm(name).startsWith(q) ? 3 : hay.split(" ").some((w) => w.startsWith(words[0])) ? 2 : 1; };
+  for (const t of SPECIES_LIST) {
+    const ts = score(spNorm(`${t.n} ${t.s} ${t.c || ""} ${t.aka || ""}`), t.n); if (ts) hits.push({ t, v: null, sc: ts + 0.5 });
+    for (const v of t.v) { const vs = score(spNorm(`${v.n} ${v.s} ${v.c} ${t.n} ${t.aka || ""}`), v.n); if (vs) hits.push({ t, v, sc: vs }); }
+  }
+  return hits.sort((a, b) => b.sc - a.sc).slice(0, 40);
+}
+// The picker: a search box over the list (browse by section when empty), then a Variety menu for the chosen type.
+// "Not on the list" keeps a typed species for anything missing.
+function speciesPicker(pre, rec, opts = {}) {
+  const hit = taxonFor(rec), t = hit?.t, custom = !t && !!rec?.species;
+  const vPick = hit?.v ? hit.v.id : hit?.other ? "__other" : "", vOther = hit?.other ? (String(rec.species).match(/'([^']+)'/) || [])[1] || "" : "";
+  return `<div class="field sp-pick" data-pre="${pre}"><label for="${pre}-spq">${opts.label || "Kind of plant"}</label>
+      <input type="search" id="${pre}-spq" class="sp-q" name="spQuery" autocomplete="off" enterkeyhint="search" value="${esc(t ? t.n : "")}" placeholder="${esc(opts.placeholder || "Search or browse the list")}" role="combobox" aria-expanded="false" aria-controls="${pre}-spres">
+      <div class="sp-res" id="${pre}-spres" role="listbox" hidden></div>
+      <input type="hidden" name="taxonType" value="${esc(t ? t.id : "")}">${opts.hint ? `<small>${esc(opts.hint)}</small>` : ""}</div>
+    <div class="field" id="${pre}-spvar-wrap"${t && t.v.length ? "" : " hidden"}><label for="${pre}-spvar">Variety</label><select id="${pre}-spvar" name="taxonVar">${t ? spVarOptions(t, vPick) : ""}</select></div>
+    <div class="field" id="${pre}-spother-wrap"${vPick === "__other" ? "" : " hidden"}><label for="${pre}-spother">Variety name</label><input type="text" id="${pre}-spother" name="taxonVarOther" value="${esc(vOther)}" placeholder="As it was sold, e.g. Silver Flame"></div>
+    <div class="field" id="${pre}-spcustom-wrap"${custom ? "" : " hidden"}><label for="${pre}-spcustom">Species, not on the list</label><input type="text" id="${pre}-spcustom" name="species" value="${esc(custom ? rec.species : "")}" placeholder="Botanical name if you know it"></div>
+    ${t ? `<p class="sp-sci" id="${pre}-spsci">${esc(spResolve(t, vPick, vOther).species)}</p>` : `<p class="sp-sci" id="${pre}-spsci" hidden></p>`}`;
+}
+const spVarOptions = (t, cur) => opt("", cur, "Regular, or not sure") + t.v.map((v) => opt(v.id, cur, v.n)).join("") + opt("__other", cur, "Another variety…");
+function spResolve(t, vid, other) {
+  const v = t.v.find((x) => x.id === vid);
+  if (v) return { taxon: `${t.id}/${v.id}`, species: v.s, common: spCommon(t, v) };
+  if (vid === "__other" && other) return { taxon: `${t.id}/~`, species: `${t.b || t.s} '${other.replace(/['‘’]/g, "")}'`, common: spCommon(t) };
+  return { taxon: t.id, species: t.s, common: spCommon(t) };
+}
+// Turns the picker's form fields into taxon + species (+ common when the field is blank or still the last automatic name).
+function applyTaxon(rec, withCommon) {
+  const t = taxonOf(rec.taxonType)?.t, q = String(rec.spQuery || "").trim(), custom = String(rec.species || "").trim();
+  const typed = !t && !custom && q ? SPECIES_LIST.find((x) => spNorm(x.n) === spNorm(q)) : null; // typed a type's name without tapping it
+  const r = t ? spResolve(t, rec.taxonVar, String(rec.taxonVarOther || "").trim()) : typed ? spResolve(typed, "", "") : { taxon: "", species: custom || q, common: "" };
+  for (const k of ["taxonType", "taxonVar", "taxonVarOther", "spQuery"]) delete rec[k];
+  rec.taxon = r.taxon; rec.species = r.species;
+  if (withCommon && r.common && !rec.common) rec.common = r.common;
+  return r;
+}
+function spRenderResults(box, q) {
+  const res = spSearch(q), row = (t, v) => {
+    const sub = v ? v.s : [spNorm(t.s) !== spNorm(t.n) && t.s, t.v.length && `${t.v.length} ${t.v.length === 1 ? "variety" : "varieties"}`].filter(Boolean).join(" · ");
+    return `<button type="button" class="sp-opt" role="option" data-t="${t.id}" data-v="${v ? v.id : ""}"><span>${esc(v ? v.n : t.n)}${v ? `<small> · ${esc(t.n)}</small>` : ""}</span>${sub ? `<i>${esc(sub)}</i>` : ""}</button>`;
+  };
+  let html = "";
+  if (!spNorm(q)) html = SPECIES_SECTIONS.map((s, i) => `<p class="sp-h">${esc(s)}</p>` + SPECIES_LIST.filter((t) => t.sec === i).map((t) => row(t, null)).join("")).join("");
+  else html = res.map((h) => row(h.t, h.v)).join("") || `<p class="sp-h">Nothing on the list matches</p>`;
+  if (spNorm(q)) html += `<button type="button" class="sp-opt sp-own" data-own="1"><span>Not on the list: use “${esc(q.trim())}”</span></button>`;
+  box.innerHTML = html; box.hidden = false; box.scrollTop = 0;
+  box.previousElementSibling?.setAttribute("aria-expanded", "true");
+}
+function spClose(box) { if (box && !box.hidden) { box.hidden = true; box.previousElementSibling?.setAttribute("aria-expanded", "false"); } }
+function spSet(pick, t, vid, own) {
+  const pre = pick.dataset.pre, form = pick.closest("form"), q = pick.querySelector(".sp-q"), hid = pick.querySelector('[name="taxonType"]');
+  const vw = $(`#${pre}-spvar-wrap`), vs = $(`#${pre}-spvar`), ow = $(`#${pre}-spother-wrap`), cw = $(`#${pre}-spcustom-wrap`), sci = $(`#${pre}-spsci`);
+  if (own) { cw.hidden = false; $(`#${pre}-spcustom`).value = q.value.trim(); hid.value = ""; q.value = ""; vw.hidden = true; ow.hidden = true; sci.hidden = true; spClose(pick.querySelector(".sp-res")); return; }
+  hid.value = t.id; q.value = t.n; vs.innerHTML = spVarOptions(t, vid || ""); vw.hidden = !t.v.length; ow.hidden = true; cw.hidden = true; $(`#${pre}-spcustom`).value = "";
+  spClose(pick.querySelector(".sp-res")); spSync(pick);
+  // Fill the care fields that come with the kind of plant, only where they are still blank.
+  const tox = form?.querySelector('[name="c.toxic"]'); if (tox && tox.value === "" && t.tox != null) tox.value = t.tox ? "1" : "0";
+}
+function spSync(pick) {
+  const pre = pick.dataset.pre, form = pick.closest("form"), t = taxonOf(pick.querySelector('[name="taxonType"]').value)?.t;
+  const vid = $(`#${pre}-spvar`)?.value || "", ow = $(`#${pre}-spother-wrap`), sci = $(`#${pre}-spsci`);
+  if (!t) return;
+  ow.hidden = vid !== "__other";
+  const r = spResolve(t, vid, $(`#${pre}-spother`).value.trim()); sci.textContent = r.species; sci.hidden = false;
+  const com = form?.querySelector('[name="common"]');
+  if (com && (!com.value.trim() || com.value === com.dataset.auto)) { com.value = r.common; com.dataset.auto = r.common; }
+}
+document.addEventListener("focusin", (ev) => {
+  const el = ev.target; if (!el.matches?.(".sp-q")) return;
+  const pick = el.closest(".sp-pick"), chosen = !!pick.querySelector('[name="taxonType"]').value;
+  // With a type already chosen, open the full list and select the text so typing starts a fresh search.
+  spRenderResults(pick.querySelector(".sp-res"), chosen ? "" : el.value); if (chosen) el.select();
+});
+document.addEventListener("input", (ev) => {
+  const el = ev.target;
+  if (el.matches?.(".sp-q")) { const pick = el.closest(".sp-pick"); pick.querySelector('[name="taxonType"]').value = ""; $(`#${pick.dataset.pre}-spvar-wrap`).hidden = true; $(`#${pick.dataset.pre}-spother-wrap`).hidden = true; $(`#${pick.dataset.pre}-spsci`).hidden = true; spRenderResults(pick.querySelector(".sp-res"), el.value); }
+  else if (el.matches?.('[name="taxonVarOther"]')) { const pick = el.closest("form")?.querySelector(".sp-pick"); if (pick) spSync(pick); }
+});
+document.addEventListener("change", (ev) => { if (ev.target.matches?.('[name="taxonVar"]')) { const pick = ev.target.closest("form")?.querySelector(".sp-pick"); if (pick) { spSync(pick); if (ev.target.value === "__other") $(`#${pick.dataset.pre}-spother`).focus(); } } });
+document.addEventListener("keydown", (ev) => {
+  if (!ev.target.matches?.(".sp-q")) return;
+  const box = ev.target.parentElement.querySelector(".sp-res");
+  if (ev.key === "Enter") { ev.preventDefault(); box.querySelector(".sp-opt")?.click(); }
+  else if (ev.key === "ArrowDown" && !box.hidden) { ev.preventDefault(); box.querySelector(".sp-opt")?.focus(); }
+  else if (ev.key === "Escape" && !box.hidden) { ev.stopPropagation(); spClose(box); }
+}, true);
+document.addEventListener("keydown", (ev) => {
+  const o = ev.target.closest?.(".sp-opt"); if (!o) return;
+  const all = [...o.parentElement.querySelectorAll(".sp-opt")], i = all.indexOf(o);
+  if (ev.key === "ArrowDown") { ev.preventDefault(); all[i + 1]?.focus(); }
+  else if (ev.key === "ArrowUp") { ev.preventDefault(); (all[i - 1] || o.closest(".sp-pick").querySelector(".sp-q")).focus(); }
+  else if (ev.key === "Escape") { ev.stopPropagation(); spClose(o.parentElement); o.closest(".sp-pick").querySelector(".sp-q").focus(); }
+}, true);
+document.addEventListener("pointerdown", (ev) => { for (const b of document.querySelectorAll(".sp-res:not([hidden])")) if (!b.parentElement.contains(ev.target)) spClose(b); });
+document.addEventListener("click", (ev) => {
+  const o = ev.target.closest?.(".sp-opt"); if (!o) return;
+  ev.preventDefault(); ev.stopPropagation();
+  const pick = o.closest(".sp-pick"), t = SPECIES_LIST.find((x) => x.id === o.dataset.t);
+  if (o.dataset.own) spSet(pick, null, "", true); else if (t) spSet(pick, t, o.dataset.v);
+  if (!o.dataset.own && t?.v.length && !o.dataset.v) $(`#${pick.dataset.pre}-spvar`)?.focus();
+}, true);
 function plantForm(p) {
   p = p || {}; const c = p.care || {}, e = p.env || {};
   return sheetTop(p.id ? "Edit plant" : "Add a plant") + `<form class="f" id="plantForm" data-id="${esc(p.id || "")}">
     <div class="row2"><div class="field"><label for="pf-name">Nickname</label><input type="text" id="pf-name" name="name" value="${esc(p.name)}" placeholder="Big Monty"></div>
-    <div class="field"><label for="pf-common">Common name</label><input type="text" id="pf-common" name="common" value="${esc(p.common)}" placeholder="Swiss cheese plant"></div></div>
-    <div><div class="field"><label for="pf-species">Species</label><input type="text" id="pf-species" name="species" value="${esc(p.species)}" placeholder="Monstera deliciosa"></div></div>
+    <div class="field"><label for="pf-common">Common name</label><input type="text" id="pf-common" name="common" value="${esc(p.common)}" data-auto="${esc(p.common && p.common === spAutoCommon(p) ? p.common : "")}" placeholder="Fills in for you"></div></div>
+    ${speciesPicker("pf", p)}
     <div class="row2"><div class="field"><label for="pf-room">Room</label><select id="pf-room" name="roomId">${opt("", p.roomId, "No room yet")}${S.rooms.map((r) => opt(r.id, p.roomId, r.name)).join("")}${opt("__new", "", "New room…")}</select></div>
     <div class="field"><label for="pf-spot">Spot</label><input type="text" id="pf-spot" name="spot" value="${esc(p.spot)}" placeholder="East window sill"></div></div>
     <div class="field"><label for="pf-cat">Can the cats reach it?</label><select id="pf-cat" name="catReach">${opt("", p.catReach, "Not sure")}${opt("yes", p.catReach, "Yes")}${opt("no", p.catReach, "No, it's out of reach")}</select></div>
@@ -1299,7 +1511,8 @@ async function savePlant(form) {
     } else if (k === "soilPick") rec.soil = val === "__other" ? String(fd.get("soilOther") || "").trim() : val;
     else if (k !== "newRoom" && k !== "fromProp" && k !== "soilOther") rec[k] = val;
   }
-  if (!rec.name && !rec.species) { toast("Give it a nickname or a species."); return; }
+  applyTaxon(rec, true);
+  if (!rec.name && !rec.species) { toast("Give it a nickname or pick the kind of plant."); return; }
   rec.waterEvery = Math.max(1, Math.min(60, parseInt(rec.waterEvery, 10) || 7));
   rec.sched = ["smart", "trusted"].includes(rec.sched) ? rec.sched : "";
   if (rec.sched === "trusted" && (old?.sched !== "trusted" || old.waterEvery !== rec.waterEvery)) rec.schedSince = today();
@@ -1369,8 +1582,8 @@ async function saveRoom(form) {
 function propForm(x) {
   x = x || { status: "rooting", taken: today(), qty: 1 };
   return sheetTop(x.id ? "Edit cutting" : "Log a cutting") + `<form class="f" id="propForm" data-id="${esc(x.id || "")}">
-    <div class="row2"><div class="field"><label for="xf-parent">From plant</label><select id="xf-parent" name="parentId">${opt("", x.parentId, "Not from my plants")}${S.plants.map((p) => opt(p.id, x.parentId, p.name ? `${p.name} (${p.species || "?"})` : p.species)).join("")}</select></div>
-    <div class="field"><label for="xf-sp">Species</label><input type="text" id="xf-sp" name="species" value="${esc(x.species)}" placeholder="Same as parent if blank"></div></div>
+    <div class="field"><label for="xf-parent">From plant</label><select id="xf-parent" name="parentId">${opt("", x.parentId, "Not from my plants")}${S.plants.map((p) => opt(p.id, x.parentId, p.name ? `${p.name} (${p.common || p.species || "?"})` : p.common || p.species)).join("")}</select></div>
+    ${speciesPicker("xf", x, { placeholder: "Blank means same as the parent" })}
     <div class="row2"><div class="field"><label for="xf-taken">Taken on</label><input type="date" id="xf-taken" name="taken" value="${esc(x.taken || "")}"></div>
     <div class="field"><label for="xf-qty">How many</label><input type="number" id="xf-qty" name="qty" min="1" max="99" value="${esc(x.qty || 1)}"></div></div>
     <div class="row2"><div class="field"><label for="xf-meth">Method</label><select id="xf-meth" name="method">${["water", "soil", "sphagnum", "leca", "division", "air layer", "leaf cutting"].map((m) => opt(m, x.method || "water", m === "leca" ? "LECA" : cap(m))).join("")}</select></div>
@@ -1386,9 +1599,10 @@ function propForm(x) {
 async function saveProp(form) {
   const fd = new FormData(form), id = form.dataset.id;
   const rec = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, String(v).trim()]));
+  applyTaxon(rec, false);
   rec.qty = Math.max(1, parseInt(rec.qty, 10) || 1);
   rec.price = rec.price ? Number(rec.price) : null;
-  if (!rec.species && rec.parentId) rec.species = getPlant(rec.parentId)?.species || "";
+  if (!rec.species && rec.parentId) { rec.species = getPlant(rec.parentId)?.species || ""; rec.taxon = getPlant(rec.parentId)?.taxon || ""; }
   const old = id ? S.props.find((x) => x.id === id) : null;
   if (old && old.status !== rec.status) rec.statusSince = today();
   const ok = id ? await write(() => S.db.collection("props").doc(id).update(rec), "Saved")
@@ -1553,14 +1767,14 @@ document.addEventListener("click", async (ev) => {
       if (await write(() => S.db.collection("rooms").doc(id).delete(), "Room deleted")) closeSheet(true); return;
     }
     case "new-prop": return openSheet(propForm());
-    case "new-cutting": if (p) { S.sheetPlant = null; openSheet(propForm({ parentId: p.id, species: p.species || "", status: "rooting", taken: today(), qty: 1, method: "water", spot: p.spot || "" })); } return;
+    case "new-cutting": if (p) { S.sheetPlant = null; openSheet(propForm({ parentId: p.id, species: p.species || "", taxon: p.taxon || "", status: "rooting", taken: today(), qty: 1, method: "water", spot: p.spot || "" })); } return;
     case "divide": if (p) { S.sheetPlant = null; openSheet(divideForm(p)); } return;
     case "df-flag": { const on = t.getAttribute("aria-pressed") !== "true"; t.setAttribute("aria-pressed", on); t.form.elements[t.dataset.k].value = on ? "1" : ""; return; }
     case "prop-to-plant": {
       const x = S.props.find((y) => y.id === id); if (!x) return;
       const m = getPlant(x.parentId) || {};
       S.sheetPlant = null;
-      openSheet(plantForm({ species: x.species || m.species || "", common: m.common || "", care: m.care || {}, roomId: m.roomId || "", catReach: m.catReach || "", soil: m.soil || "",
+      openSheet(plantForm({ species: x.species || m.species || "", taxon: x.species ? x.taxon || "" : m.taxon || "", common: m.common || "", care: m.care || {}, roomId: m.roomId || "", catReach: m.catReach || "", soil: m.soil || "",
         spot: x.spot || "", waterEvery: m.waterEvery || 7, lastWatered: today(), acquired: x.taken || "", source: m.id ? `Cutting from ${nm(m)}` : "Cutting", parentId: x.parentId || "", fromProp: x.id }));
       wireRoomSelect(); return;
     }

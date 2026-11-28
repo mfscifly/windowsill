@@ -3,7 +3,7 @@
 Three collections. Dates are `YYYY-MM-DD` strings.
 
 ## plants/{id}
-- `name` (nickname), `common`, `species`, `roomId`, `spot`, `catReach`: `yes` | `no` | `""`
+- `name` (nickname), `common`, `species`, `taxon`, `roomId`, `spot`, `catReach`: `yes` | `no` | `""`
 - `pot` (summary text, kept in sync from `env`), `soil` (growing medium: a preset like "aroid mix (chunky)" or free text), `acquired`, `source`, `notes`, `health` (flag text or null)
 - `env` (this plant's own setup, editable under Environment): `setting` indoors|outdoors, `source` window|grow|both|none, `exposure` direct|bright indirect|medium|low or full sun|partial shade|shade, `sunHours`, `growHours`, `lightValue` + `lightUnit` fc|lux|ppfd (light meter reading; older records may have a free-text `reading`), `potType`, `potSize`, `drainage` yes|no
 - Schedule fields are all editable in the plant form: `waterEvery`, `lastWatered`, `lastFed`, `feedEvery`, `feedYearRound`, `noFeedUntil`, `inspectEvery`, `lastInspected`, `repotted`
@@ -17,11 +17,13 @@ Three collections. Dates are `YYYY-MM-DD` strings.
 
 Display name order: `name` > `common` > `species`.
 
+`taxon` is the pick from the built-in plant list (`SPECIES_LIST` in `src/app.html`): `type`, `type/variety`, or `type/~` for a variety typed by hand; blank means the species was typed as "not on the list". `species` is always written as the botanical name, so older records without `taxon` still work (an exact species match selects the list entry when the form opens).
+
 ## rooms/{id}
 - `name`, `facing`, `light` (grade), `cats`: `everywhere` | `some` | `closed`, `notes`, `weekdaysOnly` (weekend due dates slide to Monday)
 
 ## props/{id}
-- `parentId`, `species`, `taken`, `qty`, `method`, `status`: `rooting` | `potted` | `established` | `for sale` | `sold` | `gifted`, `statusSince`, `spot`, `price`, `notes`
+- `parentId`, `species`, `taxon`, `taken`, `qty`, `method`, `status`: `rooting` | `potted` | `established` | `for sale` | `sold` | `gifted`, `statusSince`, `spot`, `price`, `notes`
 
 ## checkins/{id}
 - `plantId`, `d` (date), `assetId` (photo in the page's asset store, never in code), `health`: `excellent` | `good` | `bad`, `tags[]`, `note`, `at` (timestamp). Photos are shrunk to 1600px JPEG before upload.
